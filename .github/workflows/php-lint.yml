@@ -1,0 +1,36 @@
+name: PHP Lint
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: [ '8.0', '8.1', '8.2', '8.3' ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          tools: none
+          coverage: none
+
+      - name: Run php -l on all .php files
+        run: |
+          set -e
+          fail=0
+          while IFS= read -r -d '' file; do
+            if ! php -l "$file" > /dev/null; then
+              echo "::error file=$file::syntax error"
+              fail=1
+            fi
+          done < <(find . -name '*.php' -not -path './vendor/*' -not -path './node_modules/*' -print0)
+          exit $fail

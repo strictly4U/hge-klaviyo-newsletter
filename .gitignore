@@ -1,0 +1,27 @@
+# Build artifacts
+*.zip
+build/
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Composer (if added later)
+/vendor/
+composer.lock
+
+# Node (if added later for build pipelines)
+/node_modules/
+package-lock.json
+
+# PHPUnit cache (if added)
+.phpunit.result.cache
+.phpunit.cache/
+
+# OS
+Thumbs.db
+desktop.ini
