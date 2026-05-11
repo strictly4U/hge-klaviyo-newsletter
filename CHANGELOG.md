@@ -4,6 +4,16 @@ All notable changes to HgE Klaviyo Newsletter are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.4] — 2026-05-11
+
+### Removed
+
+- **`readme.txt`** — WordPress.org-format readme is no longer shipped. `README.md` is now the single source of truth for documentation (Description, Installation, FAQ, Privacy, Changelog pointers). All content from `readme.txt` was merged into `README.md` first. Submitting to WP.org later would require regenerating `readme.txt` from this `README.md`.
+
+### Changed
+
+- Architecture file tree in `README.md` refreshed: removes the stale `readme.txt` entry and surfaces the `LICENSE`, `HOOKS.md`, `.github/workflows/`, `bin/`, `languages/` directories that ship with the plugin since v3.0.x.
+
 ## [3.0.3] — 2026-05-11
 
 ### Added

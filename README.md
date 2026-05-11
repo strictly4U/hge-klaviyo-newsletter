@@ -2,14 +2,15 @@
 
 Auto-trigger Klaviyo email campaigns from tagged WordPress posts. UI-driven, deliverability-hardened, designed to act as the **Free base** of a Free + Pro split (Pro extension distributed independently).
 
-**Version 3.0.3** — current release. See [`CHANGELOG.md`](CHANGELOG.md) for the full version history; the table below summarises the relevant entries since v2.0.0.
+**Version 3.0.4** — current release. See [`CHANGELOG.md`](CHANGELOG.md) for the full version history; the table below summarises the relevant entries since v2.0.0.
 
 | Version | Highlights |
 |---------|------------|
+| **3.0.4** | Docs consolidation — `readme.txt` removed; `README.md` is now the single source of truth. WP.org submission would require regenerating `readme.txt` from this file. |
 | **3.0.3** | Klaviyo Segments appear alongside Lists in Recipient / Excluded selectors (grouped via `<optgroup>`). Cross-exclude UX disables an audience in one select when it's picked in the other. New helper `hge_klaviyo_api_list_segments()`. |
 | **3.0.2** | Translation-ready. All admin UI strings wrapped in `__()` / `esc_html__()` / `_n()` with text domain `hge-klaviyo-newsletter`. Ships a `.pot` template (~160 entries) + Romanian `.po` for back-compat with pre-3.0.1 UX. |
 | **3.0.1** | Branding neutralised — the two `FC Rapid 1923` literals are now filterable (`hge_klaviyo_safe_subject_fallback`, `hge_klaviyo_email_footer_brand`); defaults derive from `get_bloginfo('name')`. New-install seed values: `tag_slug='newsletter'`, `web_feed_name='newsletter_feed'`. |
-| **3.0.0** | **BREAKING** — newsletter config rewritten as a tag-rules cards system (`tag_rules` array). Free 1 rule, Core 2, Pro 5 (with optional comma-separated multi-tag). Per-rule cooldown + per-rule Web Feed (`?name=`). Top-level v2.x keys silently dropped at read time. New filter `hge_klaviyo_nl_matching_rule`. See Upgrade Notice in `readme.txt`. |
+| **3.0.0** | **BREAKING** — newsletter config rewritten as a tag-rules cards system (`tag_rules` array). Free 1 rule, Core 2, Pro 5 (with optional comma-separated multi-tag). Per-rule cooldown + per-rule Web Feed (`?name=`). Top-level v2.x keys silently dropped at read time. New filter `hge_klaviyo_nl_matching_rule`. See **Upgrade notes** below for the migration path. |
 | 2.4.1 | Klaviyo API revision 2024-10-15 rejects `additional-fields[list]=profile_count` (HTTP 400); subscriber count is now opt-in via the `hge_klaviyo_lists_extra_query` filter for sites on Klaviyo accounts/revisions where the parameter is accepted. |
 | 2.4.0 | Subscriber counts initial implementation (rolled back to opt-in in 2.4.1 due to Klaviyo API revision incompatibility). |
 | 2.3.1 | Klaviyo Templates API page-size fix (`100` → `10`); friendly RO error notices for Klaviyo HTTP failures; auto-flush API cache on plugin upgrade. |
@@ -50,15 +51,57 @@ The Free plugin works standalone. When the Pro plugin is active and licensed, ad
 
 ## Installation
 
-1. Drop the plugin folder into `wp-content/plugins/hge-klaviyo-newsletter/`.
+1. Drop the plugin folder into `wp-content/plugins/hge-klaviyo-newsletter/` (or upload the zip via **WP Admin → Plugins → Add New**).
 2. Activate the plugin in **WP Admin → Plugins**.
-3. Go to **Tools → Klaviyo Newsletter → Settings** and fill in:
-   - Klaviyo API Key
-   - Feed Token (`openssl rand -hex 32`)
-   - Audience list (populated from Klaviyo)
-   - (Optional) Reply-to override
-   - (Optional) Master template + Web Feed mode
-4. Tag a post with the configured slug (default: `newsletter`) and publish — Action Scheduler queues the dispatch.
+3. Go to **Tools → Klaviyo Newsletter → Settings** and fill in the **General settings** section:
+   - **Klaviyo API Key** — Private API key from your Klaviyo account.
+   - **Feed Token** — 32+ character random string. Generate with `openssl rand -hex 32`.
+   - (Optional) **Reply-to** — override the Klaviyo account default reply-to.
+   - **Minimum interval between sends** — cooldown in hours (default 12), applied per rule.
+4. In the **Newsletter rules** section, configure at least one rule:
+   - **Trigger tag** — tag slug that triggers this rule (default: `newsletter`).
+   - **Recipient list(s)** — Klaviyo list(s) / segment(s) for the campaign audience.
+   - (Core+) **Excluded list(s)** — Klaviyo lists / segments to subtract from the audience.
+   - (Pro) **Klaviyo template** + **Web Feed mode** — fully dynamic content with per-rule feed URL.
+5. Tag posts with the configured slug to trigger newsletter campaigns automatically. First matching rule wins (rules evaluated in card order). The plugin uses Klaviyo's account default sender for the from address and label.
+
+## FAQ
+
+**Does this work with `DISABLE_WP_CRON`?**
+Yes. Action Scheduler runs through its own loopback HTTP queue runner, independent of wp-cron. WooCommerce ships Action Scheduler.
+
+**Will publishing many posts at once spam my list?**
+No. The cooldown chains sends sequentially: 5 quick publications result in sends spaced at the configured interval (default 12h), applied per rule.
+
+**How do I prevent duplicate sends?**
+Five protection layers: post meta `_klaviyo_campaign_sent`, Action Scheduler dedup, atomic post-meta lock, campaign-id idempotency check, re-validation at dispatch.
+
+**Where do the from email and from label come from?**
+Klaviyo's account default sender. The plugin doesn't hardcode them; configure them in your Klaviyo account (Settings → Brand). Override only the reply-to address from the plugin's Settings tab if needed.
+
+**Can I migrate from a wp-config-based v1.x setup?**
+Yes. On activation the plugin migrates `KLAVIYO_API_PRIVATE_KEY`, `KLAVIYO_NEWSLETTER_LIST_ID`, `KLAVIYO_FEED_TOKEN`, etc. from `wp-config.php` into the database options. The constants remain as a read-only fallback. After confirming Settings shows the migrated values, you can remove them from `wp-config.php` manually.
+
+**Can I send to multiple lists / segments?**
+Not in the Free plugin (1 audience per rule). The Pro extension supports up to 15 included + excluded audiences combined per rule (Klaviyo per-campaign limit).
+
+**Can I have multiple rules (different tags → different audiences)?**
+Free is capped at 1 rule. Core lifts the cap to 2 rules; Pro allows up to 5 rules. Pro additionally lets each rule fire on multiple tags separated by commas (e.g., `stiri,promo,events` — OR semantics: any tag in the list fires the rule).
+
+**I see "0 templates" in Settings even though I have templates in Klaviyo.**
+Three things to verify, in order:
+1. Open <https://www.klaviyo.com/email-templates> — confirm at least one template exists.
+2. Confirm your Klaviyo API key has the `templates:read` (or `templates:write`) scope. Without it, the API returns 0 results silently.
+3. Click `Reload from Klaviyo` in the Settings tab to bypass the 5-minute transient cache.
+
+If the count remains 0 after all three, enable **Debug mode** in Settings and inspect the raw API response under the **Status** tab.
+
+**Why does my admin show an HTTP 401 / 403 / 429 error from Klaviyo?**
+Since v2.3.1, raw Klaviyo API errors are translated into short admin notices with action steps. The full raw error is logged to `wp-content/debug.log` if `WP_DEBUG_LOG` is on.
+
+## Privacy
+
+This plugin sends **post titles, excerpts, featured images and post URLs** to Klaviyo over HTTPS. No subscriber data is collected by the plugin itself; subscribers are managed entirely in your Klaviyo account.
 
 ## Configuration source of truth
 
@@ -127,12 +170,16 @@ Klaviyo handles fanout to subscribers (default sender from account)
 ```
 hge-klaviyo-newsletter/
 ├── hge-klaviyo-newsletter.php   Main plugin file (header + bootstrap + activation hooks)
-├── readme.txt                   WordPress.org format
-├── README.md                    This file (GitHub format)
-├── CHANGELOG.md                 Iteration history
+├── README.md                    This file (GitHub-format docs — also displayed in WP admin)
+├── CHANGELOG.md                 Iteration history (Keep a Changelog format)
+├── HOOKS.md                     Canonical filters/actions contract for the Pro extension
 ├── TESTING.md                   Staging-test runbook
+├── LICENSE                      GPLv2 text
 ├── uninstall.php                OPT-IN cleanup (see HGE_KLAVIYO_NL_FULL_UNINSTALL)
 ├── .gitignore
+├── .github/workflows/           PHP lint matrix + i18n .pot regeneration
+├── bin/                         extract-pot.py + build-ro-po.py (wp-cli-free alternatives)
+├── languages/                   .pot template + bundled .po translations
 └── includes/
     ├── config.php               Constants + helpers (use_web_feed, safe_subject, etc.)
     ├── tier.php                 Free's view of the Pro extension (is_pro_active, active_plan, upgrade CTAs)
