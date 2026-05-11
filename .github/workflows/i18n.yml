@@ -29,6 +29,14 @@ jobs:
             --domain=hge-klaviyo-newsletter \
             --skip-audit
 
+      - name: Strip POT-Creation-Date for determinism
+        run: |
+          # wp-cli writes a fresh timestamp on every run; remove it so the file
+          # only changes when actual source strings change (matches the output
+          # of bin/extract-pot.py and keeps the "no commit if unchanged" guard
+          # below working as intended).
+          sed -i '/^"POT-Creation-Date:/d' languages/hge-klaviyo-newsletter.pot
+
       - name: Commit + push regenerated .pot if changed
         run: |
           if git diff --quiet languages/hge-klaviyo-newsletter.pot; then

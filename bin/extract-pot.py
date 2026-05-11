@@ -12,8 +12,6 @@ Usage:  python bin/extract-pot.py
 """
 from __future__ import annotations
 
-import datetime
-import os
 import re
 import sys
 from pathlib import Path
@@ -78,7 +76,10 @@ def scan(root: Path):
 
 
 def write_pot(singular, plural, path: Path) -> None:
-    now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M+0000")
+    # Header is deterministic — no POT-Creation-Date, so re-running the script
+    # produces no diff unless source strings actually changed. Translators and
+    # CI alike rely on stable bytes here (Poedit shows the file as "modified"
+    # otherwise even when nothing translatable moved).
     header = (
         "# Copyright (C) 2026 HgE\n"
         "# This file is distributed under the GPLv2 or later.\n"
@@ -86,7 +87,6 @@ def write_pot(singular, plural, path: Path) -> None:
         'msgstr ""\n'
         '"Project-Id-Version: HgE Klaviyo Newsletter\\n"\n'
         '"Report-Msgid-Bugs-To: https://github.com/strictly4U/hge-klaviyo-newsletter/issues\\n"\n'
-        f'"POT-Creation-Date: {now}\\n"\n'
         '"MIME-Version: 1.0\\n"\n'
         '"Content-Type: text/plain; charset=UTF-8\\n"\n'
         '"Content-Transfer-Encoding: 8bit\\n"\n'
