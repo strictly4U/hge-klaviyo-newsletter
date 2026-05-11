@@ -4,7 +4,7 @@ Tags: klaviyo, newsletter, email, woocommerce, action-scheduler
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 3.0.1
+Stable tag: 3.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,12 @@ This plugin sends post titles, excerpts, featured images and post URLs to Klaviy
 
 == Changelog ==
 
+= 3.0.2 =
+* Translation-ready. All admin UI strings wrapped in `__()` / `esc_html__()` / `_n()` with text domain `hge-klaviyo-newsletter`. English is now the source language.
+* New: `languages/hge-klaviyo-newsletter.pot` translation template (~160 entries) + `languages/hge-klaviyo-newsletter-ro_RO.po` Romanian translation (preserves pre-3.0.1 admin UX).
+* New: `.github/workflows/i18n.yml` regenerates the `.pot` automatically via wp-cli on every push.
+* New: `bin/extract-pot.py` + `bin/build-ro-po.py` — Python alternatives for contributors without wp-cli.
+
 = 3.0.1 =
 * Branding neutralised for public distribution. The two hardcoded `FC Rapid 1923` strings are now filterable: `hge_klaviyo_safe_subject_fallback` (empty-title fallback subject) and `hge_klaviyo_email_footer_brand` (built-in HTML template footer). Both default to `get_bloginfo('name')`.
 * New install defaults: `tag_slug = 'newsletter'`, `web_feed_name = 'newsletter_feed'` (were `'trimitenl'` and `'fc_news'`). Existing installs keep their saved values.
@@ -185,6 +191,9 @@ This plugin sends post titles, excerpts, featured images and post URLs to Klaviy
 * Initial release. Code extracted from a parent theme's `functions.php` into a standalone plugin. No behavioural changes vs the in-theme implementation.
 
 == Upgrade Notice ==
+
+= 3.0.2 =
+i18n release. Admin UI is now English-as-source with a bundled Romanian translation (`ro_RO.po`). Romanian sites keep their UX unchanged. Non-Romanian sites see English out of the box; copy the `.pot` and translate via Poedit/Loco Translate for additional locales. No DB schema change.
 
 = 3.0.1 =
 Branding neutralisation. Two `FC Rapid 1923` literals removed from code; replaced with filterable defaults sourced from `get_bloginfo('name')`. Sites that need to preserve the original brand should add overrides for `hge_klaviyo_safe_subject_fallback` and `hge_klaviyo_email_footer_brand` (see CHANGELOG for snippet). No DB schema change.

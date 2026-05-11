@@ -2,10 +2,11 @@
 
 Auto-trigger Klaviyo email campaigns from tagged WordPress posts. UI-driven, deliverability-hardened, designed to act as the **Free base** of a Free + Pro split (Pro extension distributed independently).
 
-**Version 3.0.1** — current release. See [`CHANGELOG.md`](CHANGELOG.md) for the full version history; the table below summarises the relevant entries since v2.0.0.
+**Version 3.0.2** — current release. See [`CHANGELOG.md`](CHANGELOG.md) for the full version history; the table below summarises the relevant entries since v2.0.0.
 
 | Version | Highlights |
 |---------|------------|
+| **3.0.2** | Translation-ready. All admin UI strings wrapped in `__()` / `esc_html__()` / `_n()` with text domain `hge-klaviyo-newsletter`. Ships a `.pot` template (~160 entries) + Romanian `.po` for back-compat with pre-3.0.1 UX. |
 | **3.0.1** | Branding neutralised — the two `FC Rapid 1923` literals are now filterable (`hge_klaviyo_safe_subject_fallback`, `hge_klaviyo_email_footer_brand`); defaults derive from `get_bloginfo('name')`. New-install seed values: `tag_slug='newsletter'`, `web_feed_name='newsletter_feed'`. |
 | **3.0.0** | **BREAKING** — newsletter config rewritten as a tag-rules cards system (`tag_rules` array). Free 1 rule, Core 2, Pro 5 (with optional comma-separated multi-tag). Per-rule cooldown + per-rule Web Feed (`?name=`). Top-level v2.x keys silently dropped at read time. New filter `hge_klaviyo_nl_matching_rule`. See Upgrade Notice in `readme.txt`. |
 | 2.4.1 | Klaviyo API revision 2024-10-15 rejects `additional-fields[list]=profile_count` (HTTP 400); subscriber count is now opt-in via the `hge_klaviyo_lists_extra_query` filter for sites on Klaviyo accounts/revisions where the parameter is accepted. |

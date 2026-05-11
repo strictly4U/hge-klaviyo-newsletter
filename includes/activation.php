@@ -20,9 +20,14 @@ if ( ! function_exists( 'hge_klaviyo_nl_activate' ) ) {
         if ( ! class_exists( 'WooCommerce' ) ) {
             deactivate_plugins( plugin_basename( HGE_KLAVIYO_NL_PLUGIN_FILE ) );
             wp_die(
-                'HgE Klaviyo Newsletter requires <strong>WooCommerce</strong> to be active (it provides Action Scheduler).<br>'
-                . '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">&larr; Back to Plugins</a>',
-                'Plugin dependency missing',
+                wp_kses_post(
+                    sprintf(
+                        /* translators: %s is the link back to the Plugins screen */
+                        __( 'HgE Klaviyo Newsletter requires <strong>WooCommerce</strong> to be active (it provides Action Scheduler).<br>%s', 'hge-klaviyo-newsletter' ),
+                        '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">&larr; ' . esc_html__( 'Back to Plugins', 'hge-klaviyo-newsletter' ) . '</a>'
+                    )
+                ),
+                esc_html__( 'Plugin dependency missing', 'hge-klaviyo-newsletter' ),
                 array( 'back_link' => true )
             );
         }
@@ -83,8 +88,15 @@ if ( ! function_exists( 'hge_klaviyo_nl_activation_notice' ) ) {
         if ( ! get_transient( 'hge_klaviyo_nl_activation_incomplete' ) || ! current_user_can( 'manage_options' ) ) {
             return;
         }
+        $settings_url = admin_url( 'tools.php?page=hge-klaviyo-newsletter&tab=settings' );
         echo '<div class="notice notice-warning is-dismissible"><p><strong>HgE Klaviyo Newsletter:</strong> '
-            . 'configurarea nu este completă (lipsește API key, feed token sau lista de trimitere). '
-            . 'Mergi la <a href="' . esc_url( admin_url( 'tools.php?page=hge-klaviyo-newsletter&tab=settings' ) ) . '">Tools → Klaviyo Newsletter → Settings</a> pentru a completa.</p></div>';
+            . wp_kses_post(
+                sprintf(
+                    /* translators: %s is the link to the Settings tab */
+                    __( 'configuration is incomplete (API key, feed token, or recipient list is missing). Go to %s to complete it.', 'hge-klaviyo-newsletter' ),
+                    '<a href="' . esc_url( $settings_url ) . '">' . esc_html__( 'Tools → Klaviyo Newsletter → Settings', 'hge-klaviyo-newsletter' ) . '</a>'
+                )
+            )
+            . '</p></div>';
     }
 }
