@@ -372,6 +372,16 @@ if ( ! function_exists( 'hge_klaviyo_nl_sanitize_rules' ) ) {
                 }, $raw['excluded_list_ids'] ), 'strlen' ) );
             }
 
+            // Cross-exclude fail-safe (since 3.0.3): the same audience ID
+            // cannot legitimately appear in both included and excluded — Klaviyo
+            // would reject the campaign payload. The Settings UI prevents this
+            // via JS, but direct DB writes / JSON imports could still produce
+            // conflicting values, so we strip duplicates from excluded.
+            // Included wins by convention (positive intent over exclusion).
+            if ( ! empty( $included ) && ! empty( $excluded ) ) {
+                $excluded = array_values( array_diff( $excluded, $included ) );
+            }
+
             // Tier caps
             $included = array_slice( $included, 0, $caps['max_included'] );
             $excluded = array_slice( $excluded, 0, $caps['max_excluded'] );

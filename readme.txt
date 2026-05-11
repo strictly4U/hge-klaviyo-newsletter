@@ -4,7 +4,7 @@ Tags: klaviyo, newsletter, email, woocommerce, action-scheduler
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 3.0.2
+Stable tag: 3.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -43,7 +43,7 @@ The base Free plugin handles a single list and one campaign at a time. The Pro e
 * WordPress 6.0 or higher
 * PHP 8.0 or higher
 * WooCommerce active (provides Action Scheduler)
-* A Klaviyo account with a Private API key (scopes required: `campaigns:write`, `templates:write`, `lists:read`)
+* A Klaviyo account with a Private API key (scopes required: `campaigns:write`, `templates:write`, `lists:read`, `segments:read`)
 
 == Installation ==
 
@@ -120,6 +120,12 @@ This plugin sends post titles, excerpts, featured images and post URLs to Klaviy
 
 == Changelog ==
 
+= 3.0.3 =
+* New: Klaviyo Segments appear in the recipient/excluded selectors alongside Lists (grouped in `<optgroup>`). Same Campaigns API payload — Klaviyo accepts segment IDs in `audiences.included` / `audiences.excluded` interchangeably with list IDs.
+* New: cross-exclude UX — picking a list/segment as Included disables it in the Excluded select of the same card. Server-side fail-safe strips duplicates from Excluded on save.
+* New: `hge_klaviyo_api_list_segments()` helper + `hge_klaviyo_segments_extra_query` filter (mirror of the Lists variant).
+* Refresh counter in Settings now shows `N lists, M segments, K templates`.
+
 = 3.0.2 =
 * Translation-ready. All admin UI strings wrapped in `__()` / `esc_html__()` / `_n()` with text domain `hge-klaviyo-newsletter`. English is now the source language.
 * New: `languages/hge-klaviyo-newsletter.pot` translation template (~160 entries) + `languages/hge-klaviyo-newsletter-ro_RO.po` Romanian translation (preserves pre-3.0.1 admin UX).
@@ -191,6 +197,9 @@ This plugin sends post titles, excerpts, featured images and post URLs to Klaviy
 * Initial release. Code extracted from a parent theme's `functions.php` into a standalone plugin. No behavioural changes vs the in-theme implementation.
 
 == Upgrade Notice ==
+
+= 3.0.3 =
+Klaviyo Segments now appear alongside Lists in the Recipient / Excluded selectors. Cross-exclude UX prevents adding the same audience to both Included and Excluded in a single rule. No DB schema change; existing rules continue to work.
 
 = 3.0.2 =
 i18n release. Admin UI is now English-as-source with a bundled Romanian translation (`ro_RO.po`). Romanian sites keep their UX unchanged. Non-Romanian sites see English out of the box; copy the `.pot` and translate via Poedit/Loco Translate for additional locales. No DB schema change.

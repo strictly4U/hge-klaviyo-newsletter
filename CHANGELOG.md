@@ -4,6 +4,21 @@ All notable changes to HgE Klaviyo Newsletter are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.3] — 2026-05-11
+
+### Added
+
+- **Klaviyo Segments as audience members.** Both `Recipient list(s)` and `Excluded list(s)` selectors in rule cards now show Segments alongside Lists, grouped into `<optgroup>` blocks. Klaviyo's Campaigns API accepts segment IDs interchangeably with list IDs in `audiences.included` / `audiences.excluded`, so no payload change is needed — the new IDs flow through the existing keys (`included_list_ids`, `excluded_list_ids`).
+- **`hge_klaviyo_api_list_segments( $force_refresh = false )`** — new API client helper (mirror of `hge_klaviyo_api_list_lists`). Paginates `GET /api/segments/` with the same 10-per-page cap, caches the result for 5 minutes, sorts alphabetically.
+- **`hge_klaviyo_segments_extra_query`** filter — opt-in `additional-fields[segment]=profile_count` for sites on a Klaviyo revision that accepts it (same pattern as `hge_klaviyo_lists_extra_query`).
+- **Cross-exclude UX in rule cards.** Selecting a list/segment as Included automatically disables it in the Excluded select of the same card (and vice versa). Disabled options stay visible (greyed out) so the user understands why they can't be picked. Server-side fail-safe in `hge_klaviyo_nl_sanitize_rules()` strips duplicates from Excluded if direct DB writes ever conflict.
+- **Refresh counter** in Settings now reads `N lists, M segments, K templates (5 min cache)` so users can confirm Segments fetched correctly.
+
+### Internal
+
+- `hge_klaviyo_render_rule_card()` signature gains `$segments_data` between `$lists_data` and `$templates_data`. The function only has 2 callers, both internal — see the `@since 3.0.3` tag in the phpdoc.
+- API cache clear now also drops `hge_klaviyo_nl_api_segments`.
+
 ## [3.0.2] — 2026-05-11
 
 ### Added

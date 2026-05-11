@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'HGE_KLAVIYO_NL_TAG_SLUG' ) ) {
-    define( 'HGE_KLAVIYO_NL_VERSION',           '3.0.2' );
+    define( 'HGE_KLAVIYO_NL_VERSION',           '3.0.3' );
     // Default tag slug for the first rule on fresh installs. Customers configure
     // their actual trigger tag in Setări → Reguli newsletter; this constant is
     // only the bootstrap seed value.

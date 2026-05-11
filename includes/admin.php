@@ -657,7 +657,7 @@ if ( ! function_exists( 'hge_klaviyo_friendly_api_error' ) ) {
 
         // 403 — insufficient scopes
         if ( false !== strpos( $raw, 'HTTP 403' ) ) {
-            return __( 'The Klaviyo API key lacks the required scopes. Required: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>. Generate a new key with all scopes checked and save.', 'hge-klaviyo-newsletter' );
+            return __( 'The Klaviyo API key lacks the required scopes. Required: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>, <code>segments:read</code>. Generate a new key with all scopes checked and save.', 'hge-klaviyo-newsletter' );
         }
 
         // 429 — rate limited
@@ -785,17 +785,29 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
 
         $can_query_api = '' !== $s['api_key'];
 
-        // Try fetching lists + templates only if API key is present
+        // Try fetching lists + segments + templates only if API key is present.
+        // Segments share the lists' dropdown (since 3.0.3) — Klaviyo's Campaigns
+        // API accepts segment IDs alongside list IDs in audiences.included.
         $lists_data       = array();
+        $segments_data    = array();
         $templates_data   = array();
         $api_error        = '';
         $templates_error  = '';
+        $segments_error   = '';
         if ( $can_query_api && function_exists( 'hge_klaviyo_api_list_lists' ) ) {
             $lists = hge_klaviyo_api_list_lists();
             if ( is_wp_error( $lists ) ) {
                 $api_error = $lists->get_error_message();
             } else {
                 $lists_data = $lists;
+            }
+            if ( function_exists( 'hge_klaviyo_api_list_segments' ) ) {
+                $segments = hge_klaviyo_api_list_segments();
+                if ( is_wp_error( $segments ) ) {
+                    $segments_error = $segments->get_error_message();
+                } else {
+                    $segments_data = $segments;
+                }
             }
             $templates = hge_klaviyo_api_list_templates();
             if ( is_wp_error( $templates ) ) {
@@ -817,7 +829,7 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
         // API Key
         echo '<tr><th scope="row"><label for="hge_klaviyo_api_key">' . esc_html__( 'Klaviyo API Key', 'hge-klaviyo-newsletter' ) . '</label></th><td>';
         echo '<input type="password" id="hge_klaviyo_api_key" name="hge_klaviyo[api_key]" value="' . esc_attr( $s['api_key'] ) . '" class="regular-text" autocomplete="new-password" />';
-        echo '<p class="description">' . wp_kses_post( __( 'Private API key (Klaviyo → Settings → API Keys). Required scopes: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>.', 'hge-klaviyo-newsletter' ) ) . '</p>';
+        echo '<p class="description">' . wp_kses_post( __( 'Private API key (Klaviyo → Settings → API Keys). Required scopes: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>, <code>segments:read</code>.', 'hge-klaviyo-newsletter' ) ) . '</p>';
         echo '</td></tr>';
 
         // Feed Token
@@ -834,16 +846,23 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
                 $friendly = hge_klaviyo_friendly_api_error( $api_error );
                 echo ' <span style="color:#c00;">⚠ ' . wp_kses_post( $friendly ) . '</span>';
             } else {
-                $list_count = count( $lists_data );
-                $tpl_count  = count( $templates_data );
+                $list_count    = count( $lists_data );
+                $segment_count = count( $segments_data );
+                $tpl_count     = count( $templates_data );
                 echo ' <span style="color:#666;">' . esc_html(
                     sprintf(
-                        /* translators: 1: number of lists, 2: number of templates */
-                        __( '%1$d lists, %2$d templates (5 min cache)', 'hge-klaviyo-newsletter' ),
+                        /* translators: 1: number of lists, 2: number of segments, 3: number of templates */
+                        __( '%1$d lists, %2$d segments, %3$d templates (5 min cache)', 'hge-klaviyo-newsletter' ),
                         $list_count,
+                        $segment_count,
                         $tpl_count
                     )
                 ) . '</span>';
+
+                if ( $segments_error && 0 === $segment_count ) {
+                    $seg_friendly = hge_klaviyo_friendly_api_error( $segments_error );
+                    echo '<br><span style="color:#c00;font-size:12px;">⚠ ' . esc_html__( 'Segments:', 'hge-klaviyo-newsletter' ) . ' ' . wp_kses_post( $seg_friendly ) . '</span>';
+                }
 
                 if ( $templates_error && 0 === $tpl_count ) {
                     $tpl_friendly = hge_klaviyo_friendly_api_error( $templates_error );
@@ -912,7 +931,7 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
             $rules = array( hge_klaviyo_nl_default_rule() );
         }
         foreach ( $rules as $idx => $rule ) {
-            hge_klaviyo_render_rule_card( (int) $idx, $rule, $lists_data, $templates_data, $caps, $supports_multi, $plan );
+            hge_klaviyo_render_rule_card( (int) $idx, $rule, $lists_data, $segments_data, $templates_data, $caps, $supports_multi, $plan );
         }
         echo '</div>';
 
@@ -946,7 +965,7 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
         // sequences can appear, so embedding is safe.
         $blank_rule = hge_klaviyo_nl_default_rule();
         ob_start();
-        hge_klaviyo_render_rule_card( 0, $blank_rule, $lists_data, $templates_data, $caps, $supports_multi, $plan, true );
+        hge_klaviyo_render_rule_card( 0, $blank_rule, $lists_data, $segments_data, $templates_data, $caps, $supports_multi, $plan, true );
         $blank_html = ob_get_clean();
 
         echo '<script type="text/template" id="hge-klaviyo-rule-template">' . $blank_html . '</script>';
@@ -1036,10 +1055,70 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
                 var newCard = div.firstChild;
                 container.appendChild(newCard);
                 reindex();
+                applyCrossExcludeAll();
+            });
+
+            // -------------------------------------------------------------
+            // Cross-exclude: an ID selected as Included must be disabled in
+            // the same card's Excluded select (and vice versa). Klaviyo would
+            // reject the campaign anyway, so we hide the contradictory choice
+            // at the source.
+            //
+            // Implementation: scan both selects in each card, collect the set
+            // of selected values from each, then mark conflicting <option>s as
+            // disabled in the opposite select. Selected options stay enabled.
+            // -------------------------------------------------------------
+            function selectedValues(select) {
+                if ( ! select ) { return []; }
+                var out = [];
+                for ( var i = 0; i < select.options.length; i++ ) {
+                    if ( select.options[i].selected && select.options[i].value !== '' ) {
+                        out.push(select.options[i].value);
+                    }
+                }
+                return out;
+            }
+
+            function applyCrossExclude(card) {
+                var inc = card.querySelector('[data-audience-role="included"]');
+                var exc = card.querySelector('[data-audience-role="excluded"]');
+                if ( ! inc || ! exc ) { return; }
+                var incSel = selectedValues(inc);
+                var excSel = selectedValues(exc);
+
+                function disableMatching(targetSelect, otherSelected) {
+                    for ( var i = 0; i < targetSelect.options.length; i++ ) {
+                        var opt = targetSelect.options[i];
+                        if ( opt.value === '' ) { continue; }
+                        if ( opt.selected ) {
+                            // never disable an already-selected option in this
+                            // select — user must be able to deselect it.
+                            opt.disabled = false;
+                            continue;
+                        }
+                        opt.disabled = otherSelected.indexOf(opt.value) !== -1;
+                    }
+                }
+
+                disableMatching(inc, excSel);
+                disableMatching(exc, incSel);
+            }
+
+            function applyCrossExcludeAll() {
+                container.querySelectorAll('.hge-klaviyo-rule-card').forEach(applyCrossExclude);
+            }
+
+            container.addEventListener('change', function(ev) {
+                var t = ev.target;
+                if ( t && t.classList && t.classList.contains('hge-audience-select') ) {
+                    var card = t.closest('.hge-klaviyo-rule-card');
+                    if ( card ) { applyCrossExclude(card); }
+                }
             });
 
             // Initial state — ensure add button reflects current count
             updateAddButton();
+            applyCrossExcludeAll();
         })();
         </script>
         <?php
@@ -1066,16 +1145,22 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
  *   $idx            — initial card index (re-keyed on submit by sanitiser)
  *   $rule           — the rule dict (or default skeleton for blank template)
  *   $lists_data     — Klaviyo lists from API
+ *   $segments_data  — Klaviyo segments from API (since 3.0.3)
  *   $templates_data — Klaviyo templates from API
  *   $caps           — per-rule caps (max_included, max_excluded, allow_template, allow_web_feed)
  *   $supports_multi — true on Pro plan (comma-separated tag_slug)
  *   $plan           — 'free' | 'core' | 'pro'
  *   $is_template    — when true, render as blank-template stub (no selected values)
  *
+ * Lists and segments share the same <select> dropdowns via <optgroup> so the
+ * sanitiser doesn't need to distinguish them (Klaviyo's Campaigns API accepts
+ * both ID kinds in audiences.included / audiences.excluded interchangeably).
+ *
  * @since 3.0.0
+ * @since 3.0.3 Accepts $segments_data and emits an optgroup-grouped select.
  */
 if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
-    function hge_klaviyo_render_rule_card( $idx, $rule, $lists_data, $templates_data, $caps, $supports_multi, $plan, $is_template = false ) {
+    function hge_klaviyo_render_rule_card( $idx, $rule, $lists_data, $segments_data, $templates_data, $caps, $supports_multi, $plan, $is_template = false ) {
         $name_prefix = 'hge_klaviyo[tag_rules][' . (int) $idx . ']';
         $id_prefix   = 'hge-rule-' . (int) $idx . '-';
 
@@ -1117,6 +1202,40 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
         }
         echo '</td></tr>';
 
+        // Helper closure: render <optgroup>-grouped <option> list for audiences.
+        // Lists + segments share the same select; selected values come from the
+        // single $rule key (included_list_ids / excluded_list_ids — name kept
+        // for backward-compat, value space now includes segment IDs too).
+        $render_audience_options = static function ( $selected_ids ) use ( $lists_data, $segments_data ) {
+            $selected_ids = array_map( 'strval', (array) $selected_ids );
+            $out          = '';
+            if ( ! empty( $lists_data ) ) {
+                $out .= '<optgroup label="' . esc_attr__( 'Lists', 'hge-klaviyo-newsletter' ) . '">';
+                foreach ( $lists_data as $list ) {
+                    $sel   = in_array( (string) $list['id'], $selected_ids, true ) ? ' selected' : '';
+                    $count = isset( $list['profile_count'] ) ? $list['profile_count'] : null;
+                    $out  .= '<option value="' . esc_attr( $list['id'] ) . '"' . $sel . ' data-kind="list">'
+                        . esc_html( $list['name'] )
+                        . esc_html( hge_klaviyo_format_list_count( $count ) )
+                        . ' <small>(' . esc_html( $list['id'] ) . ')</small></option>';
+                }
+                $out .= '</optgroup>';
+            }
+            if ( ! empty( $segments_data ) ) {
+                $out .= '<optgroup label="' . esc_attr__( 'Segments', 'hge-klaviyo-newsletter' ) . '">';
+                foreach ( $segments_data as $seg ) {
+                    $sel   = in_array( (string) $seg['id'], $selected_ids, true ) ? ' selected' : '';
+                    $count = isset( $seg['profile_count'] ) ? $seg['profile_count'] : null;
+                    $out  .= '<option value="' . esc_attr( $seg['id'] ) . '"' . $sel . ' data-kind="segment">'
+                        . esc_html( $seg['name'] )
+                        . esc_html( hge_klaviyo_format_list_count( $count ) )
+                        . ' <small>(' . esc_html( $seg['id'] ) . ')</small></option>';
+                }
+                $out .= '</optgroup>';
+            }
+            return $out;
+        };
+
         // included_list_ids
         $inc_id   = $id_prefix . 'included';
         $inc_mult = $caps['max_included'] > 1;
@@ -1124,29 +1243,25 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
         if ( $included_disabled ) {
             echo '<em>' . esc_html__( 'Save the API Key to load the lists.', 'hge-klaviyo-newsletter' ) . '</em>';
         } else {
-            echo '<select id="' . esc_attr( $inc_id ) . '" name="' . esc_attr( $name_prefix ) . '[included_list_ids][]"' . ( $inc_mult ? ' multiple size="5"' : '' ) . ' style="min-width:340px;">';
+            echo '<select id="' . esc_attr( $inc_id ) . '" name="' . esc_attr( $name_prefix ) . '[included_list_ids][]"'
+                . ( $inc_mult ? ' multiple size="5"' : '' )
+                . ' class="hge-audience-select" data-audience-role="included" data-card-idx="' . esc_attr( $idx ) . '"'
+                . ' style="min-width:340px;">';
             if ( ! $inc_mult ) {
-                echo '<option value="">— ' . esc_html__( 'choose a list', 'hge-klaviyo-newsletter' ) . ' —</option>';
+                echo '<option value="">— ' . esc_html__( 'choose a list or segment', 'hge-klaviyo-newsletter' ) . ' —</option>';
             }
-            foreach ( $lists_data as $list ) {
-                $sel   = in_array( $list['id'], (array) $rule['included_list_ids'], true ) ? ' selected' : '';
-                $count = isset( $list['profile_count'] ) ? $list['profile_count'] : null;
-                echo '<option value="' . esc_attr( $list['id'] ) . '"' . $sel . '>'
-                    . esc_html( $list['name'] )
-                    . esc_html( hge_klaviyo_format_list_count( $count ) )
-                    . ' <small>(' . esc_html( $list['id'] ) . ')</small></option>';
-            }
+            echo $render_audience_options( $rule['included_list_ids'] );
             echo '</select>';
         }
         echo '<p class="description">' . wp_kses_post(
             sprintf(
                 /* translators: %d is the maximum number of lists per rule */
-                _n( 'Max <strong>%d</strong> list per rule.', 'Max <strong>%d</strong> lists per rule.', $caps['max_included'], 'hge-klaviyo-newsletter' ),
+                _n( 'Max <strong>%d</strong> list per rule.', 'Max <strong>%d</strong> lists or segments per rule.', $caps['max_included'], 'hge-klaviyo-newsletter' ),
                 (int) $caps['max_included']
             )
         );
         if ( 'pro' !== $plan ) {
-            echo ' ' . wp_kses_post( hge_klaviyo_upgrade_cta_html( 'pro' ) ) . ' ' . esc_html__( 'for up to 15 lists per rule.', 'hge-klaviyo-newsletter' );
+            echo ' ' . wp_kses_post( hge_klaviyo_upgrade_cta_html( 'pro' ) ) . ' ' . esc_html__( 'for up to 15 lists/segments per rule.', 'hge-klaviyo-newsletter' );
         }
         echo '</p>';
         echo '</td></tr>';
@@ -1159,20 +1274,16 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
         } elseif ( $included_disabled ) {
             echo '<em>' . esc_html__( 'Save the API Key to load the lists.', 'hge-klaviyo-newsletter' ) . '</em>';
         } else {
-            echo '<select id="' . esc_attr( $exc_id ) . '" name="' . esc_attr( $name_prefix ) . '[excluded_list_ids][]" multiple size="4" style="min-width:340px;">';
-            foreach ( $lists_data as $list ) {
-                $sel   = in_array( $list['id'], (array) $rule['excluded_list_ids'], true ) ? ' selected' : '';
-                $count = isset( $list['profile_count'] ) ? $list['profile_count'] : null;
-                echo '<option value="' . esc_attr( $list['id'] ) . '"' . $sel . '>'
-                    . esc_html( $list['name'] )
-                    . esc_html( hge_klaviyo_format_list_count( $count ) )
-                    . ' <small>(' . esc_html( $list['id'] ) . ')</small></option>';
-            }
+            echo '<select id="' . esc_attr( $exc_id ) . '" name="' . esc_attr( $name_prefix ) . '[excluded_list_ids][]"'
+                . ' multiple size="4"'
+                . ' class="hge-audience-select" data-audience-role="excluded" data-card-idx="' . esc_attr( $idx ) . '"'
+                . ' style="min-width:340px;">';
+            echo $render_audience_options( $rule['excluded_list_ids'] );
             echo '</select>';
             echo '<p class="description">' . wp_kses_post(
                 sprintf(
                     /* translators: %d is the maximum number of excluded lists per rule */
-                    _n( 'Max <strong>%d</strong> excluded list.', 'Max <strong>%d</strong> excluded lists.', $caps['max_excluded'], 'hge-klaviyo-newsletter' ),
+                    _n( 'Max <strong>%d</strong> excluded list.', 'Max <strong>%d</strong> excluded lists or segments.', $caps['max_excluded'], 'hge-klaviyo-newsletter' ),
                     (int) $caps['max_excluded']
                 )
             ) . ' ' . esc_html__( 'Klaviyo limit: included + excluded ≤ 15.', 'hge-klaviyo-newsletter' ) . '</p>';

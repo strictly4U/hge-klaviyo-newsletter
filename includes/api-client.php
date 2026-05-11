@@ -92,6 +92,76 @@ if ( ! function_exists( 'hge_klaviyo_api_list_lists' ) ) {
     }
 }
 
+if ( ! function_exists( 'hge_klaviyo_api_list_segments' ) ) {
+    /**
+     * Fetch all segments from Klaviyo. The Segments API uses the same JSON:API
+     * shape as Lists/Templates (revision 2024-10-15), with the same 10-item
+     * page[size] cap. We paginate up to 50 pages × 10 = 500 segments.
+     *
+     * Klaviyo's Campaigns API accepts segment IDs in `audiences.included` /
+     * `audiences.excluded` arrays interchangeably with list IDs — no extra
+     * `type` annotation is needed on send. The Settings UI surfaces them
+     * separately so users know which is which.
+     *
+     * @since 3.0.3
+     * @param bool $force_refresh Bypass the transient cache.
+     * @return array<int, array{id:string, name:string, profile_count: int|null}>|WP_Error
+     */
+    function hge_klaviyo_api_list_segments( $force_refresh = false ) {
+        $cache_key = 'hge_klaviyo_nl_api_segments';
+
+        if ( ! $force_refresh ) {
+            $cached = get_transient( $cache_key );
+            if ( false !== $cached ) {
+                return $cached;
+            }
+        }
+
+        $items = array();
+        // profile_count on segments is opt-in via the same filter as lists,
+        // because the same Klaviyo API revision rejects the field by default.
+        $extra = (array) apply_filters( 'hge_klaviyo_segments_extra_query', array() );
+        $query = array_merge( array( 'page[size]' => '10' ), $extra );
+        $next  = '/api/segments/?' . http_build_query( $query, '', '&', PHP_QUERY_RFC3986 );
+        $guard = 50;
+
+        while ( $next && $guard-- > 0 ) {
+            $resp = hge_klaviyo_api_request( 'GET', $next );
+            if ( is_wp_error( $resp ) ) {
+                return $resp;
+            }
+            foreach ( (array) ( $resp['data'] ?? array() ) as $row ) {
+                if ( ! is_array( $row ) ) {
+                    continue;
+                }
+                $count = null;
+                if ( isset( $row['attributes']['profile_count'] ) && is_numeric( $row['attributes']['profile_count'] ) ) {
+                    $count = (int) $row['attributes']['profile_count'];
+                }
+                $items[] = array(
+                    'id'            => isset( $row['id'] ) ? (string) $row['id'] : '',
+                    'name'          => isset( $row['attributes']['name'] ) ? (string) $row['attributes']['name'] : '(unnamed)',
+                    'profile_count' => $count,
+                );
+            }
+            $next_url = isset( $resp['links']['next'] ) ? (string) $resp['links']['next'] : '';
+            if ( '' === $next_url ) {
+                break;
+            }
+            $parsed = wp_parse_url( $next_url );
+            $next   = ( isset( $parsed['path'] ) ? $parsed['path'] : '' )
+                . ( isset( $parsed['query'] ) ? '?' . $parsed['query'] : '' );
+        }
+
+        usort( $items, static function ( $a, $b ) {
+            return strcasecmp( $a['name'], $b['name'] );
+        } );
+
+        set_transient( $cache_key, $items, HGE_KLAVIYO_NL_API_CACHE_TTL );
+        return $items;
+    }
+}
+
 if ( ! function_exists( 'hge_klaviyo_api_list_templates' ) ) {
     /**
      * Fetch email templates from Klaviyo. The Templates API caps `page[size]` at 10
@@ -156,6 +226,7 @@ if ( ! function_exists( 'hge_klaviyo_nl_clear_api_cache' ) ) {
     function hge_klaviyo_nl_clear_api_cache() {
         delete_transient( 'hge_klaviyo_nl_api_lists' );
         delete_transient( 'hge_klaviyo_nl_api_templates' );
+        delete_transient( 'hge_klaviyo_nl_api_segments' );
     }
 }
 

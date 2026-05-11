@@ -135,8 +135,8 @@ TRANSLATIONS = {
         "Nicio cheie API Klaviyo configurată. Completează câmpul <strong>Cheie API Klaviyo</strong> de mai sus și apasă <strong>Salvează setările</strong>.",
     "The Klaviyo API key is invalid or has been revoked. Generate a new key in Klaviyo &rarr; Settings &rarr; API Keys, replace it in the <strong>Klaviyo API Key</strong> field above and click <strong>Save settings</strong>.":
         "Cheia API Klaviyo este invalidă sau a fost revocată. Generează o cheie nouă din Klaviyo &rarr; Settings &rarr; API Keys, înlocuiește-o în câmpul <strong>Cheie API Klaviyo</strong> de mai sus și apasă <strong>Salvează setările</strong>.",
-    "The Klaviyo API key lacks the required scopes. Required: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>. Generate a new key with all scopes checked and save.":
-        "Cheia API Klaviyo nu are scope-urile necesare. Trebuie: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>. Generează o cheie nouă cu toate scope-urile bifate și salvează.",
+    "The Klaviyo API key lacks the required scopes. Required: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>, <code>segments:read</code>. Generate a new key with all scopes checked and save.":
+        "Cheia API Klaviyo nu are scope-urile necesare. Trebuie: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>, <code>segments:read</code>. Generează o cheie nouă cu toate scope-urile bifate și salvează.",
     "Klaviyo applied rate-limiting (too many requests in a short window). Wait a few minutes and try again.":
         "Klaviyo a aplicat rate-limiting (prea multe cereri într-un interval scurt). Așteaptă câteva minute și încearcă din nou.",
     'The Klaviyo server is not responding correctly (5xx). Try again in a few minutes. If the issue persists, check <a href="https://status.klaviyo.com/" target="_blank" rel="noopener">status.klaviyo.com</a>.':
@@ -147,14 +147,20 @@ TRANSLATIONS = {
     # admin.php — Settings tab
     "General settings": "Setări generale",
     "Klaviyo API Key": "Cheie API Klaviyo",
-    "Private API key (Klaviyo → Settings → API Keys). Required scopes: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>.":
-        "Cheie API privată (Klaviyo → Settings → API Keys). Scopes necesare: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>.",
+    "Private API key (Klaviyo → Settings → API Keys). Required scopes: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>, <code>segments:read</code>.":
+        "Cheie API privată (Klaviyo → Settings → API Keys). Scopes necesare: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>, <code>segments:read</code>.",
     "Random string (32+ chars) used to authenticate requests to <code>/feed/klaviyo*.json</code>. Generate with <code>openssl rand -hex 32</code>.":
         "String aleator (32+ caractere) folosit pentru autentificarea cererilor către <code>/feed/klaviyo*.json</code>. Generează cu <code>openssl rand -hex 32</code>.",
     "Klaviyo data": "Date Klaviyo",
     "Reload from Klaviyo": "Reîncarcă din Klaviyo",
     "%1$d lists, %2$d templates (5 min cache)": "%1$d liste, %2$d template-uri (cache 5 min)",
+    "%1$d lists, %2$d segments, %3$d templates (5 min cache)": "%1$d liste, %2$d segmente, %3$d template-uri (cache 5 min)",
     "Templates:": "Template-uri:",
+    "Segments:": "Segmente:",
+    "Lists": "Liste",
+    "Segments": "Segmente",
+    "choose a list or segment": "alege listă sau segment",
+    "for up to 15 lists/segments per rule.": "pentru până la 15 liste/segmente per regulă.",
     'No template saved in your Klaviyo account. Create one in <a href="https://www.klaviyo.com/email-templates" target="_blank" rel="noopener">Klaviyo &rarr; Email Templates</a> (any name + Code/HTML or Drag & Drop editor), then click <strong>Reload from Klaviyo</strong>.':
         'Niciun template salvat în contul Klaviyo. Creează unul în <a href="https://www.klaviyo.com/email-templates" target="_blank" rel="noopener">Klaviyo &rarr; Email Templates</a> (orice nume + editor Code/HTML sau Drag & Drop), apoi apasă <strong>Reîncarcă din Klaviyo</strong>.',
     "Reply-to address (optional)": "Adresă răspuns (opțional)",
@@ -226,10 +232,10 @@ PLURAL_TRANSLATIONS = {
      "You have reached the plan limit for <strong>%1$s</strong> (%2$d rules)."):
         ("Ai atins limita planului <strong>%1$s</strong> (%2$d regulă).",
          "Ai atins limita planului <strong>%1$s</strong> (%2$d reguli)."),
-    ("Max <strong>%d</strong> list per rule.", "Max <strong>%d</strong> lists per rule."):
-        ("Maxim <strong>%d</strong> listă pe regulă.", "Maxim <strong>%d</strong> liste pe regulă."),
-    ("Max <strong>%d</strong> excluded list.", "Max <strong>%d</strong> excluded lists."):
-        ("Maxim <strong>%d</strong> exclusă.", "Maxim <strong>%d</strong> excluse."),
+    ("Max <strong>%d</strong> list per rule.", "Max <strong>%d</strong> lists or segments per rule."):
+        ("Maxim <strong>%d</strong> listă/segment pe regulă.", "Maxim <strong>%d</strong> liste sau segmente pe regulă."),
+    ("Max <strong>%d</strong> excluded list.", "Max <strong>%d</strong> excluded lists or segments."):
+        ("Maxim <strong>%d</strong> exclusă.", "Maxim <strong>%d</strong> excluse (liste sau segmente)."),
 }
 
 
