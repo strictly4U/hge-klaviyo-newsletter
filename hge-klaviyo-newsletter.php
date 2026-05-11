@@ -3,7 +3,7 @@
  * Plugin Name:       HgE Klaviyo Newsletter
  * Plugin URI:        https://github.com/strictly4U/hge-klaviyo-newsletter
  * Description:       Auto-trigger Klaviyo email campaigns when a tagged WordPress post is published. Tier 1 (Free): single list, basic UTM, built-in HTML template. Pro extension available for delay/window control, multi-template, multi-list (up to 15), retry, A/B testing, analytics and more.
- * Version:           3.0.4
+ * Version:           3.0.5
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            HgE

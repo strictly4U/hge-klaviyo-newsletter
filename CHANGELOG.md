@@ -4,6 +4,22 @@ All notable changes to HgE Klaviyo Newsletter are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.5] — 2026-05-11
+
+### Performance
+
+- **Settings tab load time cut from 10–15s to ~3s on cold cache.** Three root causes addressed:
+  1. **Templates cache TTL extended to 1 hour** (was 5 min). New constant `HGE_KLAVIYO_NL_API_TEMPLATES_CACHE_TTL`. Templates rarely change once configured, and the 56-template paginate (6 round-trips at ~500ms each) was the bulk of cold-fetch time.
+  2. **Lists + segments cache TTL extended to 30 min** (was 5 min). Same `HGE_KLAVIYO_NL_API_CACHE_TTL` constant.
+  3. **No auto-clear on patch / minor version bumps** — only on **major**. Multiple-patch days (e.g. 3.0.2 → 3.0.3 → 3.0.4 on the same day) no longer leave admins with a cold cache after each upgrade.
+  4. **Settings-save no longer clears API cache** unless the **API key** actually changed. Rule edits, cooldown tweaks, etc. now leave the cache warm.
+
+  Manual cache flush is still available via the `Reload from Klaviyo` button in Settings.
+
+### Reverted
+
+- **`readme.txt` restored, `README.md` removed.** Reverses the v3.0.4 decision. The plugin now ships `readme.txt` as the single source of truth (WP.org-compatible) — single readme file across the plugin, matching the Free + Pro convention.
+
 ## [3.0.4] — 2026-05-11
 
 ### Removed

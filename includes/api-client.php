@@ -14,7 +14,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'HGE_KLAVIYO_NL_API_CACHE_TTL' ) ) {
-    define( 'HGE_KLAVIYO_NL_API_CACHE_TTL', 5 * MINUTE_IN_SECONDS );
+    // Default TTL for lists + segments (subscriber counts change more often
+    // than templates). Templates use the longer TTL below.
+    // Manual refresh is always available via the `Reload from Klaviyo`
+    // button (admin-post handler invalidates all three caches).
+    define( 'HGE_KLAVIYO_NL_API_CACHE_TTL', 30 * MINUTE_IN_SECONDS );
+}
+if ( ! defined( 'HGE_KLAVIYO_NL_API_TEMPLATES_CACHE_TTL' ) ) {
+    // Templates rarely change once configured — keep them cached for an hour
+    // so the Settings tab renders fast even after the lists/segments cache
+    // expires. Up to ~3 seconds saved on each cold render (templates pagination
+    // is the heaviest fetch — 56 templates / 10-per-page = 6 round-trips).
+    define( 'HGE_KLAVIYO_NL_API_TEMPLATES_CACHE_TTL', HOUR_IN_SECONDS );
 }
 
 if ( ! function_exists( 'hge_klaviyo_api_list_lists' ) ) {
@@ -214,7 +225,7 @@ if ( ! function_exists( 'hge_klaviyo_api_list_templates' ) ) {
             return strcasecmp( $a['name'], $b['name'] );
         } );
 
-        set_transient( $cache_key, $items, HGE_KLAVIYO_NL_API_CACHE_TTL );
+        set_transient( $cache_key, $items, HGE_KLAVIYO_NL_API_TEMPLATES_CACHE_TTL );
         return $items;
     }
 }
@@ -230,20 +241,45 @@ if ( ! function_exists( 'hge_klaviyo_nl_clear_api_cache' ) ) {
     }
 }
 
-// One-shot cache invalidation when the plugin code is updated to a new version.
-// Without this, the previous (cached for 5 min) "0 templates" empty array
-// keeps getting served even after the page_size fix is deployed.
+// One-shot cache invalidation when the plugin code is updated to a NEW MAJOR
+// version. Patch / minor bumps don't change the API client behaviour, so
+// keeping the cache across them avoids the cold-fetch storm (3-15 seconds)
+// users hit on every Settings page after an upgrade.
+//
+// History: pre-3.0.5 this fired on every version change (any segment of the
+// version string). Day-of-upgrade UX was unusable when multiple patches
+// shipped in one day. Now scoped to the major segment only.
 add_action( 'admin_init', static function () {
-    $marker = 'hge_klaviyo_nl_api_cache_codever';
-    $stored = (string) get_option( $marker, '' );
+    $marker  = 'hge_klaviyo_nl_api_cache_codever';
+    $stored  = (string) get_option( $marker, '' );
     $current = defined( 'HGE_KLAVIYO_NL_VERSION' ) ? HGE_KLAVIYO_NL_VERSION : '';
-    if ( $current && $current !== $stored ) {
+    if ( '' === $current ) {
+        return;
+    }
+    $stored_major  = (int) strtok( $stored, '.' );
+    $current_major = (int) strtok( $current, '.' );
+    if ( $current_major !== $stored_major ) {
         if ( function_exists( 'hge_klaviyo_nl_clear_api_cache' ) ) {
             hge_klaviyo_nl_clear_api_cache();
         }
+    }
+    if ( $current !== $stored ) {
         update_option( $marker, $current, false );
     }
 } );
 
-// Invalidate API cache when settings are saved (e.g. user updated API key)
-add_action( 'update_option_' . HGE_KLAVIYO_NL_OPT_SETTINGS, 'hge_klaviyo_nl_clear_api_cache', 10, 0 );
+// Invalidate API cache only when the API key actually changes.
+// (Pre-3.0.5 every Settings save cleared all caches, causing the slow cold
+// fetch that drove the 10-15s Settings load time.)
+add_action(
+    'update_option_' . HGE_KLAVIYO_NL_OPT_SETTINGS,
+    static function ( $old_value, $new_value ) {
+        $old_key = is_array( $old_value ) ? (string) ( $old_value['api_key'] ?? '' ) : '';
+        $new_key = is_array( $new_value ) ? (string) ( $new_value['api_key'] ?? '' ) : '';
+        if ( $old_key !== $new_key && function_exists( 'hge_klaviyo_nl_clear_api_cache' ) ) {
+            hge_klaviyo_nl_clear_api_cache();
+        }
+    },
+    10,
+    2
+);
