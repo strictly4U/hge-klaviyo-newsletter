@@ -26,12 +26,12 @@ package-lock.json
 Thumbs.db
 desktop.ini
 
-# Internal-only docs (sync from monorepo deliberately excludes these — they
-# live in the private development workspace, not in this public distribution
-# repo). Defensive gitignore so an accidental cp / rsync doesn't reintroduce.
+# Internal-only docs — task tracking, staging runbooks, planning notes.
+# Kept on disk for local use but not committed to either the monorepo or
+# the public distribution repo. See bin/sync-plugin-to-public.sh for the
+# matching rsync --exclude list.
 TESTING.md
 TODO.md
 PLAN*.md
 TASKS*.md
 .beads/
-

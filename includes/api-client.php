@@ -283,3 +283,71 @@ add_action(
     10,
     2
 );
+
+// =============================================================================
+// Background cache warmup (since 3.0.6)
+//
+// Without a background warmup, the first admin pageview after a transient
+// expires pays the cold-fetch tax: lists + segments + templates paginate
+// 1+N+6 round-trips at ~500-1500ms each = 5-15s of admin latency.
+//
+// We schedule a recurring Action Scheduler job that refreshes all three
+// caches every 25 minutes — comfortably under the 30-min lists/segments TTL
+// and far enough below the 1h template TTL that a slow Klaviyo round-trip
+// can finish before TTL expiry. Net effect: the cache is almost always
+// warm when an admin opens the Settings tab, and the warmup happens off
+// the critical path of any user request.
+// =============================================================================
+
+add_action( 'admin_init', 'hge_klaviyo_nl_maybe_schedule_cache_warmup' );
+add_action( 'hge_klaviyo_nl_api_cache_warmup', 'hge_klaviyo_nl_run_cache_warmup' );
+
+if ( ! function_exists( 'hge_klaviyo_nl_maybe_schedule_cache_warmup' ) ) {
+    /**
+     * Schedules the recurring warmup the first time an admin pageview fires
+     * after activation. No HTTP here — just queues the job.
+     *
+     * @since 3.0.6
+     */
+    function hge_klaviyo_nl_maybe_schedule_cache_warmup() {
+        // Only do useful work when Klaviyo can actually be queried — no API
+        // key means warmup would just fail-fast against a missing credential.
+        if ( ! function_exists( 'hge_klaviyo_nl_resolve_api_key' ) || '' === hge_klaviyo_nl_resolve_api_key() ) {
+            return;
+        }
+        if ( ! function_exists( 'as_has_scheduled_action' ) || ! function_exists( 'as_schedule_recurring_action' ) ) {
+            return; // Action Scheduler not loaded (WC missing — unusual)
+        }
+        $hook = 'hge_klaviyo_nl_api_cache_warmup';
+        if ( ! as_has_scheduled_action( $hook, array(), 'hge-klaviyo' ) ) {
+            as_schedule_recurring_action(
+                time() + MINUTE_IN_SECONDS, // first warmup ~1 min after admin lands
+                25 * MINUTE_IN_SECONDS,     // 25-min period — keeps lists/segments cache (30min) hot
+                $hook,
+                array(),
+                'hge-klaviyo'
+            );
+        }
+    }
+}
+
+if ( ! function_exists( 'hge_klaviyo_nl_run_cache_warmup' ) ) {
+    /**
+     * Action Scheduler entry point. Forces a refresh of all three Klaviyo
+     * API caches in sequence. Runs in the AS queue worker — never on the
+     * admin's critical render path.
+     *
+     * @since 3.0.6
+     */
+    function hge_klaviyo_nl_run_cache_warmup() {
+        if ( function_exists( 'hge_klaviyo_api_list_lists' ) ) {
+            hge_klaviyo_api_list_lists( true );
+        }
+        if ( function_exists( 'hge_klaviyo_api_list_segments' ) ) {
+            hge_klaviyo_api_list_segments( true );
+        }
+        if ( function_exists( 'hge_klaviyo_api_list_templates' ) ) {
+            hge_klaviyo_api_list_templates( true );
+        }
+    }
+}

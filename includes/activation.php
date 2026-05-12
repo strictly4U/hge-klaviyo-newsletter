@@ -76,6 +76,9 @@ if ( ! function_exists( 'hge_klaviyo_nl_deactivate' ) ) {
         // Best-effort cancel of any pending Action Scheduler jobs in the plugin's group.
         if ( function_exists( 'as_unschedule_all_actions' ) ) {
             as_unschedule_all_actions( HGE_KLAVIYO_NL_HOOK, array(), 'hge-klaviyo' );
+            // Since 3.0.6 — also unschedule the recurring API cache warmup so
+            // a deactivated plugin stops hitting Klaviyo every 25 min.
+            as_unschedule_all_actions( 'hge_klaviyo_nl_api_cache_warmup', array(), 'hge-klaviyo' );
         }
     }
 }

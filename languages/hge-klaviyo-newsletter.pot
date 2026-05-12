@@ -477,7 +477,7 @@ msgstr ""
 msgid "Title"
 msgstr ""
 
-#: includes/activation.php:97
+#: includes/activation.php:100
 msgid "Tools → Klaviyo Newsletter → Settings"
 msgstr ""
 
@@ -557,7 +557,7 @@ msgstr ""
 msgid "complete"
 msgstr ""
 
-#: includes/activation.php:96
+#: includes/activation.php:99
 msgid "configuration is incomplete (API key, feed token, or recipient list is missing). Go to %s to complete it."
 msgstr ""
 

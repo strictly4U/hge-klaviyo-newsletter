@@ -4,7 +4,7 @@ Tags: klaviyo, newsletter, email, woocommerce, action-scheduler
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 3.0.5
+Stable tag: 3.0.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,11 @@ This plugin sends post titles, excerpts, featured images and post URLs to Klaviy
 
 == Changelog ==
 
+= 3.0.6 =
+* Performance: Klaviyo Newsletter admin page is now responsive even when the API cache is cold. A recurring Action Scheduler job (`hge_klaviyo_nl_api_cache_warmup`, every 25 minutes) refreshes Lists + Segments + Templates in the background, so admin pageviews almost never wait on a paginated round-trip to Klaviyo.
+* Net effect: cold-cache navigation to Tools → Klaviyo Newsletter cut from 10–40s down to roughly the same speed as warm-cache (sub-second after the first warmup completes).
+* Schedule is cancelled cleanly on plugin deactivation so a removed plugin stops contacting Klaviyo.
+
 = 3.0.5 =
 * Performance: Settings tab loads in ~3s on cold cache (was 10-15s). Three causes addressed:
    1. Templates API cache TTL extended to 1 hour (was 5 min) — templates rarely change, and the 56-template paginate was the bulk of cold-fetch time. Lists + segments cache TTL extended to 30 min.
@@ -207,6 +212,9 @@ This plugin sends post titles, excerpts, featured images and post URLs to Klaviy
 * Initial release. Code extracted from a parent theme's `functions.php` into a standalone plugin. No behavioural changes vs the in-theme implementation.
 
 == Upgrade Notice ==
+
+= 3.0.6 =
+Admin page loads no longer wait on cold Klaviyo API cache. A background Action Scheduler job (every 25 min) keeps Lists / Segments / Templates fresh, so opening Tools → Klaviyo Newsletter is sub-second once the first warmup completes. No DB schema change.
 
 = 3.0.5 =
 Settings tab loads ~3-5× faster on cold cache (TTL extended, smarter invalidation). `readme.txt` restored as the canonical readme; `README.md` no longer ships. No DB schema change.

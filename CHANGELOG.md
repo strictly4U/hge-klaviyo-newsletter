@@ -4,6 +4,22 @@ All notable changes to HgE Klaviyo Newsletter are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.6] — 2026-05-12
+
+### Performance
+
+- **Background Klaviyo API cache warmup.** Tools → Klaviyo Newsletter
+  navigation no longer pays the cold-fetch tax (5–15s of paginated round
+  trips to Lists + Segments + Templates) on the admin's critical path.
+  A new recurring Action Scheduler job, `hge_klaviyo_nl_api_cache_warmup`,
+  fires every 25 minutes (comfortably below the 30-min lists/segments TTL
+  and 60-min template TTL) and refreshes all three caches in the queue
+  worker. Result: cold-cache navigation cut from 10–40s down to sub-second
+  once the first warmup completes.
+- The schedule is queued on the first admin pageview after an upgrade
+  (no plugin re-activation needed) and is cancelled on plugin
+  deactivation via `as_unschedule_all_actions`.
+
 ## [3.0.5] — 2026-05-11
 
 ### Performance
