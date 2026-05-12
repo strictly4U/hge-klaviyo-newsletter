@@ -57,7 +57,7 @@ msgstr ""
 msgid "Back to Plugins"
 msgstr ""
 
-#: includes/admin.php:1297
+#: includes/admin.php:1349
 msgid "Built-in HTML template"
 msgstr ""
 
@@ -101,7 +101,7 @@ msgstr ""
 msgid "Default 12. Cooldown is applied <strong>per rule</strong> (per tag). Set 0 to disable."
 msgstr ""
 
-#: includes/admin.php:1182
+#: includes/admin.php:1234
 msgid "Delete rule"
 msgstr ""
 
@@ -129,7 +129,7 @@ msgstr ""
 msgid "Error sending newsletter — see \"Last error\" in the meta box."
 msgstr ""
 
-#: includes/admin.php:1328
+#: includes/admin.php:1406
 msgid "Exact name configured in Klaviyo → Settings → Web Feeds."
 msgstr ""
 
@@ -141,7 +141,7 @@ msgstr ""
 msgid "Excluded"
 msgstr ""
 
-#: includes/admin.php:1271
+#: includes/admin.php:1323
 msgid "Excluded list(s)"
 msgstr ""
 
@@ -169,7 +169,7 @@ msgstr ""
 msgid "HgE Klaviyo Newsletter requires <strong>WooCommerce</strong> to be active (it provides Action Scheduler).<br>%s"
 msgstr ""
 
-#: includes/admin.php:1311
+#: includes/admin.php:1389
 msgid "In Web Feed mode, your template must use <code>{{ web_feeds.NAME.items.0.* }}</code>."
 msgstr ""
 
@@ -181,7 +181,7 @@ msgstr ""
 msgid "Klaviyo API Key"
 msgstr ""
 
-#: includes/admin.php:1353
+#: includes/admin.php:1431
 msgid "Klaviyo API cache cleared. The next render will fetch fresh data."
 msgstr ""
 
@@ -197,7 +197,7 @@ msgstr ""
 msgid "Klaviyo data"
 msgstr ""
 
-#: includes/admin.php:1289
+#: includes/admin.php:1341
 msgid "Klaviyo limit: included + excluded ≤ 15."
 msgstr ""
 
@@ -205,7 +205,7 @@ msgstr ""
 msgid "Klaviyo status reset. You can re-send."
 msgstr ""
 
-#: includes/admin.php:1295
+#: includes/admin.php:1347
 msgid "Klaviyo template"
 msgstr ""
 
@@ -221,7 +221,7 @@ msgstr ""
 msgid "Leave off in production. Turn on when you need to inspect the webhook / dispatch / API response flow."
 msgstr ""
 
-#: includes/admin.php:1213
+#: includes/admin.php:1265
 msgid "Lists"
 msgstr ""
 
@@ -321,7 +321,7 @@ msgstr ""
 msgid "Random string (32+ chars) used to authenticate requests to <code>/feed/klaviyo*.json</code>. Generate with <code>openssl rand -hex 32</code>."
 msgstr ""
 
-#: includes/admin.php:1242
+#: includes/admin.php:1294
 msgid "Recipient list(s)"
 msgstr ""
 
@@ -357,11 +357,11 @@ msgstr ""
 msgid "Reset the legacy global cooldown? Per-rule cooldowns remain untouched."
 msgstr ""
 
-#: includes/admin.php:1181
+#: includes/admin.php:1233
 msgid "Rule"
 msgstr ""
 
-#: includes/admin.php:1135
+#: includes/admin.php:1187
 msgid "Save settings"
 msgstr ""
 
@@ -369,7 +369,7 @@ msgstr ""
 msgid "Save the <strong>Klaviyo API Key</strong> above first so that lists and templates can be loaded into the rule cards."
 msgstr ""
 
-#: includes/admin.php:1244 includes/admin.php:1275
+#: includes/admin.php:1296 includes/admin.php:1327
 msgid "Save the API Key to load the lists."
 msgstr ""
 
@@ -377,7 +377,11 @@ msgstr ""
 msgid "Scheduled / Sent at (UTC)"
 msgstr ""
 
-#: includes/admin.php:1225
+#: includes/admin.php:1366
+msgid "Search templates by name…"
+msgstr ""
+
+#: includes/admin.php:1277
 msgid "Segments"
 msgstr ""
 
@@ -413,7 +417,7 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: includes/admin.php:1352
+#: includes/admin.php:1430
 msgid "Settings saved."
 msgstr ""
 
@@ -423,6 +427,10 @@ msgstr ""
 
 #: includes/admin.php:475
 msgid "Short description (max 120 chars, HTML escaped)"
+msgstr ""
+
+#: includes/admin.php:1159
+msgid "Showing"
 msgstr ""
 
 #: includes/admin.php:479
@@ -481,19 +489,19 @@ msgstr ""
 msgid "Tools → Klaviyo Newsletter → Settings"
 msgstr ""
 
-#: includes/admin.php:1191
+#: includes/admin.php:1243
 msgid "Trigger tag"
 msgstr ""
 
-#: includes/admin.php:1190
+#: includes/admin.php:1242
 msgid "Trigger tag(s)"
 msgstr ""
 
-#: includes/admin.php:1339
+#: includes/admin.php:1417
 msgid "URL for Klaviyo Web Feed (this rule):"
 msgstr ""
 
-#: includes/admin.php:1318
+#: includes/admin.php:1396
 msgid "Unavailable"
 msgstr ""
 
@@ -501,7 +509,7 @@ msgstr ""
 msgid "Uncertain status — check Custom Fields manually."
 msgstr ""
 
-#: includes/admin.php:1325
+#: includes/admin.php:1403
 msgid "Use Web Feed (1 master template + dynamic data)"
 msgstr ""
 
@@ -513,11 +521,11 @@ msgstr ""
 msgid "Web Feed (name)"
 msgstr ""
 
-#: includes/admin.php:1316
+#: includes/admin.php:1394
 msgid "Web Feed mode"
 msgstr ""
 
-#: includes/admin.php:1326
+#: includes/admin.php:1404
 msgid "Web Feed name in Klaviyo:"
 msgstr ""
 
@@ -525,11 +533,11 @@ msgstr ""
 msgid "When set, overrides the reply-to configured in Klaviyo. Leave empty to use the Klaviyo account default."
 msgstr ""
 
-#: includes/admin.php:1195
+#: includes/admin.php:1247
 msgid "WordPress tag slug that triggers this rule. <strong>Pro:</strong> multiple comma-separated tags, e.g. <code>news,promo,events</code> (any present tag fires the rule — OR semantics)."
 msgstr ""
 
-#: includes/admin.php:1197
+#: includes/admin.php:1249
 msgid "WordPress tag slug that triggers this rule. Ex: <code>newsletter</code>."
 msgstr ""
 
@@ -549,7 +557,7 @@ msgstr ""
 msgid "characters, no diacritics"
 msgstr ""
 
-#: includes/admin.php:1251
+#: includes/admin.php:1303
 msgid "choose a list or segment"
 msgstr ""
 
@@ -569,15 +577,15 @@ msgstr ""
 msgid "dispatch:"
 msgstr ""
 
-#: includes/admin.php:1318
+#: includes/admin.php:1396
 msgid "for Web Feed mode (1 template + dynamic data)."
 msgstr ""
 
-#: includes/admin.php:1199
+#: includes/admin.php:1251
 msgid "for multi-tag (comma-separated)."
 msgstr ""
 
-#: includes/admin.php:1264
+#: includes/admin.php:1316
 msgid "for up to 15 lists/segments per rule."
 msgstr ""
 
@@ -621,29 +629,43 @@ msgstr ""
 msgid "resets the v2.x legacy option. Per-rule cooldowns remain in"
 msgstr ""
 
+#: includes/admin.php:1157
+msgid "template"
+msgstr ""
+
+#: includes/admin.php:1157
+msgid "templates"
+msgstr ""
+
 #: includes/admin.php:344
 msgid "theme legacy"
 msgstr ""
 
-#: includes/admin.php:1273
+#: includes/admin.php:1325
 msgid "to be able to exclude lists from the audience."
 msgstr ""
 
-#: includes/admin.php:1297
+#: includes/admin.php:1349
 msgid "to pick a template from your Klaviyo account."
 msgstr ""
 
-#: includes/admin.php:1304
+#: includes/admin.php:1369
 msgid "use the built-in HTML template"
 msgstr ""
 
-#: includes/admin.php:1286
+#: includes/admin.php:1385
+msgid "%d template"
+msgid_plural "%d templates"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/admin.php:1338
 msgid "Max <strong>%d</strong> excluded list."
 msgid_plural "Max <strong>%d</strong> excluded lists or segments."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin.php:1259
+#: includes/admin.php:1311
 msgid "Max <strong>%d</strong> list per rule."
 msgid_plural "Max <strong>%d</strong> lists or segments per rule."
 msgstr[0] ""

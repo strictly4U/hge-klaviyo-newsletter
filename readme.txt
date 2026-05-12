@@ -4,7 +4,7 @@ Tags: klaviyo, newsletter, email, woocommerce, action-scheduler
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 3.0.6
+Stable tag: 3.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,11 @@ This plugin sends post titles, excerpts, featured images and post URLs to Klaviy
 
 == Changelog ==
 
+= 3.0.7 =
+* New: typeahead search above each rule card's Klaviyo template dropdown. Filters options client-side by substring (case-insensitive) as you type — handles hundreds of templates without DOM lag. The currently-selected option and the built-in template placeholder are never hidden so form submit stays predictable.
+* New: live count badge next to the dropdown ("Showing 12 / 200" when filtering, "200 templates" idle).
+* No external JS dependency — vanilla implementation, ~40 lines added inline.
+
 = 3.0.6 =
 * Performance: Klaviyo Newsletter admin page is now responsive even when the API cache is cold. A recurring Action Scheduler job (`hge_klaviyo_nl_api_cache_warmup`, every 25 minutes) refreshes Lists + Segments + Templates in the background, so admin pageviews almost never wait on a paginated round-trip to Klaviyo.
 * Net effect: cold-cache navigation to Tools → Klaviyo Newsletter cut from 10–40s down to roughly the same speed as warm-cache (sub-second after the first warmup completes).
@@ -212,6 +217,9 @@ This plugin sends post titles, excerpts, featured images and post URLs to Klaviy
 * Initial release. Code extracted from a parent theme's `functions.php` into a standalone plugin. No behavioural changes vs the in-theme implementation.
 
 == Upgrade Notice ==
+
+= 3.0.7 =
+Typeahead search above each Klaviyo template dropdown — type to filter by name. Vanilla JS, no external dependency, scales to hundreds of templates without DOM lag. No DB schema change.
 
 = 3.0.6 =
 Admin page loads no longer wait on cold Klaviyo API cache. A background Action Scheduler job (every 25 min) keeps Lists / Segments / Templates fresh, so opening Tools → Klaviyo Newsletter is sub-second once the first warmup completes. No DB schema change.

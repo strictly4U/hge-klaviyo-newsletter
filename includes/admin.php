@@ -1116,9 +1116,61 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
                 }
             });
 
+            // -------------------------------------------------------------
+            // Template typeahead filter (since 3.0.7)
+            //
+            // Each rule card may render `<input class="hge-tpl-search">`
+            // above its template `<select>`. As the user types, we hide
+            // options whose `data-name` doesn't contain the search term
+            // (substring, case-insensitive). The currently-selected option
+            // and the empty placeholder ("use the built-in HTML template")
+            // are never hidden, so submit always carries a valid value.
+            //
+            // Count badge updates with "Showing X of Y" while filtering.
+            // -------------------------------------------------------------
+            function applyTemplateSearch( input ) {
+                var targetId = input.getAttribute('data-target');
+                var countId  = input.getAttribute('data-count');
+                var select   = targetId ? document.getElementById(targetId) : null;
+                var countEl  = countId  ? document.getElementById(countId)  : null;
+                if ( ! select ) { return; }
+                var term = (input.value || '').toLowerCase().trim();
+                var shown = 0, total = 0;
+                for ( var i = 0; i < select.options.length; i++ ) {
+                    var opt = select.options[i];
+                    var name = opt.getAttribute('data-name');
+                    if ( null === name ) {
+                        // Placeholder (empty value) — always visible.
+                        continue;
+                    }
+                    total++;
+                    var match = ( '' === term ) || name.indexOf(term) !== -1;
+                    // Never hide the currently-selected option, even if it
+                    // doesn't match — the user would lose the indication of
+                    // their current setting.
+                    if ( opt.selected ) { match = true; }
+                    opt.hidden = ! match;
+                    if ( match ) { shown++; }
+                }
+                if ( countEl ) {
+                    if ( '' === term ) {
+                        countEl.textContent = total + ' ' + (total === 1 ? <?php echo wp_json_encode( __( 'template', 'hge-klaviyo-newsletter' ) ); ?> : <?php echo wp_json_encode( __( 'templates', 'hge-klaviyo-newsletter' ) ); ?>);
+                    } else {
+                        countEl.textContent = <?php echo wp_json_encode( __( 'Showing', 'hge-klaviyo-newsletter' ) ); ?> + ' ' + shown + ' / ' + total;
+                    }
+                }
+            }
+            container.addEventListener('input', function(ev) {
+                var t = ev.target;
+                if ( t && t.classList && t.classList.contains('hge-tpl-search') ) {
+                    applyTemplateSearch(t);
+                }
+            });
+
             // Initial state — ensure add button reflects current count
             updateAddButton();
             applyCrossExcludeAll();
+            container.querySelectorAll('.hge-tpl-search').forEach(applyTemplateSearch);
         })();
         </script>
         <?php
@@ -1300,14 +1352,40 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
                 echo '<input type="hidden" name="' . esc_attr( $name_prefix ) . '[template_id]" value="' . esc_attr( $rule['template_id'] ) . '">';
             }
         } else {
+            // Vanilla typeahead filter (since 3.0.7) — keeps the DOM responsive
+            // when the Klaviyo account ships hundreds of templates. The full
+            // list is still rendered into the <select> (so form submit serialises
+            // correctly without JS), but a search <input> above filters option
+            // visibility client-side. No external dependency, no asset pipeline.
+            $tpl_search_id = $id_prefix . 'template-search';
+            $tpl_count_id  = $id_prefix . 'template-count';
+            $tpl_total     = count( $templates_data );
+            echo '<input type="search" id="' . esc_attr( $tpl_search_id ) . '"'
+                . ' class="hge-tpl-search" data-target="' . esc_attr( $tpl_id ) . '"'
+                . ' data-count="' . esc_attr( $tpl_count_id ) . '"'
+                . ' placeholder="' . esc_attr__( 'Search templates by name…', 'hge-klaviyo-newsletter' ) . '"'
+                . ' style="min-width:340px;margin-bottom:6px;display:block;" />';
             echo '<select id="' . esc_attr( $tpl_id ) . '" name="' . esc_attr( $name_prefix ) . '[template_id]" style="min-width:340px;">';
             echo '<option value=""' . ( '' === $rule['template_id'] ? ' selected' : '' ) . '>— ' . esc_html__( 'use the built-in HTML template', 'hge-klaviyo-newsletter' ) . ' —</option>';
             foreach ( $templates_data as $tpl ) {
                 $sel = ( $rule['template_id'] === $tpl['id'] ) ? ' selected' : '';
                 $editor = isset( $tpl['editor_type'] ) ? $tpl['editor_type'] : '';
-                echo '<option value="' . esc_attr( $tpl['id'] ) . '"' . $sel . '>' . esc_html( $tpl['name'] ) . ( $editor ? ' <small>(' . esc_html( $editor ) . ')</small>' : '' ) . '</option>';
+                // data-name carries the lowercase name for case-insensitive
+                // matching without recomputing on every keystroke.
+                echo '<option value="' . esc_attr( $tpl['id'] ) . '"' . $sel
+                    . ' data-name="' . esc_attr( strtolower( $tpl['name'] ) ) . '">'
+                    . esc_html( $tpl['name'] )
+                    . ( $editor ? ' <small>(' . esc_html( $editor ) . ')</small>' : '' )
+                    . '</option>';
             }
             echo '</select>';
+            echo ' <span id="' . esc_attr( $tpl_count_id ) . '" class="hge-tpl-count description" style="margin-left:8px;color:#666;">' . esc_html(
+                sprintf(
+                    /* translators: %d is the number of Klaviyo templates */
+                    _n( '%d template', '%d templates', $tpl_total, 'hge-klaviyo-newsletter' ),
+                    $tpl_total
+                )
+            ) . '</span>';
             echo '<p class="description">' . wp_kses_post( __( 'In Web Feed mode, your template must use <code>{{ web_feeds.NAME.items.0.* }}</code>.', 'hge-klaviyo-newsletter' ) ) . '</p>';
         }
         echo '</td></tr>';

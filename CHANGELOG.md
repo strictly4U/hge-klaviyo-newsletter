@@ -4,6 +4,39 @@ All notable changes to HgE Klaviyo Newsletter are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.7] — 2026-05-12
+
+### Added
+
+- **Typeahead search above each Klaviyo template dropdown.** Each rule
+  card now renders an `<input type="search" class="hge-tpl-search">` above
+  its `<option>` list. As the user types, options whose `data-name`
+  (lowercased Klaviyo template name) doesn't contain the substring are
+  hidden via the standard HTML `hidden` attribute. The currently-selected
+  option and the empty placeholder are never hidden so form submit
+  always carries a valid value even mid-filter.
+- **Live count badge.** Right of the dropdown — `200 templates` idle,
+  `Showing 12 / 200` while a search term is active. Plural-aware via
+  `_n()`.
+- Vanilla JS implementation (~40 lines, single delegated `input` listener
+  on the rules container). No new external asset, no build pipeline,
+  no jQuery dependency.
+
+### Why this matters
+
+The Klaviyo Templates API caps `page[size]` at 10 (revision 2024-10-15),
+so accounts with 200+ templates already pay ~20 paginated API calls on
+the cache warmup. Rendering all of them into a single `<select>` was
+fine at 56 templates (current FC Rapid 1923 deployment) but degrades
+visibly around the 300+ mark. The client-side filter keeps the dropdown
+usable at any catalogue size.
+
+### Translatable strings
+
+`Search templates by name…` (placeholder), `template` / `templates`
+(count badge plural), `Showing` (count prefix while filtering).
+Bundled `ro_RO.po` updated.
+
 ## [3.0.6] — 2026-05-12
 
 ### Performance

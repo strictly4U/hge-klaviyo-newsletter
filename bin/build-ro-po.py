@@ -222,6 +222,12 @@ TRANSLATIONS = {
     "Web Feed name in Klaviyo:": "Numele Web Feed-ului în Klaviyo:",
     "Exact name configured in Klaviyo → Settings → Web Feeds.": "Numele exact configurat în Klaviyo → Settings → Web Feeds.",
     "URL for Klaviyo Web Feed (this rule):": "URL pentru Klaviyo Web Feed (această regulă):",
+
+    # template dropdown typeahead (since 3.0.7)
+    "Search templates by name…": "Caută template-uri după nume…",
+    "Showing": "Se afișează",
+    "template": "template",
+    "templates": "template-uri",
 }
 
 # Plural forms: msgid → (msgstr[0], msgstr[1])
@@ -236,6 +242,7 @@ PLURAL_TRANSLATIONS = {
         ("Maxim <strong>%d</strong> listă/segment pe regulă.", "Maxim <strong>%d</strong> liste sau segmente pe regulă."),
     ("Max <strong>%d</strong> excluded list.", "Max <strong>%d</strong> excluded lists or segments."):
         ("Maxim <strong>%d</strong> exclusă.", "Maxim <strong>%d</strong> excluse (liste sau segmente)."),
+    ("%d template", "%d templates"): ("%d template", "%d template-uri"),
 }
 
 
