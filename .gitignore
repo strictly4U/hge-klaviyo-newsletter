@@ -25,3 +25,13 @@ package-lock.json
 # OS
 Thumbs.db
 desktop.ini
+
+# Internal-only docs (sync from monorepo deliberately excludes these — they
+# live in the private development workspace, not in this public distribution
+# repo). Defensive gitignore so an accidental cp / rsync doesn't reintroduce.
+TESTING.md
+TODO.md
+PLAN*.md
+TASKS*.md
+.beads/
+
