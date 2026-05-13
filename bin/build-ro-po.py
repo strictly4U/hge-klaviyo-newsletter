@@ -151,6 +151,8 @@ TRANSLATIONS = {
         "Cheie API privată (Klaviyo → Settings → API Keys). Scopes necesare: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>, <code>segments:read</code>.",
     "Random string (32+ chars) used to authenticate requests to <code>/feed/klaviyo*.json</code>. Generate with <code>openssl rand -hex 32</code>.":
         "String aleator (32+ caractere) folosit pentru autentificarea cererilor către <code>/feed/klaviyo*.json</code>. Generează cu <code>openssl rand -hex 32</code>.",
+    "Random string (32+ chars) used to authenticate requests to <code>/feed/klaviyo*.json</code>. Auto-generated on first save when empty; rotate manually with <code>openssl rand -hex 32</code>.":
+        "String aleator (32+ caractere) folosit pentru autentificarea cererilor către <code>/feed/klaviyo*.json</code>. Auto-generat la prima salvare dacă e gol; rotește manual cu <code>openssl rand -hex 32</code>.",
     "Klaviyo data": "Date Klaviyo",
     "Reload from Klaviyo": "Reîncarcă din Klaviyo",
     "%1$d lists, %2$d templates (5 min cache)": "%1$d liste, %2$d template-uri (cache 5 min)",
@@ -172,8 +174,12 @@ TRANSLATIONS = {
     "Debug mode": "Mod debug",
     "Enable the <strong>Status</strong> tab (diagnostic + activity logs + raw server responses)":
         "Activează tab-ul <strong>Status</strong> (diagnostic + activity logs + raw server responses)",
+    "Enable the <strong>Status</strong> tab + show internal credentials (Feed token, Pro webhook secret) in the admin UI":
+        "Activează tab-ul <strong>Status</strong> + afișează credențialele interne (Feed token, secret webhook Pro) în interfața admin",
     "Leave off in production. Turn on when you need to inspect the webhook / dispatch / API response flow.":
         "Lasă oprit în producție. Pornește când ai nevoie să verifici fluxul webhook / dispatch / API responses.",
+    "Leave off in production. Turn on when you need to inspect the webhook / dispatch / API response flow, or to copy the auto-generated Feed token / webhook secret into an external system.":
+        "Lasă oprit în producție. Pornește când ai nevoie să verifici fluxul webhook / dispatch / API responses, sau să copiezi Feed token-ul / secret-ul webhook auto-generate într-un sistem extern.",
     "PRO": "PRO",
     "CORE": "CORE",
     "FREE": "GRATUIT",

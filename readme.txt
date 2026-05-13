@@ -4,7 +4,7 @@ Tags: klaviyo, newsletter, email, woocommerce, action-scheduler
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 3.0.7
+Stable tag: 3.0.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,11 @@ This plugin sends post titles, excerpts, featured images and post URLs to Klaviy
 
 == Changelog ==
 
+= 3.0.8 =
+* UX: Feed token row hidden by default in **Setări** — visible only when **Mod debug** is on. The token is auto-generated on first save when empty (used internally by `/feed/klaviyo*.json` endpoints) and customers never need to touch it manually. Existing values preserved through a hidden input.
+* UX: Pro plugin's **Cheie webhook** row in **Licență Pro** tab follows the same toggle (gates on Free's `debug_mode` setting via `hge_klaviyo_nl_get_setting`). The secret stays auto-pushed to Railway via `/activate` handshake — hiding the UI doesn't disable any flow.
+* Debug mode help text updated to reflect the new responsibility (toggles Status tab **and** internal credentials).
+
 = 3.0.7 =
 * New: typeahead search above each rule card's Klaviyo template dropdown. Filters options client-side by substring (case-insensitive) as you type — handles hundreds of templates without DOM lag. The currently-selected option and the built-in template placeholder are never hidden so form submit stays predictable.
 * New: live count badge next to the dropdown ("Showing 12 / 200" when filtering, "200 templates" idle).
@@ -217,6 +222,9 @@ This plugin sends post titles, excerpts, featured images and post URLs to Klaviy
 * Initial release. Code extracted from a parent theme's `functions.php` into a standalone plugin. No behavioural changes vs the in-theme implementation.
 
 == Upgrade Notice ==
+
+= 3.0.8 =
+Feed token (Free) and Webhook secret (Pro) are now hidden by default. Both auto-managed under the hood — toggle Setări → Mod debug to reveal them when you need to inspect / rotate. No DB schema change; existing values preserved.
 
 = 3.0.7 =
 Typeahead search above each Klaviyo template dropdown — type to filter by name. Vanilla JS, no external dependency, scales to hundreds of templates without DOM lag. No DB schema change.

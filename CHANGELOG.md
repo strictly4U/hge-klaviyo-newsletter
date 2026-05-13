@@ -4,6 +4,30 @@ All notable changes to HgE Klaviyo Newsletter are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.8] — 2026-05-13
+
+### Changed
+
+- **Feed token hidden by default.** The Setări tab now renders the Feed
+  token input only when **Mod debug** is on; otherwise the value rides
+  along through a hidden `<input>` so form submit preserves it.
+  Production admins never need to touch it — the token is internally
+  consumed by `/feed/klaviyo*.json` endpoints and customers don't paste
+  it anywhere in the Klaviyo UI.
+- **Feed token auto-generated on first save** when empty. New helper
+  in `hge_klaviyo_nl_sanitize_settings()` falls back to
+  `wp_generate_password(64, false, false)` (or `bin2hex(random_bytes(32))`)
+  so the token never has to be hand-rolled by the customer.
+- **Debug mode toggle scope expanded.** Now gates the Status tab **and**
+  the visibility of internal credentials (Feed token + Pro webhook
+  secret). Label + description updated to match.
+
+### Cross-plugin
+
+- **Pro plugin's Webhook secret row** (License tab) follows the same Free
+  `debug_mode` toggle via `hge_klaviyo_nl_get_setting('debug_mode')`. No
+  separate Pro debug flag — single source of truth.
+
 ## [3.0.7] — 2026-05-12
 
 ### Added

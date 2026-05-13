@@ -297,6 +297,16 @@ if ( ! function_exists( 'hge_klaviyo_nl_sanitize_settings' ) ) {
         if ( isset( $input['feed_token'] ) ) {
             $out['feed_token'] = trim( sanitize_text_field( (string) $input['feed_token'] ) );
         }
+        // Auto-generate the feed token on first save when empty (since 3.0.8).
+        // The token only ever needed to be user-supplied during the v1.x
+        // wp-config era; with the Setări UI it's purely internal — used by
+        // /feed/klaviyo*.json endpoints. Producing one automatically removes
+        // a setup step and lets us hide the field behind debug_mode.
+        if ( '' === ( $out['feed_token'] ?? '' ) ) {
+            $out['feed_token'] = function_exists( 'wp_generate_password' )
+                ? wp_generate_password( 64, false, false )
+                : bin2hex( random_bytes( 32 ) );
+        }
         if ( isset( $input['reply_to_email'] ) ) {
             $email = sanitize_email( (string) $input['reply_to_email'] );
             $out['reply_to_email'] = is_email( $email ) ? $email : '';

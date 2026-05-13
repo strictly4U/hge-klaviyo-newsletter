@@ -832,11 +832,24 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
         echo '<p class="description">' . wp_kses_post( __( 'Private API key (Klaviyo → Settings → API Keys). Required scopes: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>, <code>segments:read</code>.', 'hge-klaviyo-newsletter' ) ) . '</p>';
         echo '</td></tr>';
 
-        // Feed Token
-        echo '<tr><th scope="row"><label for="hge_klaviyo_feed_token">' . esc_html__( 'Feed token', 'hge-klaviyo-newsletter' ) . '</label></th><td>';
-        echo '<input type="text" id="hge_klaviyo_feed_token" name="hge_klaviyo[feed_token]" value="' . esc_attr( $s['feed_token'] ) . '" class="regular-text" />';
-        echo '<p class="description">' . wp_kses_post( __( 'Random string (32+ chars) used to authenticate requests to <code>/feed/klaviyo*.json</code>. Generate with <code>openssl rand -hex 32</code>.', 'hge-klaviyo-newsletter' ) ) . '</p>';
-        echo '</td></tr>';
+        // Feed Token — visible only in debug mode (since 3.0.8).
+        //
+        // The token is auto-generated on first save when empty (see
+        // hge_klaviyo_nl_sanitize_settings) and used internally by
+        // /feed/klaviyo*.json endpoints. Production admins never need to
+        // touch it manually — hide it from the default Setări view to
+        // reduce clutter; show it only when debug_mode is on (same toggle
+        // that gates the Status tab).
+        if ( ! empty( $s['debug_mode'] ) ) {
+            echo '<tr><th scope="row"><label for="hge_klaviyo_feed_token">' . esc_html__( 'Feed token', 'hge-klaviyo-newsletter' ) . '</label></th><td>';
+            echo '<input type="text" id="hge_klaviyo_feed_token" name="hge_klaviyo[feed_token]" value="' . esc_attr( $s['feed_token'] ) . '" class="regular-text" />';
+            echo '<p class="description">' . wp_kses_post( __( 'Random string (32+ chars) used to authenticate requests to <code>/feed/klaviyo*.json</code>. Auto-generated on first save when empty; rotate manually with <code>openssl rand -hex 32</code>.', 'hge-klaviyo-newsletter' ) ) . '</p>';
+            echo '</td></tr>';
+        } else {
+            // Hidden field preserves the saved value through the form post
+            // even when the visible input is suppressed.
+            echo '<input type="hidden" name="hge_klaviyo[feed_token]" value="' . esc_attr( $s['feed_token'] ) . '">';
+        }
 
         // Refresh API cache
         if ( $can_query_api ) {
@@ -890,8 +903,8 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
 
         // Debug mode
         echo '<tr><th scope="row">' . esc_html__( 'Debug mode', 'hge-klaviyo-newsletter' ) . '</th><td>';
-        echo '<label><input type="checkbox" name="hge_klaviyo[debug_mode]" value="1" ' . checked( ! empty( $s['debug_mode'] ), true, false ) . '> ' . wp_kses_post( __( 'Enable the <strong>Status</strong> tab (diagnostic + activity logs + raw server responses)', 'hge-klaviyo-newsletter' ) ) . '</label>';
-        echo '<p class="description">' . esc_html__( 'Leave off in production. Turn on when you need to inspect the webhook / dispatch / API response flow.', 'hge-klaviyo-newsletter' ) . '</p>';
+        echo '<label><input type="checkbox" name="hge_klaviyo[debug_mode]" value="1" ' . checked( ! empty( $s['debug_mode'] ), true, false ) . '> ' . wp_kses_post( __( 'Enable the <strong>Status</strong> tab + show internal credentials (Feed token, Pro webhook secret) in the admin UI', 'hge-klaviyo-newsletter' ) ) . '</label>';
+        echo '<p class="description">' . esc_html__( 'Leave off in production. Turn on when you need to inspect the webhook / dispatch / API response flow, or to copy the auto-generated Feed token / webhook secret into an external system.', 'hge-klaviyo-newsletter' ) . '</p>';
         echo '</td></tr>';
 
         echo '</table>';
