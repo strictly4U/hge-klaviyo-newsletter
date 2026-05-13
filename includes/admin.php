@@ -1030,6 +1030,18 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
                             el.setAttribute('for', f.replace(/^hge-rule-\d+-/, 'hge-rule-' + newIdx + '-'));
                         }
                     });
+                    // Since 3.0.10 — the template combobox carries cross-element
+                    // references via aria-controls + data-list + data-count.
+                    // These must follow the renumbering or the combo wires its
+                    // input to a stale list element after card add/remove.
+                    card.querySelectorAll('[aria-controls], [data-list], [data-count]').forEach(function(el) {
+                        ['aria-controls', 'data-list', 'data-count'].forEach(function(attr){
+                            var v = el.getAttribute(attr);
+                            if ( v && v.indexOf('hge-rule-') === 0 ) {
+                                el.setAttribute(attr, v.replace(/^hge-rule-\d+-/, 'hge-rule-' + newIdx + '-'));
+                            }
+                        });
+                    });
                 });
                 updateAddButton();
             }
@@ -1130,63 +1142,250 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
             });
 
             // -------------------------------------------------------------
-            // Template typeahead filter (since 3.0.7)
+            // Template combobox (since 3.0.10) — supersedes the v3.0.7
+            // search-input + <select> pair.
             //
-            // Each rule card may render `<input class="hge-tpl-search">`
-            // above its template `<select>`. As the user types, we hide
-            // options whose `data-name` doesn't contain the search term
-            // (substring, case-insensitive). The currently-selected option
-            // and the empty placeholder ("use the built-in HTML template")
-            // are never hidden, so submit always carries a valid value.
+            // Each rule card renders a `.hge-tpl-combo` wrapper with:
+            //   - visible <input class="hge-tpl-combo-input" role="combobox">
+            //   - <button class="hge-tpl-clear">×</button>
+            //   - hidden <input> (the form-submit carrier; same name as the
+            //     v3.0.0 <select>, so sanitizer + DB shape unchanged)
+            //   - <ul role="listbox"> with <li role="option" data-value …>
+            //   - count badge to the right of the wrapper
             //
-            // Count badge updates with "Showing X of Y" while filtering.
+            // Behaviour: focus opens listbox; typing filters by substring
+            // (data-name, lowercased); click / Enter on a highlighted option
+            // selects it (writes name → visible input, id → hidden input);
+            // click-outside / Esc / Tab closes; × clears selection.
             // -------------------------------------------------------------
-            function applyTemplateSearch( input ) {
-                var targetId = input.getAttribute('data-target');
-                var countId  = input.getAttribute('data-count');
-                var select   = targetId ? document.getElementById(targetId) : null;
-                var countEl  = countId  ? document.getElementById(countId)  : null;
-                if ( ! select ) { return; }
-                var term = (input.value || '').toLowerCase().trim();
+            var I18N = {
+                tpl_one:        <?php echo wp_json_encode( __( 'template', 'hge-klaviyo-newsletter' ) ); ?>,
+                tpl_many:       <?php echo wp_json_encode( __( 'templates', 'hge-klaviyo-newsletter' ) ); ?>,
+                showing:        <?php echo wp_json_encode( __( 'Showing', 'hge-klaviyo-newsletter' ) ); ?>,
+                none_match:     <?php echo wp_json_encode( __( 'No template matches that search.', 'hge-klaviyo-newsletter' ) ); ?>
+            };
+
+            function tplComboParts( anchorEl ) {
+                // Resolve the combobox parts from any element inside the wrapper.
+                var wrapper = anchorEl.closest ? anchorEl.closest('.hge-tpl-combo') : null;
+                if ( ! wrapper ) { return null; }
+                return {
+                    wrapper: wrapper,
+                    input:   wrapper.querySelector('.hge-tpl-combo-input'),
+                    clear:   wrapper.querySelector('.hge-tpl-clear'),
+                    hidden:  wrapper.querySelector('input[type="hidden"]'),
+                    list:    wrapper.querySelector('.hge-tpl-options'),
+                    items:   wrapper.querySelectorAll('.hge-tpl-options li'),
+                    count:   document.getElementById( wrapper.querySelector('.hge-tpl-combo-input').getAttribute('data-count') )
+                };
+            }
+
+            function tplFilter( parts ) {
+                var term = (parts.input.value || '').toLowerCase().trim();
+                // Treat the visible name as a non-search if it equals the
+                // currently-selected option's name (i.e., user hasn't started
+                // typing fresh after open) — show full list.
+                var selectedName = '';
+                parts.items.forEach(function(li){
+                    if ( li.getAttribute('aria-selected') === 'true' ) {
+                        selectedName = (li.getAttribute('data-name') || '').toLowerCase();
+                    }
+                });
+                if ( term === selectedName ) { term = ''; }
+
                 var shown = 0, total = 0;
-                for ( var i = 0; i < select.options.length; i++ ) {
-                    var opt = select.options[i];
-                    var name = opt.getAttribute('data-name');
-                    if ( null === name ) {
-                        // Placeholder (empty value) — always visible.
-                        continue;
+                parts.items.forEach(function(li){
+                    var name = li.getAttribute('data-name') || '';
+                    var isPlaceholder = ( '' === li.getAttribute('data-value') );
+                    if ( isPlaceholder ) {
+                        li.hidden = false; // sentinel always visible
+                        return;
                     }
                     total++;
                     var match = ( '' === term ) || name.indexOf(term) !== -1;
-                    // Never hide the currently-selected option, even if it
-                    // doesn't match — the user would lose the indication of
-                    // their current setting.
-                    if ( opt.selected ) { match = true; }
-                    opt.hidden = ! match;
+                    li.hidden = ! match;
                     if ( match ) { shown++; }
+                });
+                // No-results row
+                var noRes = parts.list.querySelector('.hge-tpl-no-results');
+                if ( '' !== term && 0 === shown ) {
+                    if ( ! noRes ) {
+                        noRes = document.createElement('li');
+                        noRes.className = 'hge-tpl-no-results';
+                        noRes.setAttribute('aria-hidden', 'true');
+                        noRes.style.cssText = 'padding:8px 10px;color:#888;font-style:italic;';
+                        noRes.textContent = I18N.none_match;
+                        parts.list.appendChild(noRes);
+                    }
+                } else if ( noRes ) {
+                    noRes.remove();
                 }
-                if ( countEl ) {
+                // Count badge
+                if ( parts.count ) {
                     if ( '' === term ) {
-                        countEl.textContent = total + ' ' + (total === 1 ? <?php echo wp_json_encode( __( 'template', 'hge-klaviyo-newsletter' ) ); ?> : <?php echo wp_json_encode( __( 'templates', 'hge-klaviyo-newsletter' ) ); ?>);
+                        parts.count.textContent = total + ' ' + (total === 1 ? I18N.tpl_one : I18N.tpl_many);
                     } else {
-                        countEl.textContent = <?php echo wp_json_encode( __( 'Showing', 'hge-klaviyo-newsletter' ) ); ?> + ' ' + shown + ' / ' + total;
+                        parts.count.textContent = I18N.showing + ' ' + shown + ' / ' + total;
                     }
                 }
             }
-            container.addEventListener('input', function(ev) {
-                var t = ev.target;
-                if ( t && t.classList && t.classList.contains('hge-tpl-search') ) {
-                    applyTemplateSearch(t);
+
+            function tplOpenList( parts ) {
+                parts.list.hidden = false;
+                parts.input.setAttribute('aria-expanded', 'true');
+                tplFilter( parts );
+            }
+
+            function tplCloseList( parts ) {
+                parts.list.hidden = true;
+                parts.input.setAttribute('aria-expanded', 'false');
+                // Restore selected name into input if user typed something but
+                // didn't pick (avoids stale free-text leaking into form state).
+                var selectedLi = parts.list.querySelector('li[aria-selected="true"]');
+                if ( selectedLi ) {
+                    var name = selectedLi.firstChild ? selectedLi.firstChild.textContent.trim() : '';
+                    if ( '' === selectedLi.getAttribute('data-value') ) {
+                        // Sentinel: keep input visually empty so placeholder shows
+                        parts.input.value = '';
+                    } else {
+                        parts.input.value = name;
+                    }
                 }
+            }
+
+            function tplSelectItem( parts, li ) {
+                if ( ! li ) { return; }
+                parts.items.forEach(function(x){ x.setAttribute('aria-selected', 'false'); });
+                li.setAttribute('aria-selected', 'true');
+                var value = li.getAttribute('data-value') || '';
+                parts.hidden.value = value;
+                if ( '' === value ) {
+                    // Sentinel "use built-in" selected — clear visible input
+                    parts.input.value = '';
+                } else {
+                    // First child node is the text label (before any <small>)
+                    parts.input.value = li.firstChild ? li.firstChild.textContent.trim() : '';
+                }
+                tplCloseList( parts );
+            }
+
+            function tplHighlightedIndex( parts ) {
+                var visible = Array.prototype.filter.call(parts.items, function(li){ return ! li.hidden; });
+                for ( var i = 0; i < visible.length; i++ ) {
+                    if ( visible[i].classList.contains('hge-tpl-active') ) { return { idx: i, list: visible }; }
+                }
+                return { idx: -1, list: visible };
+            }
+
+            function tplMoveHighlight( parts, delta ) {
+                var state = tplHighlightedIndex( parts );
+                if ( state.list.length === 0 ) { return; }
+                var next = state.idx + delta;
+                if ( next < 0 ) { next = state.list.length - 1; }
+                if ( next >= state.list.length ) { next = 0; }
+                state.list.forEach(function(li){ li.classList.remove('hge-tpl-active'); li.style.background = ''; });
+                state.list[ next ].classList.add('hge-tpl-active');
+                state.list[ next ].style.background = '#e7f2fb';
+                state.list[ next ].scrollIntoView({ block: 'nearest' });
+            }
+
+            container.addEventListener('focusin', function(ev){
+                var t = ev.target;
+                if ( t && t.classList && t.classList.contains('hge-tpl-combo-input') ) {
+                    var parts = tplComboParts( t );
+                    if ( parts ) { tplOpenList( parts ); }
+                }
+            });
+
+            container.addEventListener('input', function(ev){
+                var t = ev.target;
+                if ( t && t.classList && t.classList.contains('hge-tpl-combo-input') ) {
+                    var parts = tplComboParts( t );
+                    if ( parts ) { tplOpenList( parts ); }
+                }
+            });
+
+            container.addEventListener('keydown', function(ev){
+                var t = ev.target;
+                if ( ! t || ! t.classList || ! t.classList.contains('hge-tpl-combo-input') ) { return; }
+                var parts = tplComboParts( t );
+                if ( ! parts ) { return; }
+                if ( ev.key === 'ArrowDown' ) { ev.preventDefault(); tplOpenList(parts); tplMoveHighlight(parts, 1); }
+                else if ( ev.key === 'ArrowUp' ) { ev.preventDefault(); tplMoveHighlight(parts, -1); }
+                else if ( ev.key === 'Enter' ) {
+                    ev.preventDefault();
+                    var active = parts.list.querySelector('.hge-tpl-active') || parts.list.querySelector('li:not([hidden])');
+                    if ( active && active.classList.contains('hge-tpl-no-results') ) { active = null; }
+                    if ( active ) { tplSelectItem( parts, active ); }
+                }
+                else if ( ev.key === 'Escape' ) { tplCloseList(parts); }
+                else if ( ev.key === 'Home' ) {
+                    var visible = parts.list.querySelectorAll('li:not([hidden])');
+                    if ( visible.length ) { visible.forEach(function(li){li.classList.remove('hge-tpl-active');li.style.background='';}); visible[0].classList.add('hge-tpl-active'); visible[0].style.background='#e7f2fb'; }
+                }
+                else if ( ev.key === 'End' ) {
+                    var visible2 = parts.list.querySelectorAll('li:not([hidden])');
+                    if ( visible2.length ) { visible2.forEach(function(li){li.classList.remove('hge-tpl-active');li.style.background='';}); visible2[ visible2.length - 1 ].classList.add('hge-tpl-active'); visible2[ visible2.length - 1 ].style.background='#e7f2fb'; }
+                }
+            });
+
+            container.addEventListener('click', function(ev){
+                var t = ev.target;
+                // Clear (×) button
+                if ( t && t.classList && t.classList.contains('hge-tpl-clear') ) {
+                    ev.preventDefault();
+                    var parts = tplComboParts( t );
+                    if ( parts ) {
+                        var sentinel = parts.list.querySelector('li[data-value=""]');
+                        tplSelectItem( parts, sentinel );
+                        parts.input.focus();
+                    }
+                    return;
+                }
+                // Option click
+                var li = t && t.closest ? t.closest('.hge-tpl-options li[role="option"]') : null;
+                if ( li ) {
+                    var parts2 = tplComboParts( li );
+                    if ( parts2 ) { tplSelectItem( parts2, li ); }
+                }
+            });
+
+            // Click outside any combobox closes all open lists.
+            document.addEventListener('mousedown', function(ev){
+                container.querySelectorAll('.hge-tpl-combo').forEach(function(wrapper){
+                    if ( ! wrapper.contains(ev.target) ) {
+                        var input = wrapper.querySelector('.hge-tpl-combo-input');
+                        var list  = wrapper.querySelector('.hge-tpl-options');
+                        if ( list && ! list.hidden ) {
+                            list.hidden = true;
+                            if ( input ) { input.setAttribute('aria-expanded', 'false'); }
+                        }
+                    }
+                });
             });
 
             // Initial state — ensure add button reflects current count
             updateAddButton();
             applyCrossExcludeAll();
-            container.querySelectorAll('.hge-tpl-search').forEach(applyTemplateSearch);
+            // Prime each combobox's count badge using the same filter path that
+            // runs on input — guarantees the idle "N templates" message uses
+            // the same formatter as the active "Showing X / Y" message.
+            container.querySelectorAll('.hge-tpl-combo').forEach(function(wrapper){
+                var parts = tplComboParts( wrapper );
+                if ( parts ) { tplFilter( parts ); }
+            });
         })();
         </script>
         <?php
+
+        // ============================================================
+        // Web Feed quick-start modal (since 3.0.9)
+        //
+        // Single hidden modal in the DOM, populated per-card on open via
+        // data-* attributes on the trigger button. Vanilla JS — Esc /
+        // outside-click / X to close, copy-to-clipboard on each snippet.
+        // ============================================================
+        hge_klaviyo_render_wf_quickstart_modal();
 
         /**
          * Action — let Pro feature modules render extra settings sections inside
@@ -1199,6 +1398,231 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
 
         submit_button( __( 'Save settings', 'hge-klaviyo-newsletter' ) );
         echo '</form>';
+    }
+}
+
+/**
+ * Render the shared Web Feed quick-start modal.
+ *
+ * Markup is rendered once per Settings page render (single instance in the
+ * DOM); the per-card "Quick start" buttons populate the {{NAME}} and
+ * {{URL}} placeholders on click via JS. Keeps DOM weight constant
+ * regardless of rule count.
+ *
+ * @since 3.0.9
+ */
+if ( ! function_exists( 'hge_klaviyo_render_wf_quickstart_modal' ) ) {
+    function hge_klaviyo_render_wf_quickstart_modal() {
+        $copied        = esc_js( __( '✓ Copied', 'hge-klaviyo-newsletter' ) );
+        $copy_label    = esc_js( __( 'Copy', 'hge-klaviyo-newsletter' ) );
+        $close_aria    = esc_attr__( 'Close', 'hge-klaviyo-newsletter' );
+
+        // Starter HTML offered for copy-paste into Klaviyo's HTML editor.
+        // Single-article variant — covers the most common "publish post →
+        // newsletter goes out" workflow. Digest variant shown inline in
+        // step 3 as a Jinja for-loop snippet.
+        $starter_html = <<<'HTML'
+<!doctype html>
+<html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" style="padding:24px 12px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="background:#fff;max-width:600px;width:100%;border-radius:8px;overflow:hidden;">
+{% if web_feeds.NAME.items.0.image %}
+<tr><td><img src="{{ web_feeds.NAME.items.0.image }}" width="600" alt="" style="display:block;width:100%;height:auto;"></td></tr>
+{% endif %}
+<tr><td style="padding:28px 28px 8px;">
+  <h1 style="margin:0;font-size:24px;line-height:1.3;color:#111;">{{ web_feeds.NAME.items.0.title }}</h1>
+</td></tr>
+<tr><td style="padding:8px 28px 24px;font-size:16px;line-height:1.5;color:#333;">
+  {{ web_feeds.NAME.items.0.excerpt }}
+</td></tr>
+<tr><td align="center" style="padding:8px 28px 32px;">
+  <a href="{{ web_feeds.NAME.items.0.url }}" style="background:#2271b1;color:#fff;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;">Read the full article →</a>
+</td></tr>
+<tr><td style="padding:16px 28px;background:#fafafa;font-size:12px;color:#666;text-align:center;">{{ organization.name }} — {% unsubscribe %}</td></tr>
+</table></td></tr></table>
+</body></html>
+HTML;
+
+        $digest_html = <<<'HTML'
+{% for item in web_feeds.NAME.items[:3] %}
+<tr><td style="padding:20px 28px;border-top:1px solid #eee;">
+  <h2 style="margin:0 0 8px;font-size:18px;color:#111;">{{ item.title }}</h2>
+  {% if item.excerpt %}<p style="margin:0 0 12px;color:#444;">{{ item.excerpt }}</p>{% endif %}
+  <a href="{{ item.url }}" style="color:#2271b1;">Read more →</a>
+</td></tr>
+{% endfor %}
+HTML;
+        ?>
+
+        <div id="hge-wf-modal" class="hge-wf-modal" hidden role="dialog" aria-modal="true" aria-labelledby="hge-wf-modal-title">
+            <div class="hge-wf-modal-backdrop"></div>
+            <div class="hge-wf-modal-dialog" role="document">
+                <div class="hge-wf-modal-header">
+                    <h2 id="hge-wf-modal-title" style="margin:0;font-size:18px;">
+                        <?php esc_html_e( 'Quick start: Klaviyo digest template', 'hge-klaviyo-newsletter' ); ?>
+                    </h2>
+                    <button type="button" class="hge-wf-modal-close button-link" aria-label="<?php echo $close_aria; ?>" style="font-size:24px;line-height:1;background:none;border:0;cursor:pointer;color:#666;">✕</button>
+                </div>
+
+                <div class="hge-wf-modal-body">
+
+                    <ol style="padding-left:1.4em;">
+
+                        <li style="margin-bottom:18px;">
+                            <strong><?php esc_html_e( 'Create the Web Feed in Klaviyo', 'hge-klaviyo-newsletter' ); ?></strong>
+                            <p>
+                                <?php echo wp_kses_post( __( 'Klaviyo → <strong>Settings → Web Feeds → Add web feed</strong>. Fill in:', 'hge-klaviyo-newsletter' ) ); ?>
+                            </p>
+                            <ul style="list-style:disc;padding-left:1.4em;">
+                                <li><strong><?php esc_html_e( 'Name:', 'hge-klaviyo-newsletter' ); ?></strong> <code class="hge-wf-name">newsletter_feed</code></li>
+                                <li><strong><?php esc_html_e( 'URL:', 'hge-klaviyo-newsletter' ); ?></strong>
+                                    <code class="hge-wf-url" style="word-break:break-all;font-size:11px;">—</code>
+                                    <button type="button" class="button button-small hge-wf-copy" data-target=".hge-wf-url" style="margin-left:6px;"><?php esc_html_e( 'Copy URL', 'hge-klaviyo-newsletter' ); ?></button>
+                                </li>
+                                <li><strong><?php esc_html_e( 'Refresh interval:', 'hge-klaviyo-newsletter' ); ?></strong> 5 <?php esc_html_e( 'minutes (Klaviyo default)', 'hge-klaviyo-newsletter' ); ?></li>
+                                <li><strong><?php esc_html_e( 'Content type:', 'hge-klaviyo-newsletter' ); ?></strong> JSON</li>
+                            </ul>
+                            <p class="description"><?php esc_html_e( 'Save it; Klaviyo will fetch the feed and verify access.', 'hge-klaviyo-newsletter' ); ?></p>
+                        </li>
+
+                        <li style="margin-bottom:18px;">
+                            <strong><?php esc_html_e( 'Create a Code template in Klaviyo', 'hge-klaviyo-newsletter' ); ?></strong>
+                            <p>
+                                <?php echo wp_kses_post( __( 'Klaviyo → <strong>Email Templates → Create template → HTML editor</strong>. Paste this starter, then customise:', 'hge-klaviyo-newsletter' ) ); ?>
+                            </p>
+                            <pre class="hge-wf-snippet" id="hge-wf-starter-html" style="background:#f6f7f7;padding:10px;font-size:11px;max-height:240px;overflow:auto;border:1px solid #ddd;border-radius:3px;"><?php echo esc_html( $starter_html ); ?></pre>
+                            <p>
+                                <button type="button" class="button hge-wf-copy" data-target="#hge-wf-starter-html"><?php esc_html_e( 'Copy starter HTML', 'hge-klaviyo-newsletter' ); ?></button>
+                                <span class="description" style="margin-left:8px;"><?php echo wp_kses_post( __( 'Save the template with a memorable name — it appears in the plugin\'s <em>Klaviyo template</em> dropdown.', 'hge-klaviyo-newsletter' ) ); ?></span>
+                            </p>
+                            <p class="description"><strong><?php esc_html_e( 'Note:', 'hge-klaviyo-newsletter' ); ?></strong> <?php echo wp_kses_post( __( 'every <code>NAME</code> placeholder in the snippet is the Web Feed name from step 1. The Copy button substitutes it automatically.', 'hge-klaviyo-newsletter' ) ); ?></p>
+                        </li>
+
+                        <li style="margin-bottom:18px;">
+                            <strong><?php esc_html_e( 'Render multiple articles (digest layout)', 'hge-klaviyo-newsletter' ); ?></strong>
+                            <p><?php esc_html_e( 'Replace the single-article block in the starter with a Jinja for-loop to render N articles:', 'hge-klaviyo-newsletter' ); ?></p>
+                            <pre class="hge-wf-snippet" id="hge-wf-digest-html" style="background:#f6f7f7;padding:10px;font-size:11px;max-height:200px;overflow:auto;border:1px solid #ddd;border-radius:3px;"><?php echo esc_html( $digest_html ); ?></pre>
+                            <p>
+                                <button type="button" class="button hge-wf-copy" data-target="#hge-wf-digest-html"><?php esc_html_e( 'Copy digest loop', 'hge-klaviyo-newsletter' ); ?></button>
+                            </p>
+                            <p class="description"><?php echo wp_kses_post( __( '<code>items[:3]</code> renders the top 3 articles; change the number to taste. Available fields per item: <code>id</code>, <code>title</code>, <code>url</code>, <code>excerpt</code>, <code>image</code>, <code>published_at</code>, <code>updated_at</code>, <code>date</code>, <code>author</code>, <code>categories[]</code>, <code>tags[]</code>.', 'hge-klaviyo-newsletter' ) ); ?></p>
+                        </li>
+
+                        <li style="margin-bottom:18px;">
+                            <strong><?php esc_html_e( 'Wire the template to this rule', 'hge-klaviyo-newsletter' ); ?></strong>
+                            <p>
+                                <?php echo wp_kses_post( __( 'Back here in WordPress → this rule card:', 'hge-klaviyo-newsletter' ) ); ?>
+                            </p>
+                            <ol style="list-style:decimal;padding-left:1.4em;">
+                                <li><?php echo wp_kses_post( __( 'Pick the new template from the <em>Klaviyo template</em> dropdown.', 'hge-klaviyo-newsletter' ) ); ?></li>
+                                <li><?php echo wp_kses_post( __( 'Check <em>Use Web Feed</em>.', 'hge-klaviyo-newsletter' ) ); ?></li>
+                                <li><?php echo wp_kses_post( __( 'Confirm the <em>Web Feed name in Klaviyo</em> matches step 1 (<code class="hge-wf-name">newsletter_feed</code>).', 'hge-klaviyo-newsletter' ) ); ?></li>
+                                <li><?php esc_html_e( 'Save settings.', 'hge-klaviyo-newsletter' ); ?></li>
+                            </ol>
+                        </li>
+
+                        <li>
+                            <strong><?php esc_html_e( 'Test', 'hge-klaviyo-newsletter' ); ?></strong>
+                            <p>
+                                <?php echo wp_kses_post( __( 'Publish a post with this rule\'s trigger tag. Within ~30 seconds you should see a draft campaign in Klaviyo with the template assigned + a send-job launched. Use <em>Send test</em> from Klaviyo first if you want to preview without dispatching to the audience.', 'hge-klaviyo-newsletter' ) ); ?>
+                            </p>
+                        </li>
+
+                    </ol>
+
+                </div>
+
+                <div class="hge-wf-modal-footer" style="text-align:right;padding:10px 16px;border-top:1px solid #ddd;">
+                    <button type="button" class="button button-primary hge-wf-modal-close"><?php esc_html_e( 'Got it', 'hge-klaviyo-newsletter' ); ?></button>
+                </div>
+            </div>
+        </div>
+
+        <style>
+        .hge-wf-modal { position: fixed; inset: 0; z-index: 100000; display: flex; align-items: center; justify-content: center; }
+        .hge-wf-modal[hidden] { display: none; }
+        .hge-wf-modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
+        .hge-wf-modal-dialog { position: relative; background: #fff; max-width: 760px; width: 92%; max-height: 86vh; display: flex; flex-direction: column; border-radius: 6px; box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
+        .hge-wf-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid #ddd; }
+        .hge-wf-modal-body { padding: 14px 18px; overflow: auto; }
+        .hge-wf-modal-body pre { white-space: pre-wrap; word-break: break-word; }
+        </style>
+
+        <script>
+        (function(){
+            var modal = document.getElementById('hge-wf-modal');
+            if ( ! modal ) { return; }
+            var currentName = 'newsletter_feed';
+            var currentUrl  = '';
+
+            function interpolate( str ) {
+                // Substitute the Web Feed NAME placeholder in copied snippets.
+                return str.replace(/NAME/g, currentName);
+            }
+
+            function openModal( btn ) {
+                currentName = btn.getAttribute('data-feed-name') || 'newsletter_feed';
+                currentUrl  = btn.getAttribute('data-feed-url') || '';
+                modal.querySelectorAll('.hge-wf-name').forEach(function(el){ el.textContent = currentName; });
+                modal.querySelectorAll('.hge-wf-url').forEach(function(el){
+                    el.textContent = currentUrl !== '' ? currentUrl : '—';
+                });
+                modal.hidden = false;
+                // Focus the close button so Esc / Enter behave predictably
+                var closeBtn = modal.querySelector('.hge-wf-modal-close');
+                if ( closeBtn ) { closeBtn.focus(); }
+            }
+
+            function closeModal() { modal.hidden = true; }
+
+            document.addEventListener('click', function(ev){
+                var t = ev.target;
+                if ( t && t.classList && t.classList.contains('hge-wf-quickstart') ) {
+                    ev.preventDefault();
+                    openModal(t);
+                }
+            });
+
+            modal.addEventListener('click', function(ev){
+                var t = ev.target;
+                if ( t && t.classList && (t.classList.contains('hge-wf-modal-close') || t.classList.contains('hge-wf-modal-backdrop')) ) {
+                    closeModal();
+                    return;
+                }
+                if ( t && t.classList && t.classList.contains('hge-wf-copy') ) {
+                    var sel = t.getAttribute('data-target');
+                    var src = sel ? modal.querySelector(sel) : null;
+                    if ( ! src ) { return; }
+                    var text = interpolate( src.textContent || '' );
+                    if ( navigator.clipboard && navigator.clipboard.writeText ) {
+                        navigator.clipboard.writeText(text).then(function(){
+                            var prev = t.textContent;
+                            t.textContent = '<?php echo $copied; ?>';
+                            setTimeout(function(){ t.textContent = prev; }, 1500);
+                        });
+                    } else {
+                        // Fallback for older browsers / non-HTTPS dev sites
+                        var ta = document.createElement('textarea');
+                        ta.value = text;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        try { document.execCommand('copy'); } catch (e) {}
+                        document.body.removeChild(ta);
+                        var prev2 = t.textContent;
+                        t.textContent = '<?php echo $copied; ?>';
+                        setTimeout(function(){ t.textContent = prev2; }, 1500);
+                    }
+                }
+            });
+
+            document.addEventListener('keydown', function(ev){
+                if ( ! modal.hidden && ev.key === 'Escape' ) {
+                    closeModal();
+                }
+            });
+        })();
+        </script>
+        <?php
     }
 }
 
@@ -1365,33 +1789,85 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
                 echo '<input type="hidden" name="' . esc_attr( $name_prefix ) . '[template_id]" value="' . esc_attr( $rule['template_id'] ) . '">';
             }
         } else {
-            // Vanilla typeahead filter (since 3.0.7) — keeps the DOM responsive
-            // when the Klaviyo account ships hundreds of templates. The full
-            // list is still rendered into the <select> (so form submit serialises
-            // correctly without JS), but a search <input> above filters option
-            // visibility client-side. No external dependency, no asset pipeline.
-            $tpl_search_id = $id_prefix . 'template-search';
+            // Combobox component (since 3.0.10) — supersedes the v3.0.7 search-
+            // input + <select> pair. Single visible <input> doubles as search +
+            // selection display; a hidden <input> carries the actual template_id
+            // through form submit (same name as the prior <select>, so sanitizer
+            // + DB shape are unchanged).
+            //
+            // Markup contract:
+            //   <div class="hge-tpl-combo" data-card-idx="N">
+            //     <input type="text" id="{tpl_id}" role="combobox" aria-controls="{tpl_list_id}" …>
+            //     <button class="hge-tpl-clear" …>×</button>
+            //     <input type="hidden" name="hge_klaviyo[tag_rules][N][template_id]" value="{id}">
+            //     <ul id="{tpl_list_id}" role="listbox" hidden>
+            //       <li role="option" data-value="{id}" data-name="{lowercased}">{name}</li>
+            //     </ul>
+            //     <span class="hge-tpl-count">…</span>
+            //   </div>
+            //
+            // Keyboard contract: focus opens list; ↓ ↑ navigate (Home/End jump
+            // to extremes); Enter selects highlighted; Esc closes; Tab closes
+            // and submits naturally; click-outside closes.
+            $tpl_list_id   = $id_prefix . 'template-list';
             $tpl_count_id  = $id_prefix . 'template-count';
             $tpl_total     = count( $templates_data );
-            echo '<input type="search" id="' . esc_attr( $tpl_search_id ) . '"'
-                . ' class="hge-tpl-search" data-target="' . esc_attr( $tpl_id ) . '"'
-                . ' data-count="' . esc_attr( $tpl_count_id ) . '"'
-                . ' placeholder="' . esc_attr__( 'Search templates by name…', 'hge-klaviyo-newsletter' ) . '"'
-                . ' style="min-width:340px;margin-bottom:6px;display:block;" />';
-            echo '<select id="' . esc_attr( $tpl_id ) . '" name="' . esc_attr( $name_prefix ) . '[template_id]" style="min-width:340px;">';
-            echo '<option value=""' . ( '' === $rule['template_id'] ? ' selected' : '' ) . '>— ' . esc_html__( 'use the built-in HTML template', 'hge-klaviyo-newsletter' ) . ' —</option>';
+            $selected_id   = (string) $rule['template_id'];
+            $selected_name = '';
             foreach ( $templates_data as $tpl ) {
-                $sel = ( $rule['template_id'] === $tpl['id'] ) ? ' selected' : '';
-                $editor = isset( $tpl['editor_type'] ) ? $tpl['editor_type'] : '';
-                // data-name carries the lowercase name for case-insensitive
-                // matching without recomputing on every keystroke.
-                echo '<option value="' . esc_attr( $tpl['id'] ) . '"' . $sel
-                    . ' data-name="' . esc_attr( strtolower( $tpl['name'] ) ) . '">'
-                    . esc_html( $tpl['name'] )
-                    . ( $editor ? ' <small>(' . esc_html( $editor ) . ')</small>' : '' )
-                    . '</option>';
+                if ( $selected_id === $tpl['id'] ) {
+                    $selected_name = (string) $tpl['name'];
+                    break;
+                }
             }
-            echo '</select>';
+            $combo_placeholder = esc_attr__( 'Choose or search a Klaviyo template…', 'hge-klaviyo-newsletter' );
+            $builtin_label     = '— ' . __( 'use the built-in HTML template', 'hge-klaviyo-newsletter' ) . ' —';
+
+            echo '<div class="hge-tpl-combo" style="position:relative;display:inline-block;min-width:340px;">';
+
+            // Visible input — search + selected display
+            echo '<input type="text" id="' . esc_attr( $tpl_id ) . '"'
+                . ' class="hge-tpl-combo-input regular-text" autocomplete="off"'
+                . ' role="combobox" aria-autocomplete="list" aria-expanded="false"'
+                . ' aria-controls="' . esc_attr( $tpl_list_id ) . '"'
+                . ' data-list="' . esc_attr( $tpl_list_id ) . '"'
+                . ' data-count="' . esc_attr( $tpl_count_id ) . '"'
+                . ' placeholder="' . $combo_placeholder . '"'
+                . ' value="' . esc_attr( $selected_name ) . '"'
+                . ' style="min-width:340px;padding-right:28px;" />';
+
+            // Clear (×) button — visible only when something is selected; CSS
+            // handles the empty-input case via :placeholder-shown / fallback.
+            echo '<button type="button" class="hge-tpl-clear" aria-label="' . esc_attr__( 'Clear template selection', 'hge-klaviyo-newsletter' ) . '"'
+                . ' style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;font-size:18px;color:#888;cursor:pointer;padding:0 4px;">✕</button>';
+
+            // Hidden field — what actually submits. Same name as the v3.0.0 <select>.
+            echo '<input type="hidden" name="' . esc_attr( $name_prefix ) . '[template_id]" value="' . esc_attr( $selected_id ) . '" data-default-label="' . esc_attr( $builtin_label ) . '" />';
+
+            // Dropdown options list
+            echo '<ul id="' . esc_attr( $tpl_list_id ) . '" class="hge-tpl-options" role="listbox" hidden'
+                . ' style="position:absolute;top:100%;left:0;right:0;margin:2px 0 0;padding:0;list-style:none;background:#fff;border:1px solid #c3c4c7;border-radius:3px;max-height:260px;overflow:auto;z-index:5;box-shadow:0 4px 12px rgba(0,0,0,0.08);">';
+            // First "use built-in" sentinel option — value="" so clearing selection still submits a valid empty template_id.
+            $is_default = ( '' === $selected_id );
+            echo '<li role="option" data-value="" data-name="" aria-selected="' . ( $is_default ? 'true' : 'false' ) . '"'
+                . ' style="padding:6px 10px;cursor:pointer;color:#666;font-style:italic;">'
+                . esc_html( $builtin_label )
+                . '</li>';
+            foreach ( $templates_data as $tpl ) {
+                $is_sel  = ( $selected_id === $tpl['id'] );
+                $editor  = isset( $tpl['editor_type'] ) ? $tpl['editor_type'] : '';
+                echo '<li role="option" data-value="' . esc_attr( $tpl['id'] ) . '"'
+                    . ' data-name="' . esc_attr( strtolower( $tpl['name'] ) ) . '"'
+                    . ' aria-selected="' . ( $is_sel ? 'true' : 'false' ) . '"'
+                    . ' style="padding:6px 10px;cursor:pointer;">'
+                    . esc_html( $tpl['name'] )
+                    . ( $editor ? ' <small style="color:#888;">(' . esc_html( $editor ) . ')</small>' : '' )
+                    . '</li>';
+            }
+            echo '</ul>';
+
+            echo '</div>'; // .hge-tpl-combo
+
             echo ' <span id="' . esc_attr( $tpl_count_id ) . '" class="hge-tpl-count description" style="margin-left:8px;color:#666;">' . esc_html(
                 sprintf(
                     /* translators: %d is the number of Klaviyo templates */
@@ -1399,7 +1875,12 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
                     $tpl_total
                 )
             ) . '</span>';
-            echo '<p class="description">' . wp_kses_post( __( 'In Web Feed mode, your template must use <code>{{ web_feeds.NAME.items.0.* }}</code>.', 'hge-klaviyo-newsletter' ) ) . '</p>';
+            // The "Quick start" trigger (since 3.0.9) replaces the prior single
+            // help line about {{ web_feeds.NAME.items.0.* }}. The full Jinja
+            // reference, starter HTML and step-by-step Web Feed setup all live
+            // in the modal opened from the Web Feed row below — much friendlier
+            // for first-time digest builders.
+            echo '<p class="description">' . esc_html__( 'For Web Feed mode (digest emails), see the “Quick start” button under Web Feed mode below.', 'hge-klaviyo-newsletter' ) . '</p>';
         }
         echo '</td></tr>';
 
@@ -1422,6 +1903,7 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
             // each rule gets a distinct URL that Klaviyo can pull from.
             $feed_token = function_exists( 'hge_klaviyo_nl_resolve_feed_token' ) ? hge_klaviyo_nl_resolve_feed_token() : '';
             $feed_name_sanitized = sanitize_key( (string) $rule['web_feed_name'] );
+            $feed_url = '';
             if ( '' !== $feed_token && '' !== $feed_name_sanitized && ! $is_template ) {
                 $feed_url = add_query_arg(
                     array( 'key' => $feed_token, 'name' => $feed_name_sanitized ),
@@ -1430,6 +1912,19 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
                 echo '<p class="description" style="margin-top:6px;"><strong>' . esc_html__( 'URL for Klaviyo Web Feed (this rule):', 'hge-klaviyo-newsletter' ) . '</strong><br>'
                     . '<code style="font-size:11px;word-break:break-all;">' . esc_html( $feed_url ) . '</code></p>';
             }
+
+            // Quick start trigger (since 3.0.9) — opens the shared modal
+            // rendered once at the bottom of render_settings_tab. The button
+            // carries per-rule data via data-* attributes; the JS reads them
+            // and substitutes the placeholders inside the modal template
+            // before opening. Single modal in the DOM instead of N per card.
+            echo '<p style="margin-top:10px;">'
+                . '<button type="button" class="button hge-wf-quickstart"'
+                . ' data-feed-name="' . esc_attr( $feed_name_sanitized ) . '"'
+                . ' data-feed-url="' . esc_attr( $feed_url ) . '">'
+                . esc_html__( '📖 Quick start: build a Klaviyo digest template', 'hge-klaviyo-newsletter' )
+                . '</button>'
+                . '</p>';
         }
         echo '</td></tr>';
 

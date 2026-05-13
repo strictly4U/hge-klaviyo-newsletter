@@ -229,11 +229,61 @@ TRANSLATIONS = {
     "Exact name configured in Klaviyo → Settings → Web Feeds.": "Numele exact configurat în Klaviyo → Settings → Web Feeds.",
     "URL for Klaviyo Web Feed (this rule):": "URL pentru Klaviyo Web Feed (această regulă):",
 
-    # template dropdown typeahead (since 3.0.7)
+    # template dropdown typeahead (since 3.0.7) — superseded by combobox (3.0.10)
     "Search templates by name…": "Caută template-uri după nume…",
     "Showing": "Se afișează",
     "template": "template",
     "templates": "template-uri",
+
+    # template combobox (since 3.0.10)
+    "Choose or search a Klaviyo template…": "Alege sau caută un template Klaviyo…",
+    "Clear template selection": "Șterge selecția template",
+    "No template matches that search.": "Niciun template nu corespunde căutării.",
+
+    # Web Feed quick-start modal (since 3.0.9)
+    "📖 Quick start: build a Klaviyo digest template": "📖 Quick start: construiește un template Klaviyo de digest",
+    "For Web Feed mode (digest emails), see the “Quick start” button under Web Feed mode below.":
+        "Pentru Mod Web Feed (email-uri digest), vezi butonul „Quick start” sub secțiunea Mod Web Feed de mai jos.",
+    "Quick start: Klaviyo digest template": "Quick start: template Klaviyo de digest",
+    "Close": "Închide",
+    "Copy": "Copiază",
+    "✓ Copied": "✓ Copiat",
+    "Got it": "Am înțeles",
+    "Create the Web Feed in Klaviyo": "Creează Web Feed-ul în Klaviyo",
+    "Klaviyo → <strong>Settings → Web Feeds → Add web feed</strong>. Fill in:":
+        "Klaviyo → <strong>Settings → Web Feeds → Add web feed</strong>. Completează:",
+    "Name:": "Nume:",
+    "URL:": "URL:",
+    "Copy URL": "Copiază URL",
+    "Refresh interval:": "Interval refresh:",
+    "minutes (Klaviyo default)": "minute (default Klaviyo)",
+    "Content type:": "Content type:",
+    "Save it; Klaviyo will fetch the feed and verify access.": "Salvează; Klaviyo va aduce feed-ul și verifica accesul.",
+    "Create a Code template in Klaviyo": "Creează un template Code în Klaviyo",
+    "Klaviyo → <strong>Email Templates → Create template → HTML editor</strong>. Paste this starter, then customise:":
+        "Klaviyo → <strong>Email Templates → Create template → HTML editor</strong>. Lipește acest starter, apoi customizează:",
+    "Copy starter HTML": "Copiază HTML starter",
+    "Save the template with a memorable name — it appears in the plugin's <em>Klaviyo template</em> dropdown.":
+        "Salvează template-ul cu un nume memorabil — apare în dropdown-ul <em>Klaviyo template</em> al plugin-ului.",
+    "Note:": "Notă:",
+    "every <code>NAME</code> placeholder in the snippet is the Web Feed name from step 1. The Copy button substitutes it automatically.":
+        "fiecare placeholder <code>NAME</code> din snippet este numele Web Feed-ului de la pasul 1. Butonul Copy face substituția automat.",
+    "Render multiple articles (digest layout)": "Randează mai multe articole (layout digest)",
+    "Replace the single-article block in the starter with a Jinja for-loop to render N articles:":
+        "Înlocuiește blocul single-article din starter cu un for-loop Jinja pentru a randa N articole:",
+    "Copy digest loop": "Copiază loop-ul de digest",
+    "<code>items[:3]</code> renders the top 3 articles; change the number to taste. Available fields per item: <code>id</code>, <code>title</code>, <code>url</code>, <code>excerpt</code>, <code>image</code>, <code>published_at</code>, <code>updated_at</code>, <code>date</code>, <code>author</code>, <code>categories[]</code>, <code>tags[]</code>.":
+        "<code>items[:3]</code> randează primele 3 articole; modifică numărul după preferință. Câmpuri disponibile per item: <code>id</code>, <code>title</code>, <code>url</code>, <code>excerpt</code>, <code>image</code>, <code>published_at</code>, <code>updated_at</code>, <code>date</code>, <code>author</code>, <code>categories[]</code>, <code>tags[]</code>.",
+    "Wire the template to this rule": "Conectează template-ul la această regulă",
+    "Back here in WordPress → this rule card:": "Înapoi aici în WordPress → acest card de regulă:",
+    "Pick the new template from the <em>Klaviyo template</em> dropdown.": "Alege noul template din dropdown-ul <em>Klaviyo template</em>.",
+    "Check <em>Use Web Feed</em>.": "Bifează <em>Folosește Web Feed</em>.",
+    "Confirm the <em>Web Feed name in Klaviyo</em> matches step 1 (<code class=\"hge-wf-name\">newsletter_feed</code>).":
+        "Confirmă că <em>Numele Web Feed-ului în Klaviyo</em> coincide cu pasul 1 (<code class=\"hge-wf-name\">newsletter_feed</code>).",
+    "Save settings.": "Salvează setările.",
+    "Test": "Test",
+    "Publish a post with this rule's trigger tag. Within ~30 seconds you should see a draft campaign in Klaviyo with the template assigned + a send-job launched. Use <em>Send test</em> from Klaviyo first if you want to preview without dispatching to the audience.":
+        "Publică un articol cu tag-ul declanșator al regulii. În ~30 secunde ar trebui să vezi un draft de campanie în Klaviyo cu template-ul atașat + un send-job lansat. Folosește <em>Send test</em> din Klaviyo prima dată dacă vrei preview fără a trimite la audiență.",
 }
 
 # Plural forms: msgid → (msgstr[0], msgstr[1])

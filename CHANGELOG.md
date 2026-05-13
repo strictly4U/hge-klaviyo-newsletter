@@ -4,6 +4,69 @@ All notable changes to HgE Klaviyo Newsletter are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.9] — 2026-05-13
+
+### Added — Web Feed quick-start modal (`xef`)
+
+- New **Quick start** button rendered under the Web Feed mode row on each
+  Pro rule card. Opens a single shared in-page modal (rendered once at the
+  bottom of the Setări tab and reused by every card) with a 5-step guide:
+  1. Create the Web Feed in Klaviyo (Name + URL pre-substituted with this
+     rule's `web_feed_name` + per-rule feed URL — both copyable).
+  2. Create a Code template in Klaviyo (copyable starter HTML — ~25-line
+     responsive baseline with image, title, excerpt, CTA, footer).
+  3. Render multiple articles (digest layout — copyable Jinja
+     `{% for item in web_feeds.NAME.items[:3] %}` loop with the available
+     item field reference).
+  4. Wire the template back to this rule (in-page step list).
+  5. Test (publish a tagged post, watch Klaviyo for the draft campaign).
+- The `NAME` placeholder in copy-paste snippets is substituted at copy
+  time with the rule's actual Web Feed name (single source of truth, no
+  manual find-replace by the user).
+- Modal a11y: `role="dialog"` + `aria-modal="true"` + `aria-labelledby`;
+  Esc / outside-click / `×` / "Got it" all close; focus moves to the
+  close button on open.
+- Clipboard fallback: `navigator.clipboard.writeText` with `execCommand`
+  legacy fallback for non-HTTPS dev sites.
+- Supersedes the inline help line `In Web Feed mode, your template must
+  use {{ web_feeds.NAME.items.0.* }}` — replaced by a short pointer to
+  the Quick start button.
+
+### Changed — Klaviyo template combobox (`isf`)
+
+- The v3.0.7 separate `<input type="search">` + `<select>` pair is replaced
+  by a single combobox component (vanilla, ~210 lines of JS, zero external
+  dependency):
+  - One visible `<input role="combobox" aria-autocomplete="list">` doubles
+    as search + selection display.
+  - One `<button class="hge-tpl-clear">×</button>` clears the selection
+    back to the built-in HTML template.
+  - One hidden `<input>` carries the actual `template_id` through form
+    submit (same `name` as the v3.0.0 `<select>` — sanitizer + DB shape
+    unchanged for backward compat).
+  - One `<ul role="listbox">` with `<li role="option" data-value="…"
+    data-name="…" aria-selected="…">` per template.
+  - Per-rule count `<span class="hge-tpl-count">` to the right —
+    "200 templates" idle, "Showing 12 / 200" while filtering.
+- Behaviour: focus opens listbox; typing filters by lowercased `data-name`
+  substring; ↑ ↓ navigate visible items (wrap-around); Home/End jump to
+  extremes; Enter selects highlighted (or first visible if none active);
+  Esc closes (restoring selected name into input); Tab closes naturally;
+  click-outside closes all open lists across cards.
+- `reindex()` (the function that renumbers cards after add/remove) gains
+  awareness of `aria-controls`, `data-list`, `data-count` attributes so
+  cross-element references stay coherent when cards shuffle.
+- A "no results" row appears inside the listbox when the filter excludes
+  every option, with `aria-hidden="true"` so screen readers skip it.
+
+### i18n
+
+- 18 new translatable strings (12 for the quick-start modal, 3 for the
+  combobox, 3 for the help-line replacement). All wrapped with text
+  domain `hge-klaviyo-newsletter`.
+- `.pot` regenerated: 177 singular + 6 plural entries.
+- `ro_RO.po` fully translated (183/183).
+
 ## [3.0.8] — 2026-05-13
 
 ### Changed

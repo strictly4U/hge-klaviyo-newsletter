@@ -4,7 +4,7 @@ Tags: klaviyo, newsletter, email, woocommerce, action-scheduler
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 3.0.8
+Stable tag: 3.0.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,12 @@ This plugin sends post titles, excerpts, featured images and post URLs to Klaviy
 
 == Changelog ==
 
+= 3.0.9 =
+* **New**: Klaviyo template selector is now a single combobox — one text input doubles as search and selection display, click an option (or press Enter on the highlighted one) to set it. Keyboard: ↑ ↓ Home End navigate, Esc closes, Tab moves on naturally. `×` button clears the selection. Supersedes the v3.0.7 separate search input + dropdown pair.
+* **New**: Web Feed "Quick start" button under each rule card opens an in-page modal with a 5-step guide for building a Klaviyo digest template from scratch — copy-paste starter HTML + a Jinja for-loop snippet, with the per-rule Web Feed name + URL pre-substituted. Esc / outside-click / × all close.
+* Vanilla JS for both — no jQuery, no Choices.js, no external assets.
+* `.pot` regenerated (177 singular + 6 plural); `ro_RO.po` fully translated (183/183).
+
 = 3.0.8 =
 * UX: Feed token row hidden by default in **Setări** — visible only when **Mod debug** is on. The token is auto-generated on first save when empty (used internally by `/feed/klaviyo*.json` endpoints) and customers never need to touch it manually. Existing values preserved through a hidden input.
 * UX: Pro plugin's **Cheie webhook** row in **Licență Pro** tab follows the same toggle (gates on Free's `debug_mode` setting via `hge_klaviyo_nl_get_setting`). The secret stays auto-pushed to Railway via `/activate` handshake — hiding the UI doesn't disable any flow.
@@ -222,6 +228,9 @@ This plugin sends post titles, excerpts, featured images and post URLs to Klaviy
 * Initial release. Code extracted from a parent theme's `functions.php` into a standalone plugin. No behavioural changes vs the in-theme implementation.
 
 == Upgrade Notice ==
+
+= 3.0.9 =
+Template selector is now a single combobox (type to filter, click or Enter to select, × to clear) — replaces the v3.0.7 search-input + dropdown pair. New "Quick start" button on each rule card opens a step-by-step Klaviyo digest template guide with copy-paste snippets. No DB schema change.
 
 = 3.0.8 =
 Feed token (Free) and Webhook secret (Pro) are now hidden by default. Both auto-managed under the hood — toggle Setări → Mod debug to reveal them when you need to inspect / rotate. No DB schema change; existing values preserved.
