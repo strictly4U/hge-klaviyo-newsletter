@@ -286,16 +286,20 @@ Replace the `send_strategy` block in the campaign payload. Free emits one of:
 // immediate
 array( 'method' => 'immediate' )
 
-// or static-time (12h cooldown chained)
+// or static (12h cooldown chained) — schema per Klaviyo Campaigns API 2024-10-15
+// Note: send_past_recipients_immediately is only valid when is_local=true; it
+// must be omitted (not even set to false) when is_local=false.
 array(
-    'method'         => 'static_time',
-    'datetime'       => '2026-05-04T22:00:00+00:00',
-    'options_static' => array( 'is_local' => false, 'send_past_recipients_immediately' => false ),
+    'method'         => 'static',
+    'options_static' => array(
+        'datetime' => '2026-05-04T22:00:00+00:00',
+        'is_local' => false,
+    ),
 )
 ```
 
 **Pro plugin uses this for**:
-- Tier 2: **delay window** (e.g., delay 30 min, send only 08:00–22:00) — replaces `immediate` with `static_time` shifted to the next valid window slot.
+- Tier 2: **delay window** (e.g., delay 30 min, send only 08:00–22:00) — replaces `immediate` with `static` shifted to the next valid window slot.
 - Tier 3: `smart_send_time` strategy (Klaviyo per-recipient optimisation).
 
 **Args**: `( array $strategy, int $post_id, array $settings )`.

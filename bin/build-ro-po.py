@@ -240,11 +240,22 @@ TRANSLATIONS = {
     "Clear template selection": "Șterge selecția template",
     "No template matches that search.": "Niciun template nu corespunde căutării.",
 
+    # Multi-select discoverability hint (since 3.0.10)
+    "Hold Ctrl (Windows) / Cmd (Mac) and click to add or remove items in the multi-select.":
+        "Țineți Ctrl (Windows) / Cmd (Mac) apăsat și click pentru a adăuga sau scoate elemente din lista multi-selecție.",
+
     # Web Feed quick-start modal (since 3.0.9)
     "📖 Quick start: build a Klaviyo digest template": "📖 Quick start: construiește un template Klaviyo de digest",
     "For Web Feed mode (digest emails), see the “Quick start” button under Web Feed mode below.":
         "Pentru Mod Web Feed (email-uri digest), vezi butonul „Quick start” sub secțiunea Mod Web Feed de mai jos.",
     "Quick start: Klaviyo digest template": "Quick start: template Klaviyo de digest",
+
+    # Quick-start modal "Alternative path" callout (since 3.0.10)
+    "Alternative path:": "Cale alternativă:",
+    "if you already have a Klaviyo template built with <strong>Global Blocks</strong> (drag-and-drop), you can use it directly — just pick it from the <em>Klaviyo template</em> dropdown in step 4 and skip the manual HTML in steps 2 and 3. See Klaviyo's reference:":
+        "dacă ai deja un template Klaviyo construit cu <strong>Global Blocks</strong> (drag-and-drop), îl poți folosi direct — alege-l din dropdown-ul <em>Klaviyo template</em> de la pasul 4 și sari peste HTML-ul manual din pașii 2 și 3. Vezi referința Klaviyo:",
+    "Template editor options": "Opțiuni editor template-uri",
+
     "Close": "Închide",
     "Copy": "Copiază",
     "✓ Copied": "✓ Copiat",

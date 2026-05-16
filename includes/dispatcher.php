@@ -79,7 +79,7 @@ if ( ! function_exists( 'hge_klaviyo_maybe_enqueue' ) ) {
 
         // In Web Feed mode the dispatch must run "now" (transient with post_id has 1h TTL),
         // so we honour cooldown by scheduling AS at the future time. Other modes can use
-        // Klaviyo's `static_time` strategy and dispatch immediately.
+        // Klaviyo's `static` send strategy and dispatch immediately.
         $is_web_feed = ! empty( $rule['use_web_feed'] ) && ! empty( $rule['template_id'] );
 
         if ( $is_web_feed ) {
@@ -105,7 +105,7 @@ if ( ! function_exists( 'hge_klaviyo_maybe_enqueue' ) ) {
         }
 
         // Legacy mode (per-campaign template). Cooldown is enforced by passing
-        // `static_time` to Klaviyo at dispatch time; AS just runs immediately.
+        // a `static` send strategy to Klaviyo at dispatch time; AS just runs immediately.
         if ( function_exists( 'as_enqueue_async_action' ) ) {
             if ( function_exists( 'as_has_scheduled_action' ) && as_has_scheduled_action( $hook, $args, 'hge-klaviyo' ) ) {
                 return;
@@ -263,12 +263,17 @@ if ( ! function_exists( 'hge_klaviyo_dispatch_newsletter' ) ) {
                 if ( 'immediate' === $plan['mode'] ) {
                     $send_strategy = array( 'method' => 'immediate' );
                 } else {
+                    // Klaviyo Campaigns API 2024-10-15:
+                    //   - method must be `static` (not `static_time`).
+                    //   - `datetime` lives inside `options_static`.
+                    //   - `send_past_recipients_immediately` is ONLY valid when
+                    //     `is_local=true`; including it (even as false) when
+                    //     `is_local=false` triggers HTTP 400.
                     $send_strategy = array(
-                        'method'         => 'static_time',
-                        'datetime'       => gmdate( DATE_ATOM, $plan['time'] ),
+                        'method'         => 'static',
                         'options_static' => array(
-                            'is_local'                          => false,
-                            'send_past_recipients_immediately' => false,
+                            'datetime' => gmdate( DATE_ATOM, $plan['time'] ),
+                            'is_local' => false,
                         ),
                     );
                 }

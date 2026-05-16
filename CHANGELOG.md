@@ -4,6 +4,100 @@ All notable changes to HgE Klaviyo Newsletter are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.11] — 2026-05-16
+
+### Changed — Free tier UX consistency (`5rn`, `1bi`, P2)
+
+- **Segments optgroup hidden on Free + Core (`5rn`).** Dynamic segments are
+  a Pro-only feature (`dynamic_segments` in the Pro tier-manager registry);
+  prior versions populated the Recipient / Excluded `<select>` with a
+  `<optgroup label="Segments">` regardless of plan, so a Free admin could
+  pick segment IDs that the Pro module would not accept at dispatch time.
+  `hge_klaviyo_render_rule_card` now threads `$plan` into the audience-
+  options closure and only emits the Segments optgroup when `$plan === 'pro'`.
+  Selected segment IDs on a downgrade are still surfaced as a warning line
+  elsewhere — they are not silently kept in the dropdown.
+
+- **Web Feed name input editable on every tier (`1bi`).** Until now both
+  the "Use Web Feed" toggle AND the "Web Feed name in Klaviyo" text input
+  were rendered only on Pro; on Free the entire row collapsed to a single
+  upgrade CTA. Split the gating so the name input is always present and
+  editable while only the toggle remains Pro-gated. Admins can stage the
+  feed name they intend to use in Klaviyo before upgrading; the sanitiser
+  still drops `use_web_feed=1` on save when the plan does not unlock the
+  toggle, so the name alone has no effect at dispatch time. Description
+  line picks up a "Pre-configurable on this plan — only activates after
+  upgrade." suffix on the non-Pro path.
+
+
+
+### Fixed — Klaviyo `send_strategy` schema (`4tu`, P0)
+
+- **Critical:** any dispatch that took the cooldown-deferred path emitted a
+  Klaviyo Campaigns API payload that violated the 2024-10-15 schema and was
+  rejected with HTTP 400. Three concurrent schema errors fixed in one shot:
+  1. `send_strategy.method` was `static_time` — not a valid Klaviyo value.
+     Renamed to `static` (the only API-accepted name for a future-dated send).
+  2. `send_strategy.datetime` was emitted at the wrong nesting level.
+     Moved into `send_strategy.options_static.datetime` (the schema-required
+     location).
+  3. `send_strategy.options_static.send_past_recipients_immediately` was
+     included when `is_local=false`. Klaviyo rejects that combination
+     (the field is only valid alongside `is_local=true`). Removed entirely.
+- Impact before fix: posts deferred by the per-rule cooldown silently failed
+  — no campaign was created in Klaviyo, the dispatcher's error was logged on
+  the post but never surfaced to the customer. `_klaviyo_dispatch_last_error`
+  on the post carried the Klaviyo error JSON.
+- Impact after fix: deferred posts produce a populated `_klaviyo_campaign_id`
+  and appear in Klaviyo Dashboard → Campaigns → Scheduled at the cooldown's
+  next-allowed time. Confirmed end-to-end on dev1 with three back-to-back
+  posts (1 immediate + 2 scheduled).
+- Internal `$plan['mode'] = 'static_time'` sentinel kept unchanged — never
+  leaves PHP, used only as a future-vs-now marker by the cooldown planner.
+  Inline comment in `includes/settings.php` now documents that the internal
+  sentinel and the API value `method = 'static'` are distinct concepts.
+- `HOOKS.md` updated with the corrected `hge_klaviyo_send_strategy` example
+  payload (including a warning about the `send_past_recipients_immediately`
+  constraint) so external integrators see the right shape.
+
+### Fixed — Template combobox sentinel display (`y30`, P1)
+
+- Selecting `— use the built-in HTML template —` from the combobox cleared
+  the visible input, surfacing the `Choose or search a Klaviyo template…`
+  placeholder again — making it look like the choice did not stick.
+- The visible input now mirrors whichever option is currently selected
+  (template name OR the sentinel label). The hidden form field continues to
+  carry an empty string for the sentinel, so the DB shape is unchanged.
+- Sentinel `<li data-name>` now carries the lowercased label so the filter's
+  "selected option matches current term → show the full list" branch keeps
+  working when the sentinel is the active choice.
+- Focusing the input now pre-selects its text (`HTMLInputElement.select()`),
+  so the user can type to filter without manually clearing the displayed
+  selection.
+
+### Added — multi-select Ctrl+click hint on Recipient list(s) (`144`)
+
+- When the Recipient list(s) `<select>` is multi-select (Pro plans where
+  `max_included > 1`), the field description now ends with:
+  > Hold Ctrl (Windows) / Cmd (Mac) and click to add or remove items in the multi-select.
+- Discoverability win for Windows users who otherwise don't realise the
+  field accepts more than one selection.
+
+### Added — Quick-start modal "Alternative path" callout (`144`)
+
+- The Web Feed Quick-start modal now opens with a blue-bordered callout
+  pointing users at Klaviyo's [Template editor options](https://help.klaviyo.com/hc/en-us/articles/115005258768)
+  article. Users who already have a Klaviyo template built with
+  Global Blocks (drag-and-drop) can pick it directly in step 4 and skip
+  the manual HTML in steps 2 and 3.
+
+### i18n
+
+- Four new translatable strings (multi-select hint + three modal-callout
+  fragments). `languages/hge-klaviyo-newsletter.pot` regenerated;
+  `languages/hge-klaviyo-newsletter-ro_RO.po` updated with Romanian
+  translations.
+
 ## [3.0.9] — 2026-05-13
 
 ### Added — Web Feed quick-start modal (`xef`)

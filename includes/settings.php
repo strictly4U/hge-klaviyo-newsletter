@@ -277,7 +277,9 @@ if ( ! function_exists( 'hge_klaviyo_nl_compute_send_time_for_slug' ) ) {
         if ( $earliest <= $now ) {
             return array( 'mode' => 'immediate', 'time' => $now );
         }
-        // Klaviyo requires static_time at least a few minutes in the future
+        // Klaviyo's `static` send strategy requires a datetime at least a few minutes in the future.
+        // Note: `static_time` here is an INTERNAL plan-mode sentinel; the API value emitted by
+        // the dispatcher is `method = static`.
         $time = max( $earliest, $now + 15 * MINUTE_IN_SECONDS );
         return array( 'mode' => 'static_time', 'time' => $time );
     }
@@ -408,15 +410,18 @@ if ( ! function_exists( 'hge_klaviyo_nl_sanitize_rules' ) ) {
                 $template_id = preg_replace( '/[^A-Za-z0-9_\-]/', '', (string) $raw['template_id'] );
             }
 
-            $use_web_feed = false;
+            // `use_web_feed` (the toggle) stays Pro-gated — silently dropped to
+            // false on any plan that doesn't allow Web Feed. `web_feed_name`
+            // is editable on every plan since 3.0.11 (FcRapid1923-1bi) so admins
+            // can stage the feed name they intend to use before upgrading;
+            // the value persists across plan changes and only activates once
+            // the toggle becomes available.
+            $use_web_feed  = $caps['allow_web_feed'] ? ! empty( $raw['use_web_feed'] ) : false;
             $web_feed_name = 'newsletter_feed';
-            if ( $caps['allow_web_feed'] ) {
-                $use_web_feed = ! empty( $raw['use_web_feed'] );
-                if ( isset( $raw['web_feed_name'] ) ) {
-                    $name = sanitize_key( (string) $raw['web_feed_name'] );
-                    if ( '' !== $name ) {
-                        $web_feed_name = $name;
-                    }
+            if ( isset( $raw['web_feed_name'] ) ) {
+                $name = sanitize_key( (string) $raw['web_feed_name'] );
+                if ( '' !== $name ) {
+                    $web_feed_name = $name;
                 }
             }
 

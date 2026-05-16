@@ -1239,17 +1239,13 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
             function tplCloseList( parts ) {
                 parts.list.hidden = true;
                 parts.input.setAttribute('aria-expanded', 'false');
-                // Restore selected name into input if user typed something but
-                // didn't pick (avoids stale free-text leaking into form state).
+                // Restore selected option label into the visible input so the
+                // user always sees what is currently selected — including the
+                // sentinel "use built-in" choice. The hidden input drives the
+                // form submit (empty string for the sentinel).
                 var selectedLi = parts.list.querySelector('li[aria-selected="true"]');
                 if ( selectedLi ) {
-                    var name = selectedLi.firstChild ? selectedLi.firstChild.textContent.trim() : '';
-                    if ( '' === selectedLi.getAttribute('data-value') ) {
-                        // Sentinel: keep input visually empty so placeholder shows
-                        parts.input.value = '';
-                    } else {
-                        parts.input.value = name;
-                    }
+                    parts.input.value = selectedLi.firstChild ? selectedLi.firstChild.textContent.trim() : '';
                 }
             }
 
@@ -1257,15 +1253,11 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
                 if ( ! li ) { return; }
                 parts.items.forEach(function(x){ x.setAttribute('aria-selected', 'false'); });
                 li.setAttribute('aria-selected', 'true');
-                var value = li.getAttribute('data-value') || '';
-                parts.hidden.value = value;
-                if ( '' === value ) {
-                    // Sentinel "use built-in" selected — clear visible input
-                    parts.input.value = '';
-                } else {
-                    // First child node is the text label (before any <small>)
-                    parts.input.value = li.firstChild ? li.firstChild.textContent.trim() : '';
-                }
+                parts.hidden.value = li.getAttribute('data-value') || '';
+                // Visible input always shows the option label (sentinel
+                // included) so the user sees confirmation of their choice.
+                // First child node is the text label (before any <small>).
+                parts.input.value = li.firstChild ? li.firstChild.textContent.trim() : '';
                 tplCloseList( parts );
             }
 
@@ -1293,7 +1285,13 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
                 var t = ev.target;
                 if ( t && t.classList && t.classList.contains('hge-tpl-combo-input') ) {
                     var parts = tplComboParts( t );
-                    if ( parts ) { tplOpenList( parts ); }
+                    if ( parts ) {
+                        tplOpenList( parts );
+                        // Pre-select the visible text so the user can type
+                        // straight away to filter, without having to clear
+                        // the displayed selection by hand.
+                        try { t.select(); } catch ( e ) {}
+                    }
                 }
             });
 
@@ -1465,6 +1463,19 @@ HTML;
                 </div>
 
                 <div class="hge-wf-modal-body">
+
+                    <p class="description" style="background:#f0f6fc;border-left:4px solid #2271b1;padding:10px 12px;margin:0 0 16px;font-size:13px;">
+                        <strong><?php esc_html_e( 'Alternative path:', 'hge-klaviyo-newsletter' ); ?></strong>
+                        <?php
+                        echo wp_kses_post(
+                            __( 'if you already have a Klaviyo template built with <strong>Global Blocks</strong> (drag-and-drop), you can use it directly — just pick it from the <em>Klaviyo template</em> dropdown in step 4 and skip the manual HTML in steps 2 and 3. See Klaviyo\'s reference:', 'hge-klaviyo-newsletter' )
+                        );
+                        ?>
+                        <a href="https://help.klaviyo.com/hc/en-us/articles/115005258768" target="_blank" rel="noopener noreferrer">
+                            <?php esc_html_e( 'Template editor options', 'hge-klaviyo-newsletter' ); ?>
+                            <span aria-hidden="true">↗</span>
+                        </a>.
+                    </p>
 
                     <ol style="padding-left:1.4em;">
 
@@ -1695,7 +1706,7 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
         // Lists + segments share the same select; selected values come from the
         // single $rule key (included_list_ids / excluded_list_ids — name kept
         // for backward-compat, value space now includes segment IDs too).
-        $render_audience_options = static function ( $selected_ids ) use ( $lists_data, $segments_data ) {
+        $render_audience_options = static function ( $selected_ids ) use ( $lists_data, $segments_data, $plan ) {
             $selected_ids = array_map( 'strval', (array) $selected_ids );
             $out          = '';
             if ( ! empty( $lists_data ) ) {
@@ -1710,7 +1721,13 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
                 }
                 $out .= '</optgroup>';
             }
-            if ( ! empty( $segments_data ) ) {
+            // Dynamic segments are a Pro feature (`dynamic_segments` in the
+            // Pro tier-manager registry). Hide the Segments optgroup entirely
+            // on Free + Core so the dropdown can't be used to pick segments
+            // that the Pro module wouldn't accept anyway. Selected segment
+            // IDs from a license-downgrade scenario are surfaced as a warning
+            // line elsewhere — they're not silently kept in the dropdown.
+            if ( 'pro' === $plan && ! empty( $segments_data ) ) {
                 $out .= '<optgroup label="' . esc_attr__( 'Segments', 'hge-klaviyo-newsletter' ) . '">';
                 foreach ( $segments_data as $seg ) {
                     $sel   = in_array( (string) $seg['id'], $selected_ids, true ) ? ' selected' : '';
@@ -1749,6 +1766,9 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
                 (int) $caps['max_included']
             )
         );
+        if ( $inc_mult && ! $included_disabled ) {
+            echo ' ' . esc_html__( 'Hold Ctrl (Windows) / Cmd (Mac) and click to add or remove items in the multi-select.', 'hge-klaviyo-newsletter' );
+        }
         if ( 'pro' !== $plan ) {
             echo ' ' . wp_kses_post( hge_klaviyo_upgrade_cta_html( 'pro' ) ) . ' ' . esc_html__( 'for up to 15 lists/segments per rule.', 'hge-klaviyo-newsletter' );
         }
@@ -1809,19 +1829,22 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
             // Keyboard contract: focus opens list; ↓ ↑ navigate (Home/End jump
             // to extremes); Enter selects highlighted; Esc closes; Tab closes
             // and submits naturally; click-outside closes.
-            $tpl_list_id   = $id_prefix . 'template-list';
-            $tpl_count_id  = $id_prefix . 'template-count';
-            $tpl_total     = count( $templates_data );
-            $selected_id   = (string) $rule['template_id'];
-            $selected_name = '';
+            $tpl_list_id       = $id_prefix . 'template-list';
+            $tpl_count_id      = $id_prefix . 'template-count';
+            $tpl_total         = count( $templates_data );
+            $selected_id       = (string) $rule['template_id'];
+            $combo_placeholder = esc_attr__( 'Choose or search a Klaviyo template…', 'hge-klaviyo-newsletter' );
+            $builtin_label     = '— ' . __( 'use the built-in HTML template', 'hge-klaviyo-newsletter' ) . ' —';
+            // The visible input always displays the current selection's label
+            // (template name OR the built-in sentinel) so the user sees what
+            // they picked. Empty template_id → show the sentinel label.
+            $selected_name = $builtin_label;
             foreach ( $templates_data as $tpl ) {
-                if ( $selected_id === $tpl['id'] ) {
+                if ( '' !== $selected_id && $selected_id === $tpl['id'] ) {
                     $selected_name = (string) $tpl['name'];
                     break;
                 }
             }
-            $combo_placeholder = esc_attr__( 'Choose or search a Klaviyo template…', 'hge-klaviyo-newsletter' );
-            $builtin_label     = '— ' . __( 'use the built-in HTML template', 'hge-klaviyo-newsletter' ) . ' —';
 
             echo '<div class="hge-tpl-combo" style="position:relative;display:inline-block;min-width:340px;">';
 
@@ -1848,8 +1871,11 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
             echo '<ul id="' . esc_attr( $tpl_list_id ) . '" class="hge-tpl-options" role="listbox" hidden'
                 . ' style="position:absolute;top:100%;left:0;right:0;margin:2px 0 0;padding:0;list-style:none;background:#fff;border:1px solid #c3c4c7;border-radius:3px;max-height:260px;overflow:auto;z-index:5;box-shadow:0 4px 12px rgba(0,0,0,0.08);">';
             // First "use built-in" sentinel option — value="" so clearing selection still submits a valid empty template_id.
+            // data-name carries the lowercased sentinel label so the filter's
+            // "selectedName matches current term" branch in tplFilter() works
+            // when the sentinel is the active selection.
             $is_default = ( '' === $selected_id );
-            echo '<li role="option" data-value="" data-name="" aria-selected="' . ( $is_default ? 'true' : 'false' ) . '"'
+            echo '<li role="option" data-value="" data-name="' . esc_attr( strtolower( $builtin_label ) ) . '" aria-selected="' . ( $is_default ? 'true' : 'false' ) . '"'
                 . ' style="padding:6px 10px;cursor:pointer;color:#666;font-style:italic;">'
                 . esc_html( $builtin_label )
                 . '</li>';
@@ -1884,20 +1910,36 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
         }
         echo '</td></tr>';
 
-        // use_web_feed + web_feed_name (Pro only)
+        // Web Feed mode — split gating since 3.0.11:
+        //   - The "Use Web Feed" CHECKBOX (mode toggle) stays Pro-gated; on Free/Core
+        //     we only show the upgrade CTA, no live toggle that can be flipped.
+        //   - The "Web Feed name in Klaviyo" TEXT INPUT is editable on every tier so
+        //     admins can pre-configure the name they intend to use in Klaviyo even
+        //     before they buy Pro. Saving on Free still rejects use_web_feed=1
+        //     server-side via the sanitiser, so the name alone has no effect at
+        //     dispatch time — but the configured value survives the upgrade.
+        $wn_id = $id_prefix . 'web_feed_name';
         echo '<tr><th scope="row">' . esc_html__( 'Web Feed mode', 'hge-klaviyo-newsletter' ) . '</th><td>';
         if ( ! $web_feed_allowed ) {
-            echo '<em>' . esc_html__( 'Unavailable', 'hge-klaviyo-newsletter' ) . '</em> <span class="description">' . wp_kses_post( hge_klaviyo_upgrade_cta_html( 'pro' ) ) . ' ' . esc_html__( 'for Web Feed mode (1 template + dynamic data).', 'hge-klaviyo-newsletter' ) . '</span>';
-            if ( ! empty( $rule['web_feed_name'] ) ) {
-                echo '<input type="hidden" name="' . esc_attr( $name_prefix ) . '[web_feed_name]" value="' . esc_attr( $rule['web_feed_name'] ) . '">';
-            }
+            // Toggle replaced by an inert CTA. The "Use Web Feed" boolean stays
+            // out of the form on this plan, so no hidden input — sanitiser
+            // will treat it as false on save.
+            echo '<em>' . esc_html__( 'Use Web Feed (1 master template + dynamic data) — unavailable on this plan.', 'hge-klaviyo-newsletter' ) . '</em>';
+            echo ' <span class="description">' . wp_kses_post( hge_klaviyo_upgrade_cta_html( 'pro' ) ) . ' ' . esc_html__( 'for Web Feed mode.', 'hge-klaviyo-newsletter' ) . '</span>';
         } else {
             $wf_id = $id_prefix . 'use_web_feed';
-            $wn_id = $id_prefix . 'web_feed_name';
             echo '<label><input type="checkbox" id="' . esc_attr( $wf_id ) . '" name="' . esc_attr( $name_prefix ) . '[use_web_feed]" value="1"' . checked( ! empty( $rule['use_web_feed'] ), true, false ) . ' /> ' . esc_html__( 'Use Web Feed (1 master template + dynamic data)', 'hge-klaviyo-newsletter' ) . '</label>';
-            echo '<br><label for="' . esc_attr( $wn_id ) . '" style="display:inline-block;margin-top:8px;">' . esc_html__( 'Web Feed name in Klaviyo:', 'hge-klaviyo-newsletter' ) . '</label> ';
-            echo '<input type="text" id="' . esc_attr( $wn_id ) . '" name="' . esc_attr( $name_prefix ) . '[web_feed_name]" value="' . esc_attr( $rule['web_feed_name'] ) . '" class="regular-text" style="max-width:200px;" placeholder="newsletter_feed" />';
-            echo '<p class="description">' . esc_html__( 'Exact name configured in Klaviyo → Settings → Web Feeds.', 'hge-klaviyo-newsletter' ) . '</p>';
+        }
+        // Name input — editable on every tier (since 3.0.11) so the value
+        // can be staged ahead of a Pro upgrade.
+        echo '<br><label for="' . esc_attr( $wn_id ) . '" style="display:inline-block;margin-top:8px;">' . esc_html__( 'Web Feed name in Klaviyo:', 'hge-klaviyo-newsletter' ) . '</label> ';
+        echo '<input type="text" id="' . esc_attr( $wn_id ) . '" name="' . esc_attr( $name_prefix ) . '[web_feed_name]" value="' . esc_attr( $rule['web_feed_name'] ) . '" class="regular-text" style="max-width:200px;" placeholder="newsletter_feed" />';
+        echo '<p class="description">' . esc_html__( 'Exact name configured in Klaviyo → Settings → Web Feeds.', 'hge-klaviyo-newsletter' );
+        if ( ! $web_feed_allowed ) {
+            echo ' ' . esc_html__( '(Pre-configurable on this plan — only activates after upgrade.)', 'hge-klaviyo-newsletter' );
+        }
+        echo '</p>';
+        if ( $web_feed_allowed ) {
 
             // Per-rule feed URL preview (since 3.0.0). Keyed on web_feed_name so
             // each rule gets a distinct URL that Klaviyo can pull from.
