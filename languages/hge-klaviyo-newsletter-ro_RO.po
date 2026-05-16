@@ -14,6 +14,10 @@ msgstr ""
 msgid "%1$d lists, %2$d segments, %3$d templates (5 min cache)"
 msgstr "%1$d liste, %2$d segmente, %3$d template-uri (cache 5 min)"
 
+#: includes/admin.php:1939
+msgid "(Pre-configurable on this plan — only activates after upgrade.)"
+msgstr "(Pre-configurabil pe acest plan — se activează doar după upgrade.)"
+
 #: includes/admin.php:1519
 msgid "<code>items[:3]</code> renders the top 3 articles; change the number to taste. Available fields per item: <code>id</code>, <code>title</code>, <code>url</code>, <code>excerpt</code>, <code>image</code>, <code>published_at</code>, <code>updated_at</code>, <code>date</code>, <code>author</code>, <code>categories[]</code>, <code>tags[]</code>."
 msgstr "<code>items[:3]</code> randează primele 3 articole; modifică numărul după preferință. Câmpuri disponibile per item: <code>id</code>, <code>title</code>, <code>url</code>, <code>excerpt</code>, <code>image</code>, <code>published_at</code>, <code>updated_at</code>, <code>date</code>, <code>author</code>, <code>categories[]</code>, <code>tags[]</code>."
@@ -66,7 +70,7 @@ msgstr "Înapoi aici în WordPress → acest card de regulă:"
 msgid "Back to Plugins"
 msgstr "Înapoi la Plugin-uri"
 
-#: includes/admin.php:1800
+#: includes/admin.php:1806
 msgid "Built-in HTML template"
 msgstr "Template HTML încorporat"
 
@@ -86,11 +90,11 @@ msgstr "Campaign ID:"
 msgid "Check <em>Use Web Feed</em>."
 msgstr "Bifează <em>Folosește Web Feed</em>."
 
-#: includes/admin.php:1830
+#: includes/admin.php:1836
 msgid "Choose or search a Klaviyo template…"
 msgstr "Alege sau caută un template Klaviyo…"
 
-#: includes/admin.php:1858
+#: includes/admin.php:1864
 msgid "Clear template selection"
 msgstr "Șterge selecția template"
 
@@ -162,7 +166,7 @@ msgstr "Eroare"
 msgid "Error sending newsletter — see \"Last error\" in the meta box."
 msgstr "Eroare la trimiterea newsletter — vezi „Ultima eroare\" în meta box."
 
-#: includes/admin.php:1920
+#: includes/admin.php:1937
 msgid "Exact name configured in Klaviyo → Settings → Web Feeds."
 msgstr "Numele exact configurat în Klaviyo → Settings → Web Feeds."
 
@@ -174,7 +178,7 @@ msgstr "Lungime descriere scurtă"
 msgid "Excluded"
 msgstr "Excluse"
 
-#: includes/admin.php:1774
+#: includes/admin.php:1780
 msgid "Excluded list(s)"
 msgstr "Listă(e) excluse"
 
@@ -190,7 +194,7 @@ msgstr "URL-ul imaginii featured (folosește în <code>src=\"\"</code>)"
 msgid "Feed token"
 msgstr "Token Feed"
 
-#: includes/admin.php:1903
+#: includes/admin.php:1909
 msgid "For Web Feed mode (digest emails), see the “Quick start” button under Web Feed mode below."
 msgstr "Pentru Mod Web Feed (email-uri digest), vezi butonul „Quick start” sub secțiunea Mod Web Feed de mai jos."
 
@@ -206,7 +210,7 @@ msgstr "Cooldown global resetat. Următoarea publicare se trimite imediat."
 msgid "HgE Klaviyo Newsletter requires <strong>WooCommerce</strong> to be active (it provides Action Scheduler).<br>%s"
 msgstr "HgE Klaviyo Newsletter necesită <strong>WooCommerce</strong> activ (oferă Action Scheduler).<br>%s"
 
-#: includes/admin.php:1764
+#: includes/admin.php:1770
 msgid "Hold Ctrl (Windows) / Cmd (Mac) and click to add or remove items in the multi-select."
 msgstr "Țineți Ctrl (Windows) / Cmd (Mac) apăsat și click pentru a adăuga sau scoate elemente din lista multi-selecție."
 
@@ -218,7 +222,7 @@ msgstr "Incluse"
 msgid "Klaviyo API Key"
 msgstr "Cheie API Klaviyo"
 
-#: includes/admin.php:1959
+#: includes/admin.php:1981
 msgid "Klaviyo API cache cleared. The next render will fetch fresh data."
 msgstr "Cache-ul API Klaviyo a fost golit. Următorul render va fetch-ui date proaspete."
 
@@ -234,7 +238,7 @@ msgstr "Klaviyo a aplicat rate-limiting (prea multe cereri într-un interval scu
 msgid "Klaviyo data"
 msgstr "Date Klaviyo"
 
-#: includes/admin.php:1792
+#: includes/admin.php:1798
 msgid "Klaviyo limit: included + excluded ≤ 15."
 msgstr "Limită Klaviyo: incluse + excluse ≤ 15."
 
@@ -242,7 +246,7 @@ msgstr "Limită Klaviyo: incluse + excluse ≤ 15."
 msgid "Klaviyo status reset. You can re-send."
 msgstr "Status Klaviyo resetat. Poți retrimite."
 
-#: includes/admin.php:1798
+#: includes/admin.php:1804
 msgid "Klaviyo template"
 msgstr "Template Klaviyo"
 
@@ -378,7 +382,7 @@ msgstr "În coadă (Action Scheduler)"
 msgid "Random string (32+ chars) used to authenticate requests to <code>/feed/klaviyo*.json</code>. Auto-generated on first save when empty; rotate manually with <code>openssl rand -hex 32</code>."
 msgstr "String aleator (32+ caractere) folosit pentru autentificarea cererilor către <code>/feed/klaviyo*.json</code>. Auto-generat la prima salvare dacă e gol; rotește manual cu <code>openssl rand -hex 32</code>."
 
-#: includes/admin.php:1742
+#: includes/admin.php:1748
 msgid "Recipient list(s)"
 msgstr "Listă(e) destinatari"
 
@@ -426,7 +430,7 @@ msgstr "Salvează setările"
 msgid "Save the <strong>Klaviyo API Key</strong> above first so that lists and templates can be loaded into the rule cards."
 msgstr "Salvează mai întâi <strong>Cheie API Klaviyo</strong> mai sus, pentru ca listele și template-urile să poată fi încărcate în card-urile regulilor."
 
-#: includes/admin.php:1744 includes/admin.php:1778
+#: includes/admin.php:1750 includes/admin.php:1784
 msgid "Save the API Key to load the lists."
 msgstr "Salvează API Key pentru a încărca listele."
 
@@ -438,7 +442,7 @@ msgstr "Salvează template-ul cu un nume memorabil — apare în dropdown-ul <em
 msgid "Scheduled / Sent at (UTC)"
 msgstr "Programat / Trimis la (UTC)"
 
-#: includes/admin.php:1725
+#: includes/admin.php:1731
 msgid "Segments"
 msgstr "Segmente"
 
@@ -474,7 +478,7 @@ msgstr "Trimis?"
 msgid "Settings"
 msgstr "Setări"
 
-#: includes/admin.php:1958
+#: includes/admin.php:1980
 msgid "Settings saved."
 msgstr "Setările au fost salvate."
 
@@ -554,21 +558,21 @@ msgstr "Tag declanșator"
 msgid "Trigger tag(s)"
 msgstr "Tag(uri) declanșator(i)"
 
-#: includes/admin.php:1932
+#: includes/admin.php:1954
 msgid "URL for Klaviyo Web Feed (this rule):"
 msgstr "URL pentru Klaviyo Web Feed (această regulă):"
-
-#: includes/admin.php:1910
-msgid "Unavailable"
-msgstr "Indisponibil"
 
 #: includes/admin.php:226
 msgid "Uncertain status — check Custom Fields manually."
 msgstr "Status incert — verifică Custom Fields manual."
 
-#: includes/admin.php:1917
+#: includes/admin.php:1931
 msgid "Use Web Feed (1 master template + dynamic data)"
 msgstr "Folosește Web Feed (1 template master + date dinamice)"
+
+#: includes/admin.php:1927
+msgid "Use Web Feed (1 master template + dynamic data) — unavailable on this plan."
+msgstr "Folosește Web Feed (1 template master + date dinamice) — indisponibil pe acest plan."
 
 #: includes/admin.php:541
 msgid "WP status"
@@ -578,11 +582,11 @@ msgstr "Status WP"
 msgid "Web Feed (name)"
 msgstr "Web Feed (nume)"
 
-#: includes/admin.php:1908
+#: includes/admin.php:1922
 msgid "Web Feed mode"
 msgstr "Mod Web Feed"
 
-#: includes/admin.php:1918
+#: includes/admin.php:1935
 msgid "Web Feed name in Klaviyo:"
 msgstr "Numele Web Feed-ului în Klaviyo:"
 
@@ -614,7 +618,7 @@ msgstr "caractere"
 msgid "characters, no diacritics"
 msgstr "caractere, fără diacritice"
 
-#: includes/admin.php:1751
+#: includes/admin.php:1757
 msgid "choose a list or segment"
 msgstr "alege listă sau segment"
 
@@ -638,15 +642,15 @@ msgstr "dispatch:"
 msgid "every <code>NAME</code> placeholder in the snippet is the Web Feed name from step 1. The Copy button substitutes it automatically."
 msgstr "fiecare placeholder <code>NAME</code> din snippet este numele Web Feed-ului de la pasul 1. Butonul Copy face substituția automat."
 
-#: includes/admin.php:1910
-msgid "for Web Feed mode (1 template + dynamic data)."
-msgstr "pentru Mod Web Feed (1 template + date dinamice)."
+#: includes/admin.php:1928
+msgid "for Web Feed mode."
+msgstr "pentru Mod Web Feed."
 
 #: includes/admin.php:1699
 msgid "for multi-tag (comma-separated)."
 msgstr "pentru multi-tag (comma-separated)."
 
-#: includes/admin.php:1767
+#: includes/admin.php:1773
 msgid "for up to 15 lists/segments per rule."
 msgstr "pentru până la 15 liste/segmente per regulă."
 
@@ -706,15 +710,15 @@ msgstr "template-uri"
 msgid "theme legacy"
 msgstr "theme legacy"
 
-#: includes/admin.php:1776
+#: includes/admin.php:1782
 msgid "to be able to exclude lists from the audience."
 msgstr "pentru a putea exclude liste din audiență."
 
-#: includes/admin.php:1800
+#: includes/admin.php:1806
 msgid "to pick a template from your Klaviyo account."
 msgstr "pentru a alege un template din contul Klaviyo."
 
-#: includes/admin.php:1831
+#: includes/admin.php:1837
 msgid "use the built-in HTML template"
 msgstr "folosește template-ul HTML încorporat"
 
@@ -722,25 +726,25 @@ msgstr "folosește template-ul HTML încorporat"
 msgid "✓ Copied"
 msgstr "✓ Copiat"
 
-#: includes/admin.php:1945
+#: includes/admin.php:1967
 msgid "📖 Quick start: build a Klaviyo digest template"
 msgstr "📖 Quick start: construiește un template Klaviyo de digest"
 
-#: includes/admin.php:1894
+#: includes/admin.php:1900
 msgid "%d template"
 msgid_plural "%d templates"
 msgstr[0] "%d template"
 msgstr[1] "%d template-uri"
 msgstr[2] "%d template-uri"
 
-#: includes/admin.php:1789
+#: includes/admin.php:1795
 msgid "Max <strong>%d</strong> excluded list."
 msgid_plural "Max <strong>%d</strong> excluded lists or segments."
 msgstr[0] "Maxim <strong>%d</strong> exclusă."
 msgstr[1] "Maxim <strong>%d</strong> excluse (liste sau segmente)."
 msgstr[2] "Maxim <strong>%d</strong> excluse (liste sau segmente)."
 
-#: includes/admin.php:1759
+#: includes/admin.php:1765
 msgid "Max <strong>%d</strong> list per rule."
 msgid_plural "Max <strong>%d</strong> lists or segments per rule."
 msgstr[0] "Maxim <strong>%d</strong> listă/segment pe regulă."

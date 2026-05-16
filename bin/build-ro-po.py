@@ -229,6 +229,13 @@ TRANSLATIONS = {
     "Exact name configured in Klaviyo → Settings → Web Feeds.": "Numele exact configurat în Klaviyo → Settings → Web Feeds.",
     "URL for Klaviyo Web Feed (this rule):": "URL pentru Klaviyo Web Feed (această regulă):",
 
+    # Web Feed mode — split gating (since 3.0.11, 1bi)
+    "Use Web Feed (1 master template + dynamic data) — unavailable on this plan.":
+        "Folosește Web Feed (1 template master + date dinamice) — indisponibil pe acest plan.",
+    "for Web Feed mode.": "pentru Mod Web Feed.",
+    "(Pre-configurable on this plan — only activates after upgrade.)":
+        "(Pre-configurabil pe acest plan — se activează doar după upgrade.)",
+
     # template dropdown typeahead (since 3.0.7) — superseded by combobox (3.0.10)
     "Search templates by name…": "Caută template-uri după nume…",
     "Showing": "Se afișează",
