@@ -477,12 +477,14 @@ if ( ! function_exists( 'hge_klaviyo_build_email_body' ) ) {
         if ( defined( 'KLAVIYO_NEWSLETTER_TEMPLATE_ID' ) && KLAVIYO_NEWSLETTER_TEMPLATE_ID ) {
             $master = hge_klaviyo_api_request( 'GET', '/api/templates/' . rawurlencode( (string) KLAVIYO_NEWSLETTER_TEMPLATE_ID ) . '/' );
             if ( is_wp_error( $master ) ) {
-                throw new RuntimeException( 'fetch_template: ' . $master->get_error_message() );
+                // Exception messages may surface in admin UI / debug.log — wrap in esc_html()
+                // per WordPress.Security.EscapeOutput.ExceptionNotEscaped (defence in depth).
+                throw new RuntimeException( esc_html( 'fetch_template: ' . $master->get_error_message() ) );
             }
             $master_html = isset( $master['data']['attributes']['html'] ) ? (string) $master['data']['attributes']['html'] : '';
             $master_text = isset( $master['data']['attributes']['text'] ) ? (string) $master['data']['attributes']['text'] : '';
             if ( '' === trim( $master_html ) ) {
-                throw new RuntimeException( 'fetch_template: empty html for template id ' . KLAVIYO_NEWSLETTER_TEMPLATE_ID );
+                throw new RuntimeException( esc_html( 'fetch_template: empty html for template id ' . KLAVIYO_NEWSLETTER_TEMPLATE_ID ) );
             }
             $html = strtr( $master_html, $vars_html );
             $text = '' !== $master_text

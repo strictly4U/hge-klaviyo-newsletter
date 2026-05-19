@@ -4,6 +4,52 @@ All notable changes to HgE Klaviyo Newsletter are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.12] — 2026-05-19
+
+### Fixed — WordPress.org Plugin Check cleanup (`e5c`, P1)
+
+Production-readiness pass for the Plugin Check static analyser. No runtime
+behaviour change — all fixes are about output-escaping correctness or
+file-layout convention. **Pro plugin is unaffected** (no shared code path
+touched; Pro's extension hooks into the same Free actions unchanged).
+
+- **`includes/dispatcher.php`** — two `RuntimeException` messages in the
+  `hge_klaviyo_build_email_body()` master-template branch now wrap their
+  payload in `esc_html()` per
+  `WordPress.Security.EscapeOutput.ExceptionNotEscaped` (defence in depth —
+  exception messages can surface in admin UI or debug logs).
+- **`includes/feed-endpoints.php`** — the JSON feed handler's
+  `echo $payload;` (line 163) carries a `phpcs:ignore` annotation with
+  rationale: `$payload` is pre-encoded by `wp_json_encode()` for an
+  `application/json` response and must not be HTML-escaped (would corrupt
+  the body).
+- **`includes/admin.php`** — four false-positive `OutputNotEscaped`
+  warnings resolved:
+  - The `$copied` and `$combo_placeholder` variables (both pre-escaped via
+    `esc_js()` / `esc_attr__()`) are now inlined at the echo site so the
+    linter sees the escape function adjacent to the output. The dead
+    pre-assignments at the top of `hge_klaviyo_render_wf_quickstart_modal()`
+    and `hge_klaviyo_render_rule_card()` are removed.
+  - The two `echo $render_audience_options( ... );` lines (Recipient and
+    Excluded list selects) carry a `phpcs:ignore` annotation with
+    rationale: the closure builds `<option>` markup with `esc_attr` +
+    `esc_html` on every dynamic value.
+- **`HOOKS.md` relocated to `docs/HOOKS.md`** — Plugin Check warns about
+  unexpected markdown files in plugin root. The doc is integrator-facing
+  (filters + actions reference), not contributor-internal, but its root
+  location violates the convention. Moved under `docs/`, which is excluded
+  from the distribution zip (see `bin/build-plugin-zip.py` —
+  `COMMON_EXCLUDE_NAMES` gained `"docs"`). The doc remains available in
+  the GitHub source for integrators who want it.
+
+### Notes
+
+- `hge-klaviyo-newsletter-pro` is **not** bumped — no Pro file changed.
+  Pro 1.2.0 continues to ship as-is; its extension surface against Free
+  (`hge_klaviyo_render_settings_extra`, `hge_klaviyo_send_strategy`,
+  `hge_klaviyo_audience_*`, `hge_klaviyo_nl_get_matching_rule`) is
+  unchanged.
+
 ## [3.0.11] — 2026-05-16
 
 ### Changed — Free tier UX consistency (`5rn`, `1bi`, P2)

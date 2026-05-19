@@ -160,7 +160,9 @@ if ( ! function_exists( 'hge_klaviyo_feed_handler' ) ) {
             }
         }
 
-        echo $payload;
+        // JSON payload produced by wp_json_encode() — Content-Type is
+        // application/json, esc_html() would corrupt the body.
+        echo $payload; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON response body, pre-encoded by wp_json_encode().
         exit;
     }
 }

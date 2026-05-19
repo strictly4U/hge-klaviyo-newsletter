@@ -1411,9 +1411,7 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
  */
 if ( ! function_exists( 'hge_klaviyo_render_wf_quickstart_modal' ) ) {
     function hge_klaviyo_render_wf_quickstart_modal() {
-        $copied        = esc_js( __( '✓ Copied', 'hge-klaviyo-newsletter' ) );
-        $copy_label    = esc_js( __( 'Copy', 'hge-klaviyo-newsletter' ) );
-        $close_aria    = esc_attr__( 'Close', 'hge-klaviyo-newsletter' );
+        $close_aria = esc_attr__( 'Close', 'hge-klaviyo-newsletter' );
 
         // Starter HTML offered for copy-paste into Klaviyo's HTML editor.
         // Single-article variant — covers the most common "publish post →
@@ -1608,7 +1606,7 @@ HTML;
                     if ( navigator.clipboard && navigator.clipboard.writeText ) {
                         navigator.clipboard.writeText(text).then(function(){
                             var prev = t.textContent;
-                            t.textContent = '<?php echo $copied; ?>';
+                            t.textContent = '<?php echo esc_js( __( '✓ Copied', 'hge-klaviyo-newsletter' ) ); ?>';
                             setTimeout(function(){ t.textContent = prev; }, 1500);
                         });
                     } else {
@@ -1620,7 +1618,7 @@ HTML;
                         try { document.execCommand('copy'); } catch (e) {}
                         document.body.removeChild(ta);
                         var prev2 = t.textContent;
-                        t.textContent = '<?php echo $copied; ?>';
+                        t.textContent = '<?php echo esc_js( __( '✓ Copied', 'hge-klaviyo-newsletter' ) ); ?>';
                         setTimeout(function(){ t.textContent = prev2; }, 1500);
                     }
                 }
@@ -1756,6 +1754,7 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
             if ( ! $inc_mult ) {
                 echo '<option value="">— ' . esc_html__( 'choose a list or segment', 'hge-klaviyo-newsletter' ) . ' —</option>';
             }
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- closure builds pre-escaped <option> markup (esc_attr + esc_html on every dynamic value).
             echo $render_audience_options( $rule['included_list_ids'] );
             echo '</select>';
         }
@@ -1787,6 +1786,7 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
                 . ' multiple size="4"'
                 . ' class="hge-audience-select" data-audience-role="excluded" data-card-idx="' . esc_attr( $idx ) . '"'
                 . ' style="min-width:340px;">';
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- closure builds pre-escaped <option> markup (esc_attr + esc_html on every dynamic value).
             echo $render_audience_options( $rule['excluded_list_ids'] );
             echo '</select>';
             echo '<p class="description">' . wp_kses_post(
@@ -1829,12 +1829,11 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
             // Keyboard contract: focus opens list; ↓ ↑ navigate (Home/End jump
             // to extremes); Enter selects highlighted; Esc closes; Tab closes
             // and submits naturally; click-outside closes.
-            $tpl_list_id       = $id_prefix . 'template-list';
-            $tpl_count_id      = $id_prefix . 'template-count';
-            $tpl_total         = count( $templates_data );
-            $selected_id       = (string) $rule['template_id'];
-            $combo_placeholder = esc_attr__( 'Choose or search a Klaviyo template…', 'hge-klaviyo-newsletter' );
-            $builtin_label     = '— ' . __( 'use the built-in HTML template', 'hge-klaviyo-newsletter' ) . ' —';
+            $tpl_list_id   = $id_prefix . 'template-list';
+            $tpl_count_id  = $id_prefix . 'template-count';
+            $tpl_total     = count( $templates_data );
+            $selected_id   = (string) $rule['template_id'];
+            $builtin_label = '— ' . __( 'use the built-in HTML template', 'hge-klaviyo-newsletter' ) . ' —';
             // The visible input always displays the current selection's label
             // (template name OR the built-in sentinel) so the user sees what
             // they picked. Empty template_id → show the sentinel label.
@@ -1855,7 +1854,7 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
                 . ' aria-controls="' . esc_attr( $tpl_list_id ) . '"'
                 . ' data-list="' . esc_attr( $tpl_list_id ) . '"'
                 . ' data-count="' . esc_attr( $tpl_count_id ) . '"'
-                . ' placeholder="' . $combo_placeholder . '"'
+                . ' placeholder="' . esc_attr__( 'Choose or search a Klaviyo template…', 'hge-klaviyo-newsletter' ) . '"'
                 . ' value="' . esc_attr( $selected_name ) . '"'
                 . ' style="min-width:340px;padding-right:28px;" />';
 
