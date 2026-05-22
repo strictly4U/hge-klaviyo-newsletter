@@ -84,13 +84,13 @@ if ( ! function_exists( 'hge_klaviyo_feed_handler' ) ) {
         // Klaviyo Web Feeds. No nonce applicable (not a form submit) — the
         // token + hash_equals() below provide constant-time validation.
         $provided = '';
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token-auth endpoint, see comment above.
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended -- token-auth endpoint, see comment above; covers both $_SERVER + $_GET reads in the block below.
         if ( isset( $_SERVER['HTTP_X_FEED_TOKEN'] ) ) {
             $provided = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FEED_TOKEN'] ) );
-            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token-auth endpoint, see comment above.
         } elseif ( isset( $_GET['key'] ) ) {
             $provided = sanitize_text_field( wp_unslash( $_GET['key'] ) );
         }
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
 
         if ( ! is_string( $provided ) || '' === $provided || ! hash_equals( $expected_token, $provided ) ) {
             status_header( 401 );
@@ -206,13 +206,13 @@ if ( ! function_exists( 'hge_klaviyo_current_feed_handler' ) ) {
         // Klaviyo Web Feeds. No nonce applicable (not a form submit) — the
         // token + hash_equals() below provide constant-time validation.
         $provided = '';
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token-auth endpoint, see comment above.
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended -- token-auth endpoint, see comment above; covers both $_SERVER + $_GET reads in the block below.
         if ( isset( $_SERVER['HTTP_X_FEED_TOKEN'] ) ) {
             $provided = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FEED_TOKEN'] ) );
-            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token-auth endpoint, see comment above.
         } elseif ( isset( $_GET['key'] ) ) {
             $provided = sanitize_text_field( wp_unslash( $_GET['key'] ) );
         }
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
 
         if ( ! is_string( $provided ) || '' === $provided || ! hash_equals( $expected_token, $provided ) ) {
             status_header( 401 );

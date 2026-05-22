@@ -507,7 +507,7 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
             return;
         }
 
-        // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- admin-only diagnostic view (manage_options gated by caller); LIMIT 20 caps the cost; tax_query is essential for filtering posts by configured tag slugs.
+        // phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- admin-only diagnostic view (manage_options gated by caller); LIMIT 20 caps the cost; tax_query is essential for filtering posts by configured tag slugs.
         $posts = get_posts( array(
             'post_type'      => 'post',
             'post_status'    => 'any',
@@ -522,6 +522,7 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
             'orderby'        => 'modified',
             'order'          => 'DESC',
         ) );
+        // phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 
         $slugs_html = implode( ', ', array_map( static function ( $s ) {
             return '<code>' . esc_html( $s ) . '</code>';
