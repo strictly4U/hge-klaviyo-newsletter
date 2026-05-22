@@ -122,8 +122,7 @@ if ( ! function_exists( 'hge_klaviyo_render_meta_box' ) ) {
                 admin_url( 'admin-post.php?action=hge_klaviyo_send_now&post_id=' . (int) $post->ID ),
                 'hge_klaviyo_send_now_' . $post->ID
             );
-            $confirm_msg = esc_js( __( 'Send the newsletter to the configured Klaviyo list now?', 'hge-klaviyo-newsletter' ) );
-            echo '<p style="margin-top:12px;"><a href="' . esc_url( $url ) . '" class="button button-primary" onclick="return confirm(\'' . $confirm_msg . '\');">' . esc_html__( 'Send now', 'hge-klaviyo-newsletter' ) . '</a></p>';
+            echo '<p style="margin-top:12px;"><a href="' . esc_url( $url ) . '" class="button button-primary" onclick="return confirm(\'' . esc_js( __( 'Send the newsletter to the configured Klaviyo list now?', 'hge-klaviyo-newsletter' ) ) . '\');">' . esc_html__( 'Send now', 'hge-klaviyo-newsletter' ) . '</a></p>';
         }
 
         if ( 'yes' === $sent || $error || $lock ) {
@@ -131,8 +130,7 @@ if ( ! function_exists( 'hge_klaviyo_render_meta_box' ) ) {
                 admin_url( 'admin-post.php?action=hge_klaviyo_reset&post_id=' . (int) $post->ID ),
                 'hge_klaviyo_reset_' . $post->ID
             );
-            $reset_confirm = esc_js( __( 'Reset the Klaviyo status for this post? This allows re-sending.', 'hge-klaviyo-newsletter' ) );
-            echo '<p style="margin-top:8px;"><a href="' . esc_url( $reset_url ) . '" class="button" onclick="return confirm(\'' . $reset_confirm . '\');">' . esc_html__( 'Reset status', 'hge-klaviyo-newsletter' ) . '</a></p>';
+            echo '<p style="margin-top:8px;"><a href="' . esc_url( $reset_url ) . '" class="button" onclick="return confirm(\'' . esc_js( __( 'Reset the Klaviyo status for this post? This allows re-sending.', 'hge-klaviyo-newsletter' ) ) . '\');">' . esc_html__( 'Reset status', 'hge-klaviyo-newsletter' ) . '</a></p>';
         }
     }
 }
@@ -154,6 +152,7 @@ if ( ! function_exists( 'hge_klaviyo_handle_send_now' ) ) {
         check_admin_referer( 'hge_klaviyo_send_now_' . $post_id );
 
         if ( $post_id ) {
+            // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- intentional; dispatch can take several seconds via 3-5 Klaviyo API round-trips, and a 30s default could time out under cold cache.
             @set_time_limit( 60 );
             hge_klaviyo_dispatch_newsletter( $post_id );
         }
@@ -217,6 +216,7 @@ add_action( 'admin_notices', 'hge_klaviyo_admin_notices' );
 
 if ( ! function_exists( 'hge_klaviyo_admin_notices' ) ) {
     function hge_klaviyo_admin_notices() {
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display flag from a redirect after a nonced admin-post action; no DB write or auth side effect from reading this.
         if ( empty( $_GET['klaviyo_msg'] ) ) {
             return;
         }
@@ -227,6 +227,7 @@ if ( ! function_exists( 'hge_klaviyo_admin_notices' ) ) {
             'klaviyo_reset'          => array( 'success', __( 'Klaviyo status reset. You can re-send.', 'hge-klaviyo-newsletter' ) ),
             'klaviyo_cooldown_reset' => array( 'success', __( 'Global cooldown reset. The next publish sends immediately.', 'hge-klaviyo-newsletter' ) ),
         ) );
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- same display-flag read; sanitize_key + array-key allowlist below prevent any injection.
         $msg = sanitize_key( wp_unslash( $_GET['klaviyo_msg'] ) );
         if ( ! isset( $messages[ $msg ] ) ) {
             return;
@@ -287,6 +288,7 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
         }
         $tabs = $ordered;
 
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- tab routing for an admin-only page (manage_options enforced above); sanitize_key + array-key allowlist below prevent any injection.
         $active_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'settings';
         if ( ! array_key_exists( $active_tab, $tabs ) ) {
             $active_tab = 'settings';
@@ -397,9 +399,10 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
         );
 
         $min_int_h = (int) ( hge_klaviyo_min_interval_seconds() / HOUR_IN_SECONDS );
-        printf( '<tr><td>%s</td><td>%d %s <em>(%s)</em></td></tr>',
+        printf(
+            '<tr><td>%s</td><td>%d %s <em>(%s)</em></td></tr>',
             esc_html__( 'Minimum interval between sends', 'hge-klaviyo-newsletter' ),
-            $min_int_h,
+            (int) $min_int_h, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- %d format specifier + (int) cast guarantee a safe integer.
             esc_html__( 'hours', 'hge-klaviyo-newsletter' ),
             esc_html__( 'per rule', 'hge-klaviyo-newsletter' )
         );
@@ -444,12 +447,13 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
                 }
 
                 echo '<tr>';
-                printf( '<td>%d</td>', $i + 1 );
+                printf( '<td>%d</td>', (int) ( $i + 1 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- %d + (int) cast guarantee safe integer.
                 printf( '<td><code>%s</code></td>', esc_html( $slug !== '' ? $slug : '—' ) );
                 printf( '<td>%s</td>', $inc ? esc_html( implode( ', ', $inc ) ) : '<em>—</em>' );
                 printf( '<td>%s</td>', $exc ? esc_html( implode( ', ', $exc ) ) : '<em>—</em>' );
                 printf( '<td>%s</td>', $tpl ? '<code>' . esc_html( $tpl ) . '</code>' : '<em>' . esc_html__( 'built-in', 'hge-klaviyo-newsletter' ) . '</em>' );
                 printf( '<td>%s</td>', $wf ? '<span style="color:#1e8e3e;">' . esc_html__( 'ACTIVE', 'hge-klaviyo-newsletter' ) . '</span> <code>' . esc_html( $wf_name ) . '</code>' : '—' );
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $active_post_cell is composed of esc_url() + esc_html() + esc_html__(); pre-escaped HTML.
                 echo '<td>' . $active_post_cell . '</td>';
                 printf( '<td>%s</td>', $last ? esc_html( gmdate( 'Y-m-d H:i:s', $last ) ) : '<em>—</em>' );
                 echo '</tr>';
@@ -464,8 +468,7 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
                 admin_url( 'admin-post.php?action=hge_klaviyo_reset_cooldown' ),
                 'hge_klaviyo_reset_cooldown'
             );
-            $confirm_legacy = esc_js( __( 'Reset the legacy global cooldown? Per-rule cooldowns remain untouched.', 'hge-klaviyo-newsletter' ) );
-            echo '<p style="margin-top:8px;"><a href="' . esc_url( $reset_cd_url ) . '" class="button" onclick="return confirm(\'' . $confirm_legacy . '\');">' . esc_html__( 'Reset legacy global cooldown', 'hge-klaviyo-newsletter' ) . '</a> <em style="font-size:12px;">— ' . esc_html__( 'resets the v2.x legacy option. Per-rule cooldowns remain in', 'hge-klaviyo-newsletter' ) . ' <code>hge_klaviyo_last_send_at_by_slug</code>.</em></p>';
+            echo '<p style="margin-top:8px;"><a href="' . esc_url( $reset_cd_url ) . '" class="button" onclick="return confirm(\'' . esc_js( __( 'Reset the legacy global cooldown? Per-rule cooldowns remain untouched.', 'hge-klaviyo-newsletter' ) ) . '\');">' . esc_html__( 'Reset legacy global cooldown', 'hge-klaviyo-newsletter' ) . '</a> <em style="font-size:12px;">— ' . esc_html__( 'resets the v2.x legacy option. Per-rule cooldowns remain in', 'hge-klaviyo-newsletter' ) . ' <code>hge_klaviyo_last_send_at_by_slug</code>.</em></p>';
         }
 
         echo '<h3 style="margin-top:18px;">' . esc_html__( 'Placeholders available in the Klaviyo template', 'hge-klaviyo-newsletter' ) . '</h3>';
@@ -574,13 +577,11 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
             }
             echo '<td>' . ( $error ? '<code style="color:#c00;font-size:11px;">' . esc_html( substr( $error, 0, 120 ) ) . '</code>' : '—' ) . '</td>';
             echo '<td>';
-            $send_confirm  = esc_js( __( 'Send newsletter to the Klaviyo list?', 'hge-klaviyo-newsletter' ) );
-            $reset_confirm = esc_js( __( 'Reset Klaviyo status?', 'hge-klaviyo-newsletter' ) );
             if ( 'publish' === $p->post_status && 'yes' !== $sent && $config_ok ) {
-                echo '<a href="' . esc_url( $send_url ) . '" class="button button-small button-primary" onclick="return confirm(\'' . $send_confirm . '\');">' . esc_html__( 'Send', 'hge-klaviyo-newsletter' ) . '</a> ';
+                echo '<a href="' . esc_url( $send_url ) . '" class="button button-small button-primary" onclick="return confirm(\'' . esc_js( __( 'Send newsletter to the Klaviyo list?', 'hge-klaviyo-newsletter' ) ) . '\');">' . esc_html__( 'Send', 'hge-klaviyo-newsletter' ) . '</a> ';
             }
             if ( 'yes' === $sent || $error ) {
-                echo '<a href="' . esc_url( $reset_url ) . '" class="button button-small" onclick="return confirm(\'' . $reset_confirm . '\');">' . esc_html__( 'Reset', 'hge-klaviyo-newsletter' ) . '</a>';
+                echo '<a href="' . esc_url( $reset_url ) . '" class="button button-small" onclick="return confirm(\'' . esc_js( __( 'Reset Klaviyo status?', 'hge-klaviyo-newsletter' ) ) . '\');">' . esc_html__( 'Reset', 'hge-klaviyo-newsletter' ) . '</a>';
             }
             echo '</td></tr>';
         }
@@ -704,6 +705,7 @@ if ( ! function_exists( 'hge_klaviyo_handle_save_settings' ) ) {
         check_admin_referer( 'hge_klaviyo_save_settings' );
 
         $input = isset( $_POST['hge_klaviyo'] ) && is_array( $_POST['hge_klaviyo'] )
+            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- nested array, each leaf is sanitized later in $partial + hge_klaviyo_nl_sanitize_settings filter chain.
             ? wp_unslash( $_POST['hge_klaviyo'] )
             : array();
 
@@ -981,6 +983,7 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
         hge_klaviyo_render_rule_card( 0, $blank_rule, $lists_data, $segments_data, $templates_data, $caps, $supports_multi, $plan, true );
         $blank_html = ob_get_clean();
 
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $blank_html is the output of hge_klaviyo_render_rule_card() which builds pre-escaped HTML internally (esc_attr + esc_html on all dynamic values).
         echo '<script type="text/template" id="hge-klaviyo-rule-template">' . $blank_html . '</script>';
 
         // Inline JS — vanilla, no jQuery dependency.
@@ -994,8 +997,6 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
         //
         // i18n strings are echoed below from PHP through esc_js() so translations
         // flow through `__()` like the rest of the UI.
-        $js_confirm_last     = esc_js( __( 'This is the only rule. Deleting it stops all automatic sends. Continue?', 'hge-klaviyo-newsletter' ) );
-        $js_confirm_delete   = esc_js( __( 'Delete this rule? The change takes effect after Save.', 'hge-klaviyo-newsletter' ) );
         ?>
         <script>
         (function() {
@@ -1057,10 +1058,10 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
                     ev.preventDefault();
                     var cards = container.querySelectorAll('.hge-klaviyo-rule-card');
                     if ( cards.length <= 1 ) {
-                        if ( ! confirm('<?php echo $js_confirm_last; ?>') ) {
+                        if ( ! confirm('<?php echo esc_js( __( 'This is the only rule. Deleting it stops all automatic sends. Continue?', 'hge-klaviyo-newsletter' ) ); ?>') ) {
                             return;
                         }
-                    } else if ( ! confirm('<?php echo $js_confirm_delete; ?>') ) {
+                    } else if ( ! confirm('<?php echo esc_js( __( 'Delete this rule? The change takes effect after Save.', 'hge-klaviyo-newsletter' ) ); ?>') ) {
                         return;
                     }
                     var card = t.closest('.hge-klaviyo-rule-card');
@@ -1411,7 +1412,6 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
  */
 if ( ! function_exists( 'hge_klaviyo_render_wf_quickstart_modal' ) ) {
     function hge_klaviyo_render_wf_quickstart_modal() {
-        $close_aria = esc_attr__( 'Close', 'hge-klaviyo-newsletter' );
 
         // Starter HTML offered for copy-paste into Klaviyo's HTML editor.
         // Single-article variant — covers the most common "publish post →
@@ -1457,7 +1457,7 @@ HTML;
                     <h2 id="hge-wf-modal-title" style="margin:0;font-size:18px;">
                         <?php esc_html_e( 'Quick start: Klaviyo digest template', 'hge-klaviyo-newsletter' ); ?>
                     </h2>
-                    <button type="button" class="hge-wf-modal-close button-link" aria-label="<?php echo $close_aria; ?>" style="font-size:24px;line-height:1;background:none;border:0;cursor:pointer;color:#666;">✕</button>
+                    <button type="button" class="hge-wf-modal-close button-link" aria-label="<?php echo esc_attr__( 'Close', 'hge-klaviyo-newsletter' ); ?>" style="font-size:24px;line-height:1;background:none;border:0;cursor:pointer;color:#666;">✕</button>
                 </div>
 
                 <div class="hge-wf-modal-body">

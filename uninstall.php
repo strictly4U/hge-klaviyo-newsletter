@@ -70,5 +70,6 @@ $meta_keys = array(
     '_klaviyo_campaign_last_error',
 );
 foreach ( $meta_keys as $key ) {
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- uninstall.php: bulk meta delete is the documented WP pattern; caching is irrelevant because the site is being permanently torn down.
     $wpdb->delete( $wpdb->postmeta, array( 'meta_key' => $key ), array( '%s' ) );
 }

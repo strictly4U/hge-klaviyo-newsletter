@@ -59,7 +59,7 @@ if ( ! function_exists( 'hge_klaviyo_feed_handler' ) ) {
             return;
         }
 
-        $method = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( (string) $_SERVER['REQUEST_METHOD'] ) : 'GET';
+        $method = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) : 'GET';
         if ( ! in_array( $method, array( 'GET', 'HEAD' ), true ) ) {
             status_header( 405 );
             header( 'Allow: GET, HEAD' );
@@ -80,11 +80,14 @@ if ( ! function_exists( 'hge_klaviyo_feed_handler' ) ) {
             exit;
         }
 
+        // Token-based authentication for a cross-origin JSON feed pulled by
+        // Klaviyo Web Feeds. No nonce applicable (not a form submit).
         $provided = '';
         if ( isset( $_SERVER['HTTP_X_FEED_TOKEN'] ) ) {
-            $provided = (string) $_SERVER['HTTP_X_FEED_TOKEN'];
+            $provided = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FEED_TOKEN'] ) );
         } elseif ( isset( $_GET['key'] ) ) {
-            $provided = (string) wp_unslash( $_GET['key'] );
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token-auth endpoint; hash_equals() below provides constant-time validation.
+            $provided = sanitize_text_field( wp_unslash( $_GET['key'] ) );
         }
 
         if ( ! is_string( $provided ) || '' === $provided || ! hash_equals( $expected_token, $provided ) ) {
@@ -148,7 +151,7 @@ if ( ! function_exists( 'hge_klaviyo_feed_handler' ) ) {
             $payload = wp_json_encode(
                 array(
                     'version'      => '1.0',
-                    'source'       => parse_url( home_url(), PHP_URL_HOST ),
+                    'source'       => wp_parse_url( home_url(), PHP_URL_HOST ),
                     'generated_at' => gmdate( DATE_ATOM ),
                     'items'        => $items,
                 ),
@@ -176,7 +179,7 @@ if ( ! function_exists( 'hge_klaviyo_current_feed_handler' ) ) {
             return;
         }
 
-        $method = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( (string) $_SERVER['REQUEST_METHOD'] ) : 'GET';
+        $method = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) : 'GET';
         if ( ! in_array( $method, array( 'GET', 'HEAD' ), true ) ) {
             status_header( 405 );
             header( 'Allow: GET, HEAD' );
@@ -197,11 +200,14 @@ if ( ! function_exists( 'hge_klaviyo_current_feed_handler' ) ) {
             exit;
         }
 
+        // Token-based authentication for a cross-origin JSON feed pulled by
+        // Klaviyo Web Feeds. No nonce applicable (not a form submit).
         $provided = '';
         if ( isset( $_SERVER['HTTP_X_FEED_TOKEN'] ) ) {
-            $provided = (string) $_SERVER['HTTP_X_FEED_TOKEN'];
+            $provided = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FEED_TOKEN'] ) );
         } elseif ( isset( $_GET['key'] ) ) {
-            $provided = (string) wp_unslash( $_GET['key'] );
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token-auth endpoint; hash_equals() below provides constant-time validation.
+            $provided = sanitize_text_field( wp_unslash( $_GET['key'] ) );
         }
 
         if ( ! is_string( $provided ) || '' === $provided || ! hash_equals( $expected_token, $provided ) ) {
@@ -229,7 +235,8 @@ if ( ! function_exists( 'hge_klaviyo_current_feed_handler' ) ) {
         //   ?name=newsletter_feed_promo → hge_klaviyo_current_post_id_newsletter_feed_promo
         //   no ?name=                   → legacy global key (back-compat with pre-v3.0
         //                                 Klaviyo Web Feed URLs that omitted the param)
-        $feed_name = isset( $_GET['name'] ) ? (string) wp_unslash( $_GET['name'] ) : '';
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token-auth feed endpoint already authorized above via hash_equals(); name routes to a per-rule transient and is sanitized via sanitize_key in the lookup helper.
+        $feed_name = isset( $_GET['name'] ) ? sanitize_text_field( wp_unslash( $_GET['name'] ) ) : '';
         $transient_key = function_exists( 'hge_klaviyo_nl_transient_key_for_feed' )
             ? hge_klaviyo_nl_transient_key_for_feed( $feed_name )
             : HGE_KLAVIYO_NL_TRANSIENT_CURRENT;
@@ -280,7 +287,7 @@ if ( ! function_exists( 'hge_klaviyo_current_feed_handler' ) ) {
         echo wp_json_encode(
             array(
                 'version'      => '1.0',
-                'source'       => parse_url( home_url(), PHP_URL_HOST ),
+                'source'       => wp_parse_url( home_url(), PHP_URL_HOST ),
                 'generated_at' => gmdate( DATE_ATOM ),
                 'items'        => array( $item ),
             ),

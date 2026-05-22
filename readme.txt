@@ -2,9 +2,9 @@
 Contributors: hge
 Tags: klaviyo, newsletter, email, woocommerce, action-scheduler
 Requires at least: 6.0
-Tested up to: 6.7
+Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 3.0.12
+Stable tag: 3.0.13
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -230,7 +230,7 @@ This plugin sends post titles, excerpts, featured images and post URLs to Klaviy
 == Upgrade Notice ==
 
 = 3.0.9 =
-Template selector is now a single combobox (type to filter, click or Enter to select, × to clear) — replaces the v3.0.7 search-input + dropdown pair. New "Quick start" button on each rule card opens a step-by-step Klaviyo digest template guide with copy-paste snippets. No DB schema change.
+Template selector is now a single combobox (type to filter, Enter to select). New Quick start button on each rule card opens a step-by-step Klaviyo digest template guide with copy-paste snippets. No DB schema change. Full notes in CHANGELOG.md.
 
 = 3.0.8 =
 Feed token (Free) and Webhook secret (Pro) are now hidden by default. Both auto-managed under the hood — toggle Setări → Mod debug to reveal them when you need to inspect / rotate. No DB schema change; existing values preserved.
@@ -254,10 +254,10 @@ Klaviyo Segments now appear alongside Lists in the Recipient / Excluded selector
 i18n release. Admin UI is now English-as-source with a bundled Romanian translation (`ro_RO.po`). Romanian sites keep their UX unchanged. Non-Romanian sites see English out of the box; copy the `.pot` and translate via Poedit/Loco Translate for additional locales. No DB schema change.
 
 = 3.0.1 =
-Branding neutralisation. Two `FC Rapid 1923` literals removed from code; replaced with filterable defaults sourced from `get_bloginfo('name')`. Sites that need to preserve the original brand should add overrides for `hge_klaviyo_safe_subject_fallback` and `hge_klaviyo_email_footer_brand` (see CHANGELOG for snippet). No DB schema change.
+Branding neutralisation. Hard-coded brand literals replaced with filterable defaults from `get_bloginfo('name')`. Sites that need the original brand can override via `hge_klaviyo_safe_subject_fallback` + `hge_klaviyo_email_footer_brand` (snippet in CHANGELOG). No DB schema change.
 
 = 3.0.0 =
-**Action required.** Schema rewrite — newsletter config moves from a single list/template into a tag-rule cards system. Top-level keys `included_list_ids`, `excluded_list_ids`, `template_id`, `use_web_feed`, `web_feed_name` are silently dropped on first read after upgrade. Open **Tools → Klaviyo Newsletter → Setări** immediately and configure your rule under the new **Reguli newsletter** section. Per-rule cooldown now uses a new option key `hge_klaviyo_last_send_at_by_slug`. If you use Pro, update to Pro 1.1.0+ which requires Free 3.0.0+.
+**Action required.** Schema rewrite — newsletter config moves to a tag-rule cards system. Old top-level keys are dropped on first read after upgrade. Open **Tools → Klaviyo Newsletter → Setări** and reconfigure under **Reguli newsletter**. Pro users need Pro 1.1.0+. Full migration notes in CHANGELOG.md.
 
 = 2.4.1 =
 Patch fix for HTTP 400 from Klaviyo Lists API on revision 2024-10-15 (`additional-fields[list]=profile_count` rejected). Subscriber count display becomes opt-in via the `hge_klaviyo_lists_extra_query` filter — see Changelog for the snippet. The API cache auto-flushes after upgrade.
@@ -269,7 +269,7 @@ Klaviyo lists now show their subscriber count in the Settings dropdowns (rolled 
 Patch fix for the Klaviyo Templates API page-size cap (HTTP 400). Friendly Romanian error notices replace raw JSON-API blobs in the admin UI. No action required — the API cache is auto-flushed on first admin page view after the upgrade.
 
 = 2.3.0 =
-Romanian tab labels and a new `debug_mode` setting. Default landing tab is now `Setări` (was `Diagnostic`). Diagnostic content moves to a `Status` tab that only appears when debug mode is on. Klaviyo Master Template list is now gated to the Pro plan; users on Free / Core retain the built-in template option.
+Romanian tab labels and a new `debug_mode` setting. Default landing tab is now `Setări` (was `Diagnostic`). Diagnostic content moves to a `Status` tab that only appears with debug mode on. Klaviyo Master Template list is now Pro-only; Free/Core retain the built-in template.
 
 = 2.2.0 =
 Settings extension hooks for the Pro plugin. No user-facing changes if you don't have Pro installed.

@@ -4,6 +4,63 @@ All notable changes to HgE Klaviyo Newsletter are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.13] — 2026-05-22
+
+### Fixed — WordPress.org Plugin Check round 2 (`vno`, P1)
+
+Second pass on the Plugin Check static analyser after 3.0.12 cleared the
+first batch. Zero runtime behaviour change; all fixes are escape-output
+correctness, input-sanitisation hardening, or convention adherence.
+**Pro plugin is unaffected** — no shared code path touched, hook
+contracts unchanged.
+
+- **`includes/admin.php`** — 12 `OutputNotEscaped` ERRORs resolved:
+  pre-escaped variables (`$confirm_msg`, `$reset_confirm`, `$send_confirm`,
+  `$confirm_legacy`, `$js_confirm_last`, `$js_confirm_delete`,
+  `$close_aria`) are now inlined at the echo site with `esc_js()` /
+  `esc_attr__()` so the linter sees the escape function adjacent to the
+  output. Dead pre-assignments removed. Lines that build pre-escaped HTML
+  in helpers (`$active_post_cell`, `$blank_html`) or print integers
+  through `printf( '%d', ... )` carry a `phpcs:ignore` annotation with
+  rationale.
+- **`includes/admin.php`** — 5 input-handling warnings resolved:
+  `set_time_limit(60)` annotated as intentional (Klaviyo dispatch can
+  take several seconds via 3–5 API round-trips); read-only display flags
+  from `$_GET` (`klaviyo_msg`, `tab`) annotated with rationale (no DB
+  write or auth side effect); the `$_POST['hge_klaviyo']` array annotated
+  (every leaf is sanitised downstream via the
+  `hge_klaviyo_nl_sanitize_settings` filter chain after
+  `check_admin_referer`).
+- **`includes/feed-endpoints.php`** — 2 `parse_url()` ERRORs swapped for
+  `wp_parse_url()` (PHP version inconsistency). 8 sanitisation warnings
+  resolved: `$_SERVER['REQUEST_METHOD']` and `$_SERVER['HTTP_X_FEED_TOKEN']`
+  now wrapped in `sanitize_text_field( wp_unslash() )`; `$_GET['key']`
+  and `$_GET['name']` likewise sanitised + annotated with rationale
+  (token-auth endpoint pulled cross-origin by Klaviyo Web Feeds, no nonce
+  applicable; `hash_equals()` provides constant-time validation).
+- **`includes/dispatcher.php`** — 4 `error_log_error_log` warnings
+  annotated with rationale (intentional admin diagnostic; production
+  dispatch failures must be visible in debug.log for support).
+- **`uninstall.php`** — 1 ERROR + 2 warnings (`DirectQuery`,
+  `NoCaching`, `slow_db_query_meta_key`) annotated with rationale
+  (uninstall pattern; caching is irrelevant on permanent site teardown).
+- **`hge-klaviyo-newsletter.php`** — removed the explicit
+  `load_plugin_textdomain()` call per WP 4.6+ guidance. Translations
+  continue to load automatically; the bundled `.mo` files in
+  `/languages/` are picked up by core's discovery against the Text Domain
+  header which matches the plugin folder slug.
+- **`readme.txt`** — `Tested up to: 6.7` bumped to `7.0` (current WP).
+  Upgrade-Notice entries for 3.0.9 / 3.0.1 / 3.0.0 / 2.3.0 trimmed to the
+  300-character Plugin Check limit (full details remain in `CHANGELOG.md`).
+
+### Notes
+
+- `hge-klaviyo-newsletter-pro` is **not** bumped. No Pro file changed.
+  Pro 1.2.0 continues to ship as-is; its hook surface against Free
+  (`hge_klaviyo_render_settings_extra`, `hge_klaviyo_send_strategy`,
+  `hge_klaviyo_audience_*`, `hge_klaviyo_nl_get_matching_rule`,
+  `hge_klaviyo_nl_sanitize_settings`) is unchanged.
+
 ## [3.0.12] — 2026-05-19
 
 ### Fixed — WordPress.org Plugin Check cleanup (`e5c`, P1)
