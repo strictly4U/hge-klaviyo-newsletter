@@ -257,7 +257,7 @@ i18n release. Admin UI is now English-as-source with a bundled Romanian translat
 Branding neutralisation. Hard-coded brand literals replaced with filterable defaults from `get_bloginfo('name')`. Sites that need the original brand can override via `hge_klaviyo_safe_subject_fallback` + `hge_klaviyo_email_footer_brand` (snippet in CHANGELOG). No DB schema change.
 
 = 3.0.0 =
-**Action required.** Schema rewrite — newsletter config moves to a tag-rule cards system. Old top-level keys are dropped on first read after upgrade. Open **Tools → Klaviyo Newsletter → Setări** and reconfigure under **Reguli newsletter**. Pro users need Pro 1.1.0+. Full migration notes in CHANGELOG.md.
+**Action required.** Schema rewrite — newsletter config moves to a tag-rule cards system. Old top-level keys are dropped on upgrade. Reconfigure under **Tools → Klaviyo Newsletter → Reguli newsletter**. Pro users need Pro 1.1.0+. Notes in CHANGELOG.md.
 
 = 2.4.1 =
 Patch fix for HTTP 400 from Klaviyo Lists API on revision 2024-10-15 (`additional-fields[list]=profile_count` rejected). Subscriber count display becomes opt-in via the `hge_klaviyo_lists_extra_query` filter — see Changelog for the snippet. The API cache auto-flushes after upgrade.

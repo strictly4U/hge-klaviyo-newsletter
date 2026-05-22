@@ -507,6 +507,7 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
             return;
         }
 
+        // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- admin-only diagnostic view (manage_options gated by caller); LIMIT 20 caps the cost; tax_query is essential for filtering posts by configured tag slugs.
         $posts = get_posts( array(
             'post_type'      => 'post',
             'post_status'    => 'any',

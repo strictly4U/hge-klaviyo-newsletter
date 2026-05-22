@@ -37,15 +37,15 @@ delete_option( 'hge_klaviyo_nl_activated_at' );
 //    Enumerate the per-rule Web Feed transients before deleting the settings
 //    option (otherwise we'd lose the list of feed names). Helpers from
 //    config.php are not loaded during uninstall, so we read the option directly.
-$settings = get_option( 'hge_klaviyo_nl_settings', array() );
-if ( is_array( $settings ) && isset( $settings['tag_rules'] ) && is_array( $settings['tag_rules'] ) ) {
-    foreach ( $settings['tag_rules'] as $rule ) {
-        $name = isset( $rule['web_feed_name'] ) ? sanitize_key( (string) $rule['web_feed_name'] ) : '';
+$hge_klaviyo_nl_settings = get_option( 'hge_klaviyo_nl_settings', array() );
+if ( is_array( $hge_klaviyo_nl_settings ) && isset( $hge_klaviyo_nl_settings['tag_rules'] ) && is_array( $hge_klaviyo_nl_settings['tag_rules'] ) ) {
+    foreach ( $hge_klaviyo_nl_settings['tag_rules'] as $hge_klaviyo_nl_rule ) {
+        $hge_klaviyo_nl_feed_name = isset( $hge_klaviyo_nl_rule['web_feed_name'] ) ? sanitize_key( (string) $hge_klaviyo_nl_rule['web_feed_name'] ) : '';
         // Skip 'fc_news' — it shares the legacy unkeyed transient key (back-compat
         // with the original FC Rapid 1923 Klaviyo deployment), which we delete via
         // the legacy line further below.
-        if ( '' !== $name && 'fc_news' !== $name ) {
-            delete_transient( 'hge_klaviyo_current_post_id_' . $name );
+        if ( '' !== $hge_klaviyo_nl_feed_name && 'fc_news' !== $hge_klaviyo_nl_feed_name ) {
+            delete_transient( 'hge_klaviyo_current_post_id_' . $hge_klaviyo_nl_feed_name );
         }
     }
 }
@@ -61,7 +61,7 @@ if ( function_exists( 'as_unschedule_all_actions' ) ) {
 
 // 4. Post meta — direct DB delete to bypass per-post overhead
 global $wpdb;
-$meta_keys = array(
+$hge_klaviyo_nl_meta_keys = array(
     '_klaviyo_campaign_sent',
     '_klaviyo_campaign_lock',
     '_klaviyo_campaign_id',
@@ -69,7 +69,7 @@ $meta_keys = array(
     '_klaviyo_campaign_scheduled_for',
     '_klaviyo_campaign_last_error',
 );
-foreach ( $meta_keys as $key ) {
+foreach ( $hge_klaviyo_nl_meta_keys as $hge_klaviyo_nl_meta_key ) {
     // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- uninstall.php: bulk meta delete is the documented WP pattern; caching is irrelevant because the site is being permanently torn down.
-    $wpdb->delete( $wpdb->postmeta, array( 'meta_key' => $key ), array( '%s' ) );
+    $wpdb->delete( $wpdb->postmeta, array( 'meta_key' => $hge_klaviyo_nl_meta_key ), array( '%s' ) );
 }

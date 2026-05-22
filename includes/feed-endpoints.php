@@ -81,12 +81,14 @@ if ( ! function_exists( 'hge_klaviyo_feed_handler' ) ) {
         }
 
         // Token-based authentication for a cross-origin JSON feed pulled by
-        // Klaviyo Web Feeds. No nonce applicable (not a form submit).
+        // Klaviyo Web Feeds. No nonce applicable (not a form submit) — the
+        // token + hash_equals() below provide constant-time validation.
         $provided = '';
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token-auth endpoint, see comment above.
         if ( isset( $_SERVER['HTTP_X_FEED_TOKEN'] ) ) {
             $provided = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FEED_TOKEN'] ) );
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token-auth endpoint, see comment above.
         } elseif ( isset( $_GET['key'] ) ) {
-            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token-auth endpoint; hash_equals() below provides constant-time validation.
             $provided = sanitize_text_field( wp_unslash( $_GET['key'] ) );
         }
 
@@ -201,12 +203,14 @@ if ( ! function_exists( 'hge_klaviyo_current_feed_handler' ) ) {
         }
 
         // Token-based authentication for a cross-origin JSON feed pulled by
-        // Klaviyo Web Feeds. No nonce applicable (not a form submit).
+        // Klaviyo Web Feeds. No nonce applicable (not a form submit) — the
+        // token + hash_equals() below provide constant-time validation.
         $provided = '';
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token-auth endpoint, see comment above.
         if ( isset( $_SERVER['HTTP_X_FEED_TOKEN'] ) ) {
             $provided = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FEED_TOKEN'] ) );
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token-auth endpoint, see comment above.
         } elseif ( isset( $_GET['key'] ) ) {
-            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token-auth endpoint; hash_equals() below provides constant-time validation.
             $provided = sanitize_text_field( wp_unslash( $_GET['key'] ) );
         }
 
