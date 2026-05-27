@@ -17,8 +17,8 @@ import sys
 from pathlib import Path
 
 PLUGIN_ROOT = Path(__file__).resolve().parent.parent
-POT_PATH = PLUGIN_ROOT / "languages" / "hge-klaviyo-newsletter.pot"
-TEXTDOMAIN = "hge-klaviyo-newsletter"
+POT_PATH = PLUGIN_ROOT / "languages" / "hge-automated-post-campaigns-for-klaviyo.pot"
+TEXTDOMAIN = "hge-automated-post-campaigns-for-klaviyo"
 
 # Match: __( 'string', 'textdomain' ), esc_html__( "string", 'textdomain' ), etc.
 # Captures: 1=quote, 2=msgid, 3=textdomain (when present)
@@ -86,7 +86,7 @@ def write_pot(singular, plural, path: Path) -> None:
         'msgid ""\n'
         'msgstr ""\n'
         '"Project-Id-Version: HgE Klaviyo Newsletter\\n"\n'
-        '"Report-Msgid-Bugs-To: https://github.com/strictly4U/hge-klaviyo-newsletter/issues\\n"\n'
+        '"Report-Msgid-Bugs-To: https://github.com/strictly4U/hge-automated-post-campaigns-for-klaviyo/issues\\n"\n'
         '"MIME-Version: 1.0\\n"\n'
         '"Content-Type: text/plain; charset=UTF-8\\n"\n'
         '"Content-Transfer-Encoding: 8bit\\n"\n'

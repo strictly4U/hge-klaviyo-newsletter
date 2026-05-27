@@ -23,11 +23,11 @@ if ( ! function_exists( 'hge_klaviyo_nl_activate' ) ) {
                 wp_kses_post(
                     sprintf(
                         /* translators: %s is the link back to the Plugins screen */
-                        __( 'HgE Klaviyo Newsletter requires <strong>WooCommerce</strong> to be active (it provides Action Scheduler).<br>%s', 'hge-klaviyo-newsletter' ),
-                        '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">&larr; ' . esc_html__( 'Back to Plugins', 'hge-klaviyo-newsletter' ) . '</a>'
+                        __( 'HgE Klaviyo Newsletter requires <strong>WooCommerce</strong> to be active (it provides Action Scheduler).<br>%s', 'hge-automated-post-campaigns-for-klaviyo' ),
+                        '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">&larr; ' . esc_html__( 'Back to Plugins', 'hge-automated-post-campaigns-for-klaviyo' ) . '</a>'
                     )
                 ),
-                esc_html__( 'Plugin dependency missing', 'hge-klaviyo-newsletter' ),
+                esc_html__( 'Plugin dependency missing', 'hge-automated-post-campaigns-for-klaviyo' ),
                 array( 'back_link' => true )
             );
         }
@@ -96,8 +96,8 @@ if ( ! function_exists( 'hge_klaviyo_nl_activation_notice' ) ) {
             . wp_kses_post(
                 sprintf(
                     /* translators: %s is the link to the Settings tab */
-                    __( 'configuration is incomplete (API key, feed token, or recipient list is missing). Go to %s to complete it.', 'hge-klaviyo-newsletter' ),
-                    '<a href="' . esc_url( $settings_url ) . '">' . esc_html__( 'Tools → Klaviyo Newsletter → Settings', 'hge-klaviyo-newsletter' ) . '</a>'
+                    __( 'configuration is incomplete (API key, feed token, or recipient list is missing). Go to %s to complete it.', 'hge-automated-post-campaigns-for-klaviyo' ),
+                    '<a href="' . esc_url( $settings_url ) . '">' . esc_html__( 'Tools → Klaviyo Newsletter → Settings', 'hge-automated-post-campaigns-for-klaviyo' ) . '</a>'
                 )
             )
             . '</p></div>';

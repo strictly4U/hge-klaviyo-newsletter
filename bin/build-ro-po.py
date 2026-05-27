@@ -18,8 +18,8 @@ import sys
 from pathlib import Path
 
 PLUGIN_ROOT = Path(__file__).resolve().parent.parent
-POT_PATH = PLUGIN_ROOT / "languages" / "hge-klaviyo-newsletter.pot"
-PO_PATH = PLUGIN_ROOT / "languages" / "hge-klaviyo-newsletter-ro_RO.po"
+POT_PATH = PLUGIN_ROOT / "languages" / "hge-automated-post-campaigns-for-klaviyo.pot"
+PO_PATH = PLUGIN_ROOT / "languages" / "hge-automated-post-campaigns-for-klaviyo-ro_RO.po"
 
 # msgid → Romanian msgstr. Strings here mirror the Romanian UX used pre-v3.0.1
 # on the original FC Rapid 1923 deployment.

@@ -1,0 +1,763 @@
+# Copyright (C) 2026 HgE
+# This file is distributed under the GPLv2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: HgE Klaviyo Newsletter\n"
+"Report-Msgid-Bugs-To: https://github.com/strictly4U/hge-automated-post-campaigns-for-klaviyo/issues\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: hge-klaviyo-newsletter\n"
+
+#: includes/admin.php:871
+msgid "%1$d lists, %2$d segments, %3$d templates (5 min cache)"
+msgstr ""
+
+#: includes/admin.php:1939
+msgid "(Pre-configurable on this plan — only activates after upgrade.)"
+msgstr ""
+
+#: includes/admin.php:1518
+msgid "<code>items[:3]</code> renders the top 3 articles; change the number to taste. Available fields per item: <code>id</code>, <code>title</code>, <code>url</code>, <code>excerpt</code>, <code>image</code>, <code>published_at</code>, <code>updated_at</code>, <code>date</code>, <code>author</code>, <code>categories[]</code>, <code>tags[]</code>."
+msgstr ""
+
+#: includes/admin.php:455
+msgid "ACTIVE"
+msgstr ""
+
+#: includes/admin.php:550
+msgid "Actions"
+msgstr ""
+
+#: includes/admin.php:343
+msgid "Active code source"
+msgstr ""
+
+#: includes/admin.php:111
+msgid "Active lock since:"
+msgstr ""
+
+#: includes/admin.php:423
+msgid "Active post"
+msgstr ""
+
+#: includes/admin.php:415
+msgid "Active rules"
+msgstr ""
+
+#: includes/admin.php:956
+msgid "Add rule"
+msgstr ""
+
+#: includes/admin.php:85
+msgid "At:"
+msgstr ""
+
+#: includes/tier.php:57
+msgid "Available in Core plan"
+msgstr ""
+
+#: includes/tier.php:56
+msgid "Available in Pro plan"
+msgstr ""
+
+#: includes/admin.php:1524
+msgid "Back here in WordPress → this rule card:"
+msgstr ""
+
+#: includes/activation.php:27
+msgid "Back to Plugins"
+msgstr ""
+
+#: includes/admin.php:1807
+msgid "Built-in HTML template"
+msgstr ""
+
+#: includes/admin.php:922
+msgid "CORE"
+msgstr ""
+
+#: includes/admin.php:547
+msgid "Campaign ID"
+msgstr ""
+
+#: includes/admin.php:82
+msgid "Campaign ID:"
+msgstr ""
+
+#: includes/admin.php:1528
+msgid "Check <em>Use Web Feed</em>."
+msgstr ""
+
+#: includes/admin.php:1858
+msgid "Choose or search a Klaviyo template…"
+msgstr ""
+
+#: includes/admin.php:1864
+msgid "Clear template selection"
+msgstr ""
+
+#: includes/admin.php:1461
+msgid "Close"
+msgstr ""
+
+#: includes/admin.php:339
+msgid "Code version (constant)"
+msgstr ""
+
+#: includes/admin.php:350
+msgid "Configuration"
+msgstr ""
+
+#: includes/admin.php:368
+msgid "Configured rules"
+msgstr ""
+
+#: includes/admin.php:1529
+msgid "Confirm the <em>Web Feed name in Klaviyo</em> matches step 1 (<code class=\"hge-wf-name\">newsletter_feed</code>)."
+msgstr ""
+
+#: includes/admin.php:941
+msgid "Could not load lists from Klaviyo:"
+msgstr ""
+
+#: includes/admin.php:926
+msgid "Current plan:"
+msgstr ""
+
+#: includes/admin.php:908
+msgid "Debug mode"
+msgstr ""
+
+#: includes/admin.php:904
+msgid "Default 12. Cooldown is applied <strong>per rule</strong> (per tag). Set 0 to disable."
+msgstr ""
+
+#: includes/admin.php:1681
+msgid "Delete rule"
+msgstr ""
+
+#: includes/admin.php:1065
+msgid "Delete this rule? The change takes effect after Save."
+msgstr ""
+
+#: includes/admin.php:475
+msgid "Drop any of these into your Klaviyo template HTML (selected in Settings); they are replaced per post before the campaign is dispatched."
+msgstr ""
+
+#: includes/admin.php:925
+msgid "Each rule maps a post <strong>tag</strong> to a configuration: <em>recipient list(s)</em>, <em>excluded list(s)</em> (Core+), <em>Klaviyo template</em> (Pro) and <em>Web Feed mode</em> (Pro). When a post is published, the plugin matches the first rule whose tag is present on the post (card order = priority) and dispatches using that rule. Cooldown is applied separately per rule (per tag)."
+msgstr ""
+
+#: includes/admin.php:909
+msgid "Enable the <strong>Status</strong> tab + show internal credentials (Feed token, Pro webhook secret) in the admin UI"
+msgstr ""
+
+#: includes/admin.php:549
+msgid "Error"
+msgstr ""
+
+#: includes/admin.php:225
+msgid "Error sending newsletter — see \"Last error\" in the meta box."
+msgstr ""
+
+#: includes/admin.php:1937
+msgid "Exact name configured in Klaviyo → Settings → Web Feeds."
+msgstr ""
+
+#: includes/admin.php:387
+msgid "Excerpt length"
+msgstr ""
+
+#: includes/admin.php:420
+msgid "Excluded"
+msgstr ""
+
+#: includes/admin.php:1780
+msgid "Excluded list(s)"
+msgstr ""
+
+#: includes/admin.php:922
+msgid "FREE"
+msgstr ""
+
+#: includes/admin.php:479
+msgid "Featured image URL (use inside <code>src=\"\"</code>)"
+msgstr ""
+
+#: includes/admin.php:381 includes/admin.php:847
+msgid "Feed token"
+msgstr ""
+
+#: includes/admin.php:1909
+msgid "For Web Feed mode (digest emails), see the “Quick start” button under Web Feed mode below."
+msgstr ""
+
+#: includes/admin.php:829
+msgid "General settings"
+msgstr ""
+
+#: includes/admin.php:228
+msgid "Global cooldown reset. The next publish sends immediately."
+msgstr ""
+
+#: includes/activation.php:26
+msgid "HgE Klaviyo Newsletter requires <strong>WooCommerce</strong> to be active (it provides Action Scheduler).<br>%s"
+msgstr ""
+
+#: includes/admin.php:1770
+msgid "Hold Ctrl (Windows) / Cmd (Mac) and click to add or remove items in the multi-select."
+msgstr ""
+
+#: includes/admin.php:419
+msgid "Included"
+msgstr ""
+
+#: includes/admin.php:833
+msgid "Klaviyo API Key"
+msgstr ""
+
+#: includes/admin.php:1981
+msgid "Klaviyo API cache cleared. The next render will fetch fresh data."
+msgstr ""
+
+#: includes/admin.php:46 includes/admin.php:249 includes/admin.php:250
+msgid "Klaviyo Newsletter"
+msgstr ""
+
+#: includes/admin.php:667
+msgid "Klaviyo applied rate-limiting (too many requests in a short window). Wait a few minutes and try again."
+msgstr ""
+
+#: includes/admin.php:859
+msgid "Klaviyo data"
+msgstr ""
+
+#: includes/admin.php:1799
+msgid "Klaviyo limit: included + excluded ≤ 15."
+msgstr ""
+
+#: includes/admin.php:227
+msgid "Klaviyo status reset. You can re-send."
+msgstr ""
+
+#: includes/admin.php:1805
+msgid "Klaviyo template"
+msgstr ""
+
+#: includes/admin.php:1501
+msgid "Klaviyo → <strong>Email Templates → Create template → HTML editor</strong>. Paste this starter, then customise:"
+msgstr ""
+
+#: includes/admin.php:1484
+msgid "Klaviyo → <strong>Settings → Web Feeds → Add web feed</strong>. Fill in:"
+msgstr ""
+
+#: includes/admin.php:117
+msgid "Last error:"
+msgstr ""
+
+#: includes/admin.php:424
+msgid "Last send (UTC)"
+msgstr ""
+
+#: includes/admin.php:910
+msgid "Leave off in production. Turn on when you need to inspect the webhook / dispatch / API response flow, or to copy the auto-generated Feed token / webhook secret into an external system."
+msgstr ""
+
+#: includes/admin.php:1712
+msgid "Lists"
+msgstr ""
+
+#: includes/admin.php:95
+msgid "Matched rule — tag"
+msgstr ""
+
+#: includes/admin.php:404
+msgid "Minimum interval between sends"
+msgstr ""
+
+#: includes/admin.php:902
+msgid "Minimum interval between sends (hours)"
+msgstr ""
+
+#: includes/admin.php:679
+msgid "Network error. The WordPress server cannot reach <code>a.klaviyo.com</code>. Check DNS, the firewall, or whether an outbound proxy is in place on this install."
+msgstr ""
+
+#: includes/admin.php:924
+msgid "Newsletter rules"
+msgstr ""
+
+#: includes/admin.php:224
+msgid "Newsletter sent successfully via Klaviyo."
+msgstr ""
+
+#: includes/admin.php:650
+msgid "No Klaviyo API key configured. Fill in the <strong>Klaviyo API Key</strong> field above and click <strong>Save settings</strong>."
+msgstr ""
+
+#: includes/admin.php:97
+msgid "No active rule tag is present on this post"
+msgstr ""
+
+#: includes/admin.php:538
+msgid "No posts found with any of the configured tags."
+msgstr ""
+
+#: includes/admin.php:502
+msgid "No rule with a <code>tag_slug</code> configured. Set at least one rule in %s."
+msgstr ""
+
+#: includes/admin.php:1167
+msgid "No template matches that search."
+msgstr ""
+
+#: includes/admin.php:889
+msgid "No template saved in your Klaviyo account. Create one in <a href=\"https://www.klaviyo.com/email-templates\" target=\"_blank\" rel=\"noopener\">Klaviyo &rarr; Email Templates</a> (any name + Code/HTML or Drag & Drop editor), then click <strong>Reload from Klaviyo</strong>."
+msgstr ""
+
+#: includes/admin.php:90
+msgid "Not sent"
+msgstr ""
+
+#: includes/admin.php:397
+msgid "OFF"
+msgstr ""
+
+#: includes/admin.php:921
+msgid "PRO"
+msgstr ""
+
+#: includes/admin.php:1527
+msgid "Pick the new template from the <em>Klaviyo template</em> dropdown."
+msgstr ""
+
+#: includes/admin.php:474
+msgid "Placeholders available in the Klaviyo template"
+msgstr ""
+
+#: includes/admin.php:100
+msgid "Plugin configuration"
+msgstr ""
+
+#: includes/activation.php:30
+msgid "Plugin dependency missing"
+msgstr ""
+
+#: includes/admin.php:480
+msgid "Post URL with UTM (use inside <code>href=\"\"</code>)"
+msgstr ""
+
+#: includes/admin.php:477
+msgid "Post title (HTML escaped)"
+msgstr ""
+
+#: includes/admin.php:532
+msgid "Posts with configured tags (%s) — last 20"
+msgstr ""
+
+#: includes/admin.php:835
+msgid "Private API key (Klaviyo → Settings → API Keys). Required scopes: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>, <code>segments:read</code>."
+msgstr ""
+
+#: includes/admin.php:481
+msgid "Publication date (WP-formatted)"
+msgstr ""
+
+#: includes/admin.php:1537
+msgid "Publish a post with this rule's trigger tag. Within ~30 seconds you should see a draft campaign in Klaviyo with the template assigned + a send-job launched. Use <em>Send test</em> from Klaviyo first if you want to preview without dispatching to the audience."
+msgstr ""
+
+#: includes/admin.php:88
+msgid "Queued (Action Scheduler)"
+msgstr ""
+
+#: includes/admin.php:849
+msgid "Random string (32+ chars) used to authenticate requests to <code>/feed/klaviyo*.json</code>. Auto-generated on first save when empty; rotate manually with <code>openssl rand -hex 32</code>."
+msgstr ""
+
+#: includes/admin.php:1747
+msgid "Recipient list(s)"
+msgstr ""
+
+#: includes/admin.php:860
+msgid "Reload from Klaviyo"
+msgstr ""
+
+#: includes/admin.php:896
+msgid "Reply-to address (optional)"
+msgstr ""
+
+#: includes/admin.php:585
+msgid "Reset"
+msgstr ""
+
+#: includes/admin.php:585
+msgid "Reset Klaviyo status?"
+msgstr ""
+
+#: includes/admin.php:471
+msgid "Reset legacy global cooldown"
+msgstr ""
+
+#: includes/admin.php:133
+msgid "Reset status"
+msgstr ""
+
+#: includes/admin.php:133
+msgid "Reset the Klaviyo status for this post? This allows re-sending."
+msgstr ""
+
+#: includes/admin.php:471
+msgid "Reset the legacy global cooldown? Per-rule cooldowns remain untouched."
+msgstr ""
+
+#: includes/admin.php:1680
+msgid "Rule"
+msgstr ""
+
+#: includes/admin.php:1399
+msgid "Save settings"
+msgstr ""
+
+#: includes/admin.php:939
+msgid "Save the <strong>Klaviyo API Key</strong> above first so that lists and templates can be loaded into the rule cards."
+msgstr ""
+
+#: includes/admin.php:1749 includes/admin.php:1784
+msgid "Save the API Key to load the lists."
+msgstr ""
+
+#: includes/admin.php:1506
+msgid "Save the template with a memorable name — it appears in the plugin's <em>Klaviyo template</em> dropdown."
+msgstr ""
+
+#: includes/admin.php:548
+msgid "Scheduled / Sent at (UTC)"
+msgstr ""
+
+#: includes/admin.php:1730
+msgid "Segments"
+msgstr ""
+
+#: includes/admin.php:880
+msgid "Segments:"
+msgstr ""
+
+#: includes/admin.php:582
+msgid "Send"
+msgstr ""
+
+#: includes/admin.php:582
+msgid "Send newsletter to the Klaviyo list?"
+msgstr ""
+
+#: includes/admin.php:125
+msgid "Send now"
+msgstr ""
+
+#: includes/admin.php:125
+msgid "Send the newsletter to the configured Klaviyo list now?"
+msgstr ""
+
+#: includes/admin.php:80
+msgid "Sent"
+msgstr ""
+
+#: includes/admin.php:546
+msgid "Sent?"
+msgstr ""
+
+#: includes/admin.php:105 includes/admin.php:271 includes/admin.php:357 includes/admin.php:503
+msgid "Settings"
+msgstr ""
+
+#: includes/admin.php:1980
+msgid "Settings saved."
+msgstr ""
+
+#: includes/admin.php:352
+msgid "Settings tab"
+msgstr ""
+
+#: includes/admin.php:478
+msgid "Short description (max 120 chars, HTML escaped)"
+msgstr ""
+
+#: includes/admin.php:1166
+msgid "Showing"
+msgstr ""
+
+#: includes/admin.php:482
+msgid "Site name"
+msgstr ""
+
+#: includes/admin.php:274
+msgid "Status"
+msgstr ""
+
+#: includes/admin.php:99
+msgid "Status:"
+msgstr ""
+
+#: includes/admin.php:78
+msgid "Status: "
+msgstr ""
+
+#: includes/admin.php:391
+msgid "Subject length (ASCII only)"
+msgstr ""
+
+#: includes/admin.php:418
+msgid "Tag(s)"
+msgstr ""
+
+#: includes/admin.php:421
+msgid "Template"
+msgstr ""
+
+#: includes/admin.php:885
+msgid "Templates:"
+msgstr ""
+
+#: includes/admin.php:657
+msgid "The Klaviyo API key is invalid or has been revoked. Generate a new key in Klaviyo &rarr; Settings &rarr; API Keys, replace it in the <strong>Klaviyo API Key</strong> field above and click <strong>Save settings</strong>."
+msgstr ""
+
+#: includes/admin.php:662
+msgid "The Klaviyo API key lacks the required scopes. Required: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>, <code>segments:read</code>. Generate a new key with all scopes checked and save."
+msgstr ""
+
+#: includes/admin.php:672
+msgid "The Klaviyo server is not responding correctly (5xx). Try again in a few minutes. If the issue persists, check <a href=\"https://status.klaviyo.com/\" target=\"_blank\" rel=\"noopener\">status.klaviyo.com</a>."
+msgstr ""
+
+#: includes/admin.php:1062
+msgid "This is the only rule. Deleting it stops all automatic sends. Continue?"
+msgstr ""
+
+#: includes/admin.php:544
+msgid "Title"
+msgstr ""
+
+#: includes/activation.php:100
+msgid "Tools → Klaviyo Newsletter → Settings"
+msgstr ""
+
+#: includes/admin.php:1690
+msgid "Trigger tag"
+msgstr ""
+
+#: includes/admin.php:1689
+msgid "Trigger tag(s)"
+msgstr ""
+
+#: includes/admin.php:1954
+msgid "URL for Klaviyo Web Feed (this rule):"
+msgstr ""
+
+#: includes/admin.php:226
+msgid "Uncertain status — check Custom Fields manually."
+msgstr ""
+
+#: includes/admin.php:1931
+msgid "Use Web Feed (1 master template + dynamic data)"
+msgstr ""
+
+#: includes/admin.php:1927
+msgid "Use Web Feed (1 master template + dynamic data) — unavailable on this plan."
+msgstr ""
+
+#: includes/admin.php:545
+msgid "WP status"
+msgstr ""
+
+#: includes/admin.php:422
+msgid "Web Feed (name)"
+msgstr ""
+
+#: includes/admin.php:1922
+msgid "Web Feed mode"
+msgstr ""
+
+#: includes/admin.php:1935
+msgid "Web Feed name in Klaviyo:"
+msgstr ""
+
+#: includes/admin.php:898
+msgid "When set, overrides the reply-to configured in Klaviyo. Leave empty to use the Klaviyo account default."
+msgstr ""
+
+#: includes/admin.php:1694
+msgid "WordPress tag slug that triggers this rule. <strong>Pro:</strong> multiple comma-separated tags, e.g. <code>news,promo,events</code> (any present tag fires the rule — OR semantics)."
+msgstr ""
+
+#: includes/admin.php:1696
+msgid "WordPress tag slug that triggers this rule. Ex: <code>newsletter</code>."
+msgstr ""
+
+#: includes/admin.php:398
+msgid "all list recipients receive the campaign"
+msgstr ""
+
+#: includes/admin.php:454
+msgid "built-in"
+msgstr ""
+
+#: includes/admin.php:383 includes/admin.php:386
+msgid "characters"
+msgstr ""
+
+#: includes/admin.php:393
+msgid "characters, no diacritics"
+msgstr ""
+
+#: includes/admin.php:1756
+msgid "choose a list or segment"
+msgstr ""
+
+#: includes/admin.php:352
+msgid "complete"
+msgstr ""
+
+#: includes/activation.php:99
+msgid "configuration is incomplete (API key, feed token, or recipient list is missing). Go to %s to complete it."
+msgstr ""
+
+#: includes/admin.php:383
+msgid "configured"
+msgstr ""
+
+#: includes/admin.php:575
+msgid "dispatch:"
+msgstr ""
+
+#: includes/admin.php:1508
+msgid "every <code>NAME</code> placeholder in the snippet is the Web Feed name from step 1. The Copy button substitutes it automatically."
+msgstr ""
+
+#: includes/admin.php:1928
+msgid "for Web Feed mode."
+msgstr ""
+
+#: includes/admin.php:1698
+msgid "for multi-tag (comma-separated)."
+msgstr ""
+
+#: includes/admin.php:1773
+msgid "for up to 15 lists/segments per rule."
+msgstr ""
+
+#: includes/admin.php:406
+msgid "hours"
+msgstr ""
+
+#: includes/admin.php:1470
+msgid "if you already have a Klaviyo template built with <strong>Global Blocks</strong> (drag-and-drop), you can use it directly — just pick it from the <em>Klaviyo template</em> dropdown in step 4 and skip the manual HTML in steps 2 and 3. See Klaviyo's reference:"
+msgstr ""
+
+#: includes/admin.php:104 includes/admin.php:356
+msgid "incomplete — see %s"
+msgstr ""
+
+#: includes/admin.php:363
+msgid "loaded"
+msgstr ""
+
+#: includes/admin.php:384
+msgid "not defined — Klaviyo cannot authenticate to the feed"
+msgstr ""
+
+#: includes/admin.php:109
+msgid "not loaded"
+msgstr ""
+
+#: includes/admin.php:364
+msgid "not loaded (check WooCommerce)"
+msgstr ""
+
+#: includes/admin.php:407
+msgid "per rule"
+msgstr ""
+
+#: includes/admin.php:367
+msgid "plan"
+msgstr ""
+
+#: includes/admin.php:445
+msgid "post not found, id="
+msgstr ""
+
+#: includes/admin.php:471
+msgid "resets the v2.x legacy option. Per-rule cooldowns remain in"
+msgstr ""
+
+#: includes/admin.php:1164
+msgid "template"
+msgstr ""
+
+#: includes/admin.php:1165
+msgid "templates"
+msgstr ""
+
+#: includes/admin.php:346
+msgid "theme legacy"
+msgstr ""
+
+#: includes/admin.php:1782
+msgid "to be able to exclude lists from the audience."
+msgstr ""
+
+#: includes/admin.php:1807
+msgid "to pick a template from your Klaviyo account."
+msgstr ""
+
+#: includes/admin.php:1837
+msgid "use the built-in HTML template"
+msgstr ""
+
+#: includes/admin.php:1610 includes/admin.php:1622
+msgid "✓ Copied"
+msgstr ""
+
+#: includes/admin.php:1967
+msgid "📖 Quick start: build a Klaviyo digest template"
+msgstr ""
+
+#: includes/admin.php:1900
+msgid "%d template"
+msgid_plural "%d templates"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/admin.php:1796
+msgid "Max <strong>%d</strong> excluded list."
+msgid_plural "Max <strong>%d</strong> excluded lists or segments."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/admin.php:1765
+msgid "Max <strong>%d</strong> list per rule."
+msgid_plural "Max <strong>%d</strong> lists or segments per rule."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/admin.php:961
+msgid "You have reached the plan limit for <strong>%1$s</strong> (%2$d rule)."
+msgid_plural "You have reached the plan limit for <strong>%1$s</strong> (%2$d rules)."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/admin.php:929
+msgid "max %d rule"
+msgid_plural "max %d rules"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/admin.php:627
+msgid "subscriber"
+msgid_plural "subscribers"
+msgstr[0] ""
+msgstr[1] ""
+

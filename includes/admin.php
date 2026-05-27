@@ -43,7 +43,7 @@ if ( ! function_exists( 'hge_klaviyo_register_meta_box' ) ) {
         }
         add_meta_box(
             'hge_klaviyo_nl_status',
-            __( 'Klaviyo Newsletter', 'hge-klaviyo-newsletter' ),
+            __( 'Klaviyo Newsletter', 'hge-automated-post-campaigns-for-klaviyo' ),
             'hge_klaviyo_render_meta_box',
             'post',
             'side',
@@ -75,46 +75,46 @@ if ( ! function_exists( 'hge_klaviyo_render_meta_box' ) ) {
             $scheduled = as_has_scheduled_action( HGE_KLAVIYO_NL_HOOK, array( (int) $post->ID ), 'hge-klaviyo' );
         }
 
-        echo '<p style="margin-top:0;"><strong>' . esc_html__( 'Status: ', 'hge-klaviyo-newsletter' ) . '</strong>';
+        echo '<p style="margin-top:0;"><strong>' . esc_html__( 'Status: ', 'hge-automated-post-campaigns-for-klaviyo' ) . '</strong>';
         if ( 'yes' === $sent ) {
-            echo '<span style="color:#1e8e3e;">✓ ' . esc_html__( 'Sent', 'hge-klaviyo-newsletter' ) . '</span></p>';
+            echo '<span style="color:#1e8e3e;">✓ ' . esc_html__( 'Sent', 'hge-automated-post-campaigns-for-klaviyo' ) . '</span></p>';
             if ( $camp_id ) {
-                echo '<p style="font-size:12px;margin:4px 0;">' . esc_html__( 'Campaign ID:', 'hge-klaviyo-newsletter' ) . ' <code>' . esc_html( $camp_id ) . '</code></p>';
+                echo '<p style="font-size:12px;margin:4px 0;">' . esc_html__( 'Campaign ID:', 'hge-automated-post-campaigns-for-klaviyo' ) . ' <code>' . esc_html( $camp_id ) . '</code></p>';
             }
             if ( $sent_at ) {
-                echo '<p style="font-size:12px;margin:4px 0;">' . esc_html__( 'At:', 'hge-klaviyo-newsletter' ) . ' ' . esc_html( $sent_at ) . '</p>';
+                echo '<p style="font-size:12px;margin:4px 0;">' . esc_html__( 'At:', 'hge-automated-post-campaigns-for-klaviyo' ) . ' ' . esc_html( $sent_at ) . '</p>';
             }
         } elseif ( $scheduled ) {
-            echo '<span style="color:#c45500;">' . esc_html__( 'Queued (Action Scheduler)', 'hge-klaviyo-newsletter' ) . '</span></p>';
+            echo '<span style="color:#c45500;">' . esc_html__( 'Queued (Action Scheduler)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</span></p>';
         } else {
-            echo '<span>' . esc_html__( 'Not sent', 'hge-klaviyo-newsletter' ) . '</span></p>';
+            echo '<span>' . esc_html__( 'Not sent', 'hge-automated-post-campaigns-for-klaviyo' ) . '</span></p>';
         }
 
         echo '<ul style="font-size:12px;margin:8px 0 0 0;list-style:none;padding:0;">';
         if ( $has_tag ) {
-            echo '<li>✓ ' . esc_html__( 'Matched rule — tag', 'hge-klaviyo-newsletter' ) . ' <code>' . esc_html( $matched_slug ) . '</code></li>';
+            echo '<li>✓ ' . esc_html__( 'Matched rule — tag', 'hge-automated-post-campaigns-for-klaviyo' ) . ' <code>' . esc_html( $matched_slug ) . '</code></li>';
         } else {
-            echo '<li>✗ ' . esc_html__( 'No active rule tag is present on this post', 'hge-klaviyo-newsletter' ) . '</li>';
+            echo '<li>✗ ' . esc_html__( 'No active rule tag is present on this post', 'hge-automated-post-campaigns-for-klaviyo' ) . '</li>';
         }
-        echo '<li>' . ( $is_pub ? '✓' : '✗' ) . ' ' . esc_html__( 'Status:', 'hge-klaviyo-newsletter' ) . ' <code>' . esc_html( $post->post_status ) . '</code></li>';
-        echo '<li>' . ( $config_ok ? '✓' : '✗' ) . ' ' . esc_html__( 'Plugin configuration', 'hge-klaviyo-newsletter' )
+        echo '<li>' . ( $is_pub ? '✓' : '✗' ) . ' ' . esc_html__( 'Status:', 'hge-automated-post-campaigns-for-klaviyo' ) . ' <code>' . esc_html( $post->post_status ) . '</code></li>';
+        echo '<li>' . ( $config_ok ? '✓' : '✗' ) . ' ' . esc_html__( 'Plugin configuration', 'hge-automated-post-campaigns-for-klaviyo' )
             . ( $config_ok ? '' : ' <em>(' . wp_kses_post(
                 sprintf(
                     /* translators: %s is the Settings tab link */
-                    __( 'incomplete — see %s', 'hge-klaviyo-newsletter' ),
-                    '<a href="' . esc_url( admin_url( 'tools.php?page=hge-klaviyo-newsletter&tab=settings' ) ) . '">' . esc_html__( 'Settings', 'hge-klaviyo-newsletter' ) . '</a>'
+                    __( 'incomplete — see %s', 'hge-automated-post-campaigns-for-klaviyo' ),
+                    '<a href="' . esc_url( admin_url( 'tools.php?page=hge-klaviyo-newsletter&tab=settings' ) ) . '">' . esc_html__( 'Settings', 'hge-automated-post-campaigns-for-klaviyo' ) . '</a>'
                 )
             ) . ')</em>' ) . '</li>';
         echo '<li>' . ( $as_loaded ? '✓' : '✗' ) . ' Action Scheduler'
-            . ( $as_loaded ? '' : ' <em>(' . esc_html__( 'not loaded', 'hge-klaviyo-newsletter' ) . ')</em>' ) . '</li>';
+            . ( $as_loaded ? '' : ' <em>(' . esc_html__( 'not loaded', 'hge-automated-post-campaigns-for-klaviyo' ) . ')</em>' ) . '</li>';
         if ( $lock ) {
-            echo '<li>⚠ ' . esc_html__( 'Active lock since:', 'hge-klaviyo-newsletter' ) . ' ' . esc_html( gmdate( 'Y-m-d H:i:s', (int) $lock ) ) . ' UTC</li>';
+            echo '<li>⚠ ' . esc_html__( 'Active lock since:', 'hge-automated-post-campaigns-for-klaviyo' ) . ' ' . esc_html( gmdate( 'Y-m-d H:i:s', (int) $lock ) ) . ' UTC</li>';
         }
         echo '</ul>';
 
         if ( $error ) {
             echo '<div style="margin-top:10px;padding:8px;background:#fde7e7;border-left:3px solid #c00;font-size:11px;">'
-                . '<strong>' . esc_html__( 'Last error:', 'hge-klaviyo-newsletter' ) . '</strong><br><code style="word-break:break-all;">' . esc_html( $error ) . '</code></div>';
+                . '<strong>' . esc_html__( 'Last error:', 'hge-automated-post-campaigns-for-klaviyo' ) . '</strong><br><code style="word-break:break-all;">' . esc_html( $error ) . '</code></div>';
         }
 
         if ( $has_tag && $is_pub && $config_ok && 'yes' !== $sent ) {
@@ -122,7 +122,7 @@ if ( ! function_exists( 'hge_klaviyo_render_meta_box' ) ) {
                 admin_url( 'admin-post.php?action=hge_klaviyo_send_now&post_id=' . (int) $post->ID ),
                 'hge_klaviyo_send_now_' . $post->ID
             );
-            echo '<p style="margin-top:12px;"><a href="' . esc_url( $url ) . '" class="button button-primary" onclick="return confirm(\'' . esc_js( __( 'Send the newsletter to the configured Klaviyo list now?', 'hge-klaviyo-newsletter' ) ) . '\');">' . esc_html__( 'Send now', 'hge-klaviyo-newsletter' ) . '</a></p>';
+            echo '<p style="margin-top:12px;"><a href="' . esc_url( $url ) . '" class="button button-primary" onclick="return confirm(\'' . esc_js( __( 'Send the newsletter to the configured Klaviyo list now?', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '\');">' . esc_html__( 'Send now', 'hge-automated-post-campaigns-for-klaviyo' ) . '</a></p>';
         }
 
         if ( 'yes' === $sent || $error || $lock ) {
@@ -130,7 +130,7 @@ if ( ! function_exists( 'hge_klaviyo_render_meta_box' ) ) {
                 admin_url( 'admin-post.php?action=hge_klaviyo_reset&post_id=' . (int) $post->ID ),
                 'hge_klaviyo_reset_' . $post->ID
             );
-            echo '<p style="margin-top:8px;"><a href="' . esc_url( $reset_url ) . '" class="button" onclick="return confirm(\'' . esc_js( __( 'Reset the Klaviyo status for this post? This allows re-sending.', 'hge-klaviyo-newsletter' ) ) . '\');">' . esc_html__( 'Reset status', 'hge-klaviyo-newsletter' ) . '</a></p>';
+            echo '<p style="margin-top:8px;"><a href="' . esc_url( $reset_url ) . '" class="button" onclick="return confirm(\'' . esc_js( __( 'Reset the Klaviyo status for this post? This allows re-sending.', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '\');">' . esc_html__( 'Reset status', 'hge-automated-post-campaigns-for-klaviyo' ) . '</a></p>';
         }
     }
 }
@@ -221,11 +221,11 @@ if ( ! function_exists( 'hge_klaviyo_admin_notices' ) ) {
             return;
         }
         $messages = apply_filters( 'hge_klaviyo_admin_notice_messages', array(
-            'klaviyo_sent'           => array( 'success', __( 'Newsletter sent successfully via Klaviyo.', 'hge-klaviyo-newsletter' ) ),
-            'klaviyo_error'          => array( 'error',   __( 'Error sending newsletter — see "Last error" in the meta box.', 'hge-klaviyo-newsletter' ) ),
-            'klaviyo_unknown'        => array( 'warning', __( 'Uncertain status — check Custom Fields manually.', 'hge-klaviyo-newsletter' ) ),
-            'klaviyo_reset'          => array( 'success', __( 'Klaviyo status reset. You can re-send.', 'hge-klaviyo-newsletter' ) ),
-            'klaviyo_cooldown_reset' => array( 'success', __( 'Global cooldown reset. The next publish sends immediately.', 'hge-klaviyo-newsletter' ) ),
+            'klaviyo_sent'           => array( 'success', __( 'Newsletter sent successfully via Klaviyo.', 'hge-automated-post-campaigns-for-klaviyo' ) ),
+            'klaviyo_error'          => array( 'error',   __( 'Error sending newsletter — see "Last error" in the meta box.', 'hge-automated-post-campaigns-for-klaviyo' ) ),
+            'klaviyo_unknown'        => array( 'warning', __( 'Uncertain status — check Custom Fields manually.', 'hge-automated-post-campaigns-for-klaviyo' ) ),
+            'klaviyo_reset'          => array( 'success', __( 'Klaviyo status reset. You can re-send.', 'hge-automated-post-campaigns-for-klaviyo' ) ),
+            'klaviyo_cooldown_reset' => array( 'success', __( 'Global cooldown reset. The next publish sends immediately.', 'hge-automated-post-campaigns-for-klaviyo' ) ),
         ) );
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- same display-flag read; sanitize_key + array-key allowlist below prevent any injection.
         $msg = sanitize_key( wp_unslash( $_GET['klaviyo_msg'] ) );
@@ -245,9 +245,17 @@ add_action( 'admin_menu', 'hge_klaviyo_register_tools_page' );
 
 if ( ! function_exists( 'hge_klaviyo_register_tools_page' ) ) {
     function hge_klaviyo_register_tools_page() {
+        // Admin menu slug intentionally kept as the legacy 'hge-klaviyo-newsletter'
+        // even though the WP plugin folder + Text Domain were renamed for
+        // wp.org / trademark compliance. The admin URL is bookmarked by
+        // existing customers, referenced by the Pro extension plugin, and
+        // documented in support material. Changing the menu slug would
+        // 404 every existing bookmark and break Pro -> Free deep links —
+        // both customer-impacting. Keep the slug stable; the rename is
+        // cosmetic at the directory level only.
         add_management_page(
-            __( 'Klaviyo Newsletter', 'hge-klaviyo-newsletter' ),
-            __( 'Klaviyo Newsletter', 'hge-klaviyo-newsletter' ),
+            __( 'Klaviyo Newsletter', 'hge-automated-post-campaigns-for-klaviyo' ),
+            __( 'Klaviyo Newsletter', 'hge-automated-post-campaigns-for-klaviyo' ),
             'manage_options',
             'hge-klaviyo-newsletter',
             'hge_klaviyo_render_tools_page'
@@ -268,10 +276,10 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
         // Tabs registry. Free emits "Setări" by default. Pro adds "Licență Pro" via filter.
         // "Status" (former Diagnostic) appears only when debug_mode is on (Settings → Debug mode).
         $tabs = apply_filters( 'hge_klaviyo_admin_tabs', array(
-            'settings' => __( 'Settings', 'hge-klaviyo-newsletter' ),
+            'settings' => __( 'Settings', 'hge-automated-post-campaigns-for-klaviyo' ),
         ) );
         if ( $debug_enabled ) {
-            $tabs['diagnostic'] = __( 'Status', 'hge-klaviyo-newsletter' );
+            $tabs['diagnostic'] = __( 'Status', 'hge-automated-post-campaigns-for-klaviyo' );
         }
 
         // Enforce display order: Setări → Licență Pro → Status (orice tab terț apare la final).
@@ -336,36 +344,36 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
 
         echo '<table class="widefat striped" style="max-width:720px;"><tbody>';
         printf( '<tr><td>%s</td><td><code>%s</code></td></tr>',
-            esc_html__( 'Code version (constant)', 'hge-klaviyo-newsletter' ),
+            esc_html__( 'Code version (constant)', 'hge-automated-post-campaigns-for-klaviyo' ),
             esc_html( $version )
         );
         printf( '<tr><td>%s</td><td>%s — <code style="font-size:11px;">%s</code></td></tr>',
-            esc_html__( 'Active code source', 'hge-klaviyo-newsletter' ),
+            esc_html__( 'Active code source', 'hge-automated-post-campaigns-for-klaviyo' ),
             $source_is_plugin
                 ? '<span style="color:#1e8e3e;">✓ plugin</span>'
-                : '<span style="color:#c45500;">⚠ ' . esc_html__( 'theme legacy', 'hge-klaviyo-newsletter' ) . '</span>',
+                : '<span style="color:#c45500;">⚠ ' . esc_html__( 'theme legacy', 'hge-automated-post-campaigns-for-klaviyo' ) . '</span>',
             esc_html( $source_file )
         );
         printf( '<tr><td>%s</td><td>%s</td></tr>',
-            esc_html__( 'Configuration', 'hge-klaviyo-newsletter' ),
+            esc_html__( 'Configuration', 'hge-automated-post-campaigns-for-klaviyo' ),
             $config_ok
-                ? '<span style="color:#1e8e3e;">✓ ' . esc_html__( 'complete', 'hge-klaviyo-newsletter' ) . '</span> (' . esc_html__( 'Settings tab', 'hge-klaviyo-newsletter' ) . ')'
+                ? '<span style="color:#1e8e3e;">✓ ' . esc_html__( 'complete', 'hge-automated-post-campaigns-for-klaviyo' ) . '</span> (' . esc_html__( 'Settings tab', 'hge-automated-post-campaigns-for-klaviyo' ) . ')'
                 : '<span style="color:#c00;">✗ ' . wp_kses_post(
                     sprintf(
                         /* translators: %s is the Settings tab link */
-                        __( 'incomplete — see %s', 'hge-klaviyo-newsletter' ),
-                        '<a href="' . esc_url( admin_url( 'tools.php?page=hge-klaviyo-newsletter&tab=settings' ) ) . '">' . esc_html__( 'Settings', 'hge-klaviyo-newsletter' ) . '</a>'
+                        __( 'incomplete — see %s', 'hge-automated-post-campaigns-for-klaviyo' ),
+                        '<a href="' . esc_url( admin_url( 'tools.php?page=hge-klaviyo-newsletter&tab=settings' ) ) . '">' . esc_html__( 'Settings', 'hge-automated-post-campaigns-for-klaviyo' ) . '</a>'
                     )
                 ) . '</span>'
         );
         printf( '<tr><td>Action Scheduler</td><td>%s</td></tr>',
             $as_loaded
-                ? '<span style="color:#1e8e3e;">✓ ' . esc_html__( 'loaded', 'hge-klaviyo-newsletter' ) . '</span>'
-                : '<span style="color:#c00;">✗ ' . esc_html__( 'not loaded (check WooCommerce)', 'hge-klaviyo-newsletter' ) . '</span>'
+                ? '<span style="color:#1e8e3e;">✓ ' . esc_html__( 'loaded', 'hge-automated-post-campaigns-for-klaviyo' ) . '</span>'
+                : '<span style="color:#c00;">✗ ' . esc_html__( 'not loaded (check WooCommerce)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</span>'
         );
 
-        printf( '<tr><td>%s</td><td>%d / %d (' . esc_html__( 'plan', 'hge-klaviyo-newsletter' ) . ': <code>%s</code>)</td></tr>',
-            esc_html__( 'Configured rules', 'hge-klaviyo-newsletter' ),
+        printf( '<tr><td>%s</td><td>%d / %d (' . esc_html__( 'plan', 'hge-automated-post-campaigns-for-klaviyo' ) . ': <code>%s</code>)</td></tr>',
+            esc_html__( 'Configured rules', 'hge-automated-post-campaigns-for-klaviyo' ),
             count( $rules ),
             (int) hge_klaviyo_nl_max_rules(),
             esc_html( function_exists( 'hge_klaviyo_active_plan' ) ? hge_klaviyo_active_plan() : 'free' )
@@ -378,33 +386,33 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
         // in 2.x — each rule with Web Feed enabled has its own keyed transient.
         if ( $any_web_feed ) {
             printf( '<tr><td>%s</td><td>%s</td></tr>',
-                esc_html__( 'Feed token', 'hge-klaviyo-newsletter' ),
+                esc_html__( 'Feed token', 'hge-automated-post-campaigns-for-klaviyo' ),
                 '' !== $feed_token_resolved
-                    ? '<span style="color:#1e8e3e;">✓ ' . esc_html__( 'configured', 'hge-klaviyo-newsletter' ) . '</span> (' . esc_html( strlen( $feed_token_resolved ) ) . ' ' . esc_html__( 'characters', 'hge-klaviyo-newsletter' ) . ')'
-                    : '<span style="color:#c00;">✗ ' . esc_html__( 'not defined — Klaviyo cannot authenticate to the feed', 'hge-klaviyo-newsletter' ) . '</span>' );
+                    ? '<span style="color:#1e8e3e;">✓ ' . esc_html__( 'configured', 'hge-automated-post-campaigns-for-klaviyo' ) . '</span> (' . esc_html( strlen( $feed_token_resolved ) ) . ' ' . esc_html__( 'characters', 'hge-automated-post-campaigns-for-klaviyo' ) . ')'
+                    : '<span style="color:#c00;">✗ ' . esc_html__( 'not defined — Klaviyo cannot authenticate to the feed', 'hge-automated-post-campaigns-for-klaviyo' ) . '</span>' );
         }
-        printf( '<tr><td>%s</td><td>%d ' . esc_html__( 'characters', 'hge-klaviyo-newsletter' ) . '</td></tr>',
-            esc_html__( 'Excerpt length', 'hge-klaviyo-newsletter' ),
+        printf( '<tr><td>%s</td><td>%d ' . esc_html__( 'characters', 'hge-automated-post-campaigns-for-klaviyo' ) . '</td></tr>',
+            esc_html__( 'Excerpt length', 'hge-automated-post-campaigns-for-klaviyo' ),
             (int) apply_filters( 'hge_klaviyo_excerpt_length', 120 )
         );
         printf( '<tr><td>%s</td><td>%d %s</td></tr>',
-            esc_html__( 'Subject length (ASCII only)', 'hge-klaviyo-newsletter' ),
+            esc_html__( 'Subject length (ASCII only)', 'hge-automated-post-campaigns-for-klaviyo' ),
             (int) apply_filters( 'hge_klaviyo_subject_length', 60 ),
-            esc_html__( 'characters, no diacritics', 'hge-klaviyo-newsletter' )
+            esc_html__( 'characters, no diacritics', 'hge-automated-post-campaigns-for-klaviyo' )
         );
 
         printf( '<tr><td>Smart Sending</td><td><span style="color:#c00;">%s</span> — %s</td></tr>',
-            esc_html__( 'OFF', 'hge-klaviyo-newsletter' ),
-            esc_html__( 'all list recipients receive the campaign', 'hge-klaviyo-newsletter' )
+            esc_html__( 'OFF', 'hge-automated-post-campaigns-for-klaviyo' ),
+            esc_html__( 'all list recipients receive the campaign', 'hge-automated-post-campaigns-for-klaviyo' )
         );
 
         $min_int_h = (int) ( hge_klaviyo_min_interval_seconds() / HOUR_IN_SECONDS );
         printf(
             '<tr><td>%s</td><td>%d %s <em>(%s)</em></td></tr>',
-            esc_html__( 'Minimum interval between sends', 'hge-klaviyo-newsletter' ),
+            esc_html__( 'Minimum interval between sends', 'hge-automated-post-campaigns-for-klaviyo' ),
             (int) $min_int_h, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- %d format specifier + (int) cast guarantee a safe integer.
-            esc_html__( 'hours', 'hge-klaviyo-newsletter' ),
-            esc_html__( 'per rule', 'hge-klaviyo-newsletter' )
+            esc_html__( 'hours', 'hge-automated-post-campaigns-for-klaviyo' ),
+            esc_html__( 'per rule', 'hge-automated-post-campaigns-for-klaviyo' )
         );
         echo '</tbody></table>';
 
@@ -412,16 +420,16 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
         // Per-rule "Active post" column reads the keyed transient (since 3.0.0)
         // so a leftover post-id from any specific rule's Web Feed is surfaced.
         if ( ! empty( $rules ) ) {
-            echo '<h3 style="margin-top:18px;">' . esc_html__( 'Active rules', 'hge-klaviyo-newsletter' ) . '</h3>';
+            echo '<h3 style="margin-top:18px;">' . esc_html__( 'Active rules', 'hge-automated-post-campaigns-for-klaviyo' ) . '</h3>';
             echo '<table class="widefat striped" style="max-width:1100px;"><thead><tr>';
             echo '<th>#</th>'
-                . '<th>' . esc_html__( 'Tag(s)', 'hge-klaviyo-newsletter' ) . '</th>'
-                . '<th>' . esc_html__( 'Included', 'hge-klaviyo-newsletter' ) . '</th>'
-                . '<th>' . esc_html__( 'Excluded', 'hge-klaviyo-newsletter' ) . '</th>'
-                . '<th>' . esc_html__( 'Template', 'hge-klaviyo-newsletter' ) . '</th>'
-                . '<th>' . esc_html__( 'Web Feed (name)', 'hge-klaviyo-newsletter' ) . '</th>'
-                . '<th>' . esc_html__( 'Active post', 'hge-klaviyo-newsletter' ) . '</th>'
-                . '<th>' . esc_html__( 'Last send (UTC)', 'hge-klaviyo-newsletter' ) . '</th>';
+                . '<th>' . esc_html__( 'Tag(s)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th>'
+                . '<th>' . esc_html__( 'Included', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th>'
+                . '<th>' . esc_html__( 'Excluded', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th>'
+                . '<th>' . esc_html__( 'Template', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th>'
+                . '<th>' . esc_html__( 'Web Feed (name)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th>'
+                . '<th>' . esc_html__( 'Active post', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th>'
+                . '<th>' . esc_html__( 'Last send (UTC)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th>';
             echo '</tr></thead><tbody>';
             foreach ( $rules as $i => $r ) {
                 $slug  = (string) ( $r['tag_slug'] ?? '' );
@@ -442,7 +450,7 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
                         $cp = get_post( $pid );
                         $active_post_cell = $cp
                             ? '<a href="' . esc_url( get_edit_post_link( $pid ) ) . '">' . esc_html( get_the_title( $cp ) ) . '</a> <small>(' . (int) $pid . ')</small>'
-                            : '<em>(' . esc_html__( 'post not found, id=', 'hge-klaviyo-newsletter' ) . (int) $pid . ')</em>';
+                            : '<em>(' . esc_html__( 'post not found, id=', 'hge-automated-post-campaigns-for-klaviyo' ) . (int) $pid . ')</em>';
                     }
                 }
 
@@ -451,8 +459,8 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
                 printf( '<td><code>%s</code></td>', esc_html( $slug !== '' ? $slug : '—' ) );
                 printf( '<td>%s</td>', $inc ? esc_html( implode( ', ', $inc ) ) : '<em>—</em>' );
                 printf( '<td>%s</td>', $exc ? esc_html( implode( ', ', $exc ) ) : '<em>—</em>' );
-                printf( '<td>%s</td>', $tpl ? '<code>' . esc_html( $tpl ) . '</code>' : '<em>' . esc_html__( 'built-in', 'hge-klaviyo-newsletter' ) . '</em>' );
-                printf( '<td>%s</td>', $wf ? '<span style="color:#1e8e3e;">' . esc_html__( 'ACTIVE', 'hge-klaviyo-newsletter' ) . '</span> <code>' . esc_html( $wf_name ) . '</code>' : '—' );
+                printf( '<td>%s</td>', $tpl ? '<code>' . esc_html( $tpl ) . '</code>' : '<em>' . esc_html__( 'built-in', 'hge-automated-post-campaigns-for-klaviyo' ) . '</em>' );
+                printf( '<td>%s</td>', $wf ? '<span style="color:#1e8e3e;">' . esc_html__( 'ACTIVE', 'hge-automated-post-campaigns-for-klaviyo' ) . '</span> <code>' . esc_html( $wf_name ) . '</code>' : '—' );
                 // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $active_post_cell is composed of esc_url() + esc_html() + esc_html__(); pre-escaped HTML.
                 echo '<td>' . $active_post_cell . '</td>';
                 printf( '<td>%s</td>', $last ? esc_html( gmdate( 'Y-m-d H:i:s', $last ) ) : '<em>—</em>' );
@@ -468,18 +476,18 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
                 admin_url( 'admin-post.php?action=hge_klaviyo_reset_cooldown' ),
                 'hge_klaviyo_reset_cooldown'
             );
-            echo '<p style="margin-top:8px;"><a href="' . esc_url( $reset_cd_url ) . '" class="button" onclick="return confirm(\'' . esc_js( __( 'Reset the legacy global cooldown? Per-rule cooldowns remain untouched.', 'hge-klaviyo-newsletter' ) ) . '\');">' . esc_html__( 'Reset legacy global cooldown', 'hge-klaviyo-newsletter' ) . '</a> <em style="font-size:12px;">— ' . esc_html__( 'resets the v2.x legacy option. Per-rule cooldowns remain in', 'hge-klaviyo-newsletter' ) . ' <code>hge_klaviyo_last_send_at_by_slug</code>.</em></p>';
+            echo '<p style="margin-top:8px;"><a href="' . esc_url( $reset_cd_url ) . '" class="button" onclick="return confirm(\'' . esc_js( __( 'Reset the legacy global cooldown? Per-rule cooldowns remain untouched.', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '\');">' . esc_html__( 'Reset legacy global cooldown', 'hge-automated-post-campaigns-for-klaviyo' ) . '</a> <em style="font-size:12px;">— ' . esc_html__( 'resets the v2.x legacy option. Per-rule cooldowns remain in', 'hge-automated-post-campaigns-for-klaviyo' ) . ' <code>hge_klaviyo_last_send_at_by_slug</code>.</em></p>';
         }
 
-        echo '<h3 style="margin-top:18px;">' . esc_html__( 'Placeholders available in the Klaviyo template', 'hge-klaviyo-newsletter' ) . '</h3>';
-        echo '<p style="font-size:13px;">' . esc_html__( 'Drop any of these into your Klaviyo template HTML (selected in Settings); they are replaced per post before the campaign is dispatched.', 'hge-klaviyo-newsletter' ) . '</p>';
+        echo '<h3 style="margin-top:18px;">' . esc_html__( 'Placeholders available in the Klaviyo template', 'hge-automated-post-campaigns-for-klaviyo' ) . '</h3>';
+        echo '<p style="font-size:13px;">' . esc_html__( 'Drop any of these into your Klaviyo template HTML (selected in Settings); they are replaced per post before the campaign is dispatched.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
         echo '<table class="widefat striped" style="max-width:720px;"><tbody>';
-        echo '<tr><td><code>{{title}}</code></td><td>' . esc_html__( 'Post title (HTML escaped)', 'hge-klaviyo-newsletter' ) . '</td></tr>';
-        echo '<tr><td><code>{{excerpt}}</code></td><td>' . esc_html__( 'Short description (max 120 chars, HTML escaped)', 'hge-klaviyo-newsletter' ) . '</td></tr>';
-        echo '<tr><td><code>{{image}}</code></td><td>' . wp_kses_post( __( 'Featured image URL (use inside <code>src=""</code>)', 'hge-klaviyo-newsletter' ) ) . '</td></tr>';
-        echo '<tr><td><code>{{url}}</code></td><td>' . wp_kses_post( __( 'Post URL with UTM (use inside <code>href=""</code>)', 'hge-klaviyo-newsletter' ) ) . '</td></tr>';
-        echo '<tr><td><code>{{date}}</code></td><td>' . esc_html__( 'Publication date (WP-formatted)', 'hge-klaviyo-newsletter' ) . '</td></tr>';
-        echo '<tr><td><code>{{site}}</code></td><td>' . esc_html__( 'Site name', 'hge-klaviyo-newsletter' ) . '</td></tr>';
+        echo '<tr><td><code>{{title}}</code></td><td>' . esc_html__( 'Post title (HTML escaped)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</td></tr>';
+        echo '<tr><td><code>{{excerpt}}</code></td><td>' . esc_html__( 'Short description (max 120 chars, HTML escaped)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</td></tr>';
+        echo '<tr><td><code>{{image}}</code></td><td>' . wp_kses_post( __( 'Featured image URL (use inside <code>src=""</code>)', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '</td></tr>';
+        echo '<tr><td><code>{{url}}</code></td><td>' . wp_kses_post( __( 'Post URL with UTM (use inside <code>href=""</code>)', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '</td></tr>';
+        echo '<tr><td><code>{{date}}</code></td><td>' . esc_html__( 'Publication date (WP-formatted)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</td></tr>';
+        echo '<tr><td><code>{{site}}</code></td><td>' . esc_html__( 'Site name', 'hge-automated-post-campaigns-for-klaviyo' ) . '</td></tr>';
         echo '</tbody></table>';
 
         // Collect all tag slugs from all rules (split comma-separated for Pro)
@@ -499,8 +507,8 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
             echo '<div class="notice notice-warning inline" style="margin-top:12px;"><p>' . wp_kses_post(
                 sprintf(
                     /* translators: %s is the Settings tab link */
-                    __( 'No rule with a <code>tag_slug</code> configured. Set at least one rule in %s.', 'hge-klaviyo-newsletter' ),
-                    '<a href="' . esc_url( admin_url( 'tools.php?page=hge-klaviyo-newsletter&tab=settings' ) ) . '">' . esc_html__( 'Settings', 'hge-klaviyo-newsletter' ) . '</a>'
+                    __( 'No rule with a <code>tag_slug</code> configured. Set at least one rule in %s.', 'hge-automated-post-campaigns-for-klaviyo' ),
+                    '<a href="' . esc_url( admin_url( 'tools.php?page=hge-klaviyo-newsletter&tab=settings' ) ) . '">' . esc_html__( 'Settings', 'hge-automated-post-campaigns-for-klaviyo' ) . '</a>'
                 )
             ) . '</p></div>';
             echo '</div>';
@@ -530,25 +538,25 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
         echo '<h2 style="margin-top:24px;">' . wp_kses_post(
             sprintf(
                 /* translators: %s is a comma-separated list of <code>-wrapped tag slugs */
-                __( 'Posts with configured tags (%s) — last 20', 'hge-klaviyo-newsletter' ),
+                __( 'Posts with configured tags (%s) — last 20', 'hge-automated-post-campaigns-for-klaviyo' ),
                 $slugs_html
             )
         ) . '</h2>';
 
         if ( empty( $posts ) ) {
-            echo '<p><em>' . esc_html__( 'No posts found with any of the configured tags.', 'hge-klaviyo-newsletter' ) . '</em></p>';
+            echo '<p><em>' . esc_html__( 'No posts found with any of the configured tags.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</em></p>';
             echo '</div>';
             return;
         }
 
         echo '<table class="widefat striped"><thead><tr>';
-        echo '<th>' . esc_html__( 'Title', 'hge-klaviyo-newsletter' ) . '</th>'
-            . '<th>' . esc_html__( 'WP status', 'hge-klaviyo-newsletter' ) . '</th>'
-            . '<th>' . esc_html__( 'Sent?', 'hge-klaviyo-newsletter' ) . '</th>'
-            . '<th>' . esc_html__( 'Campaign ID', 'hge-klaviyo-newsletter' ) . '</th>'
-            . '<th>' . esc_html__( 'Scheduled / Sent at (UTC)', 'hge-klaviyo-newsletter' ) . '</th>'
-            . '<th>' . esc_html__( 'Error', 'hge-klaviyo-newsletter' ) . '</th>'
-            . '<th>' . esc_html__( 'Actions', 'hge-klaviyo-newsletter' ) . '</th>';
+        echo '<th>' . esc_html__( 'Title', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th>'
+            . '<th>' . esc_html__( 'WP status', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th>'
+            . '<th>' . esc_html__( 'Sent?', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th>'
+            . '<th>' . esc_html__( 'Campaign ID', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th>'
+            . '<th>' . esc_html__( 'Scheduled / Sent at (UTC)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th>'
+            . '<th>' . esc_html__( 'Error', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th>'
+            . '<th>' . esc_html__( 'Actions', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th>';
         echo '</tr></thead><tbody>';
 
         foreach ( $posts as $p ) {
@@ -573,17 +581,17 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
             echo '<td>' . ( 'yes' === $sent ? '<span style="color:#1e8e3e;">✓</span>' : '—' ) . '</td>';
             echo '<td>' . ( $camp_id ? '<code>' . esc_html( $camp_id ) . '</code>' : '—' ) . '</td>';
             if ( $sched ) {
-                echo '<td><strong>📅 ' . esc_html( $sched ) . '</strong><br><small>(' . esc_html__( 'dispatch:', 'hge-klaviyo-newsletter' ) . ' ' . esc_html( $sent_at ) . ')</small></td>';
+                echo '<td><strong>📅 ' . esc_html( $sched ) . '</strong><br><small>(' . esc_html__( 'dispatch:', 'hge-automated-post-campaigns-for-klaviyo' ) . ' ' . esc_html( $sent_at ) . ')</small></td>';
             } else {
                 echo '<td>' . ( $sent_at ? esc_html( $sent_at ) : '—' ) . '</td>';
             }
             echo '<td>' . ( $error ? '<code style="color:#c00;font-size:11px;">' . esc_html( substr( $error, 0, 120 ) ) . '</code>' : '—' ) . '</td>';
             echo '<td>';
             if ( 'publish' === $p->post_status && 'yes' !== $sent && $config_ok ) {
-                echo '<a href="' . esc_url( $send_url ) . '" class="button button-small button-primary" onclick="return confirm(\'' . esc_js( __( 'Send newsletter to the Klaviyo list?', 'hge-klaviyo-newsletter' ) ) . '\');">' . esc_html__( 'Send', 'hge-klaviyo-newsletter' ) . '</a> ';
+                echo '<a href="' . esc_url( $send_url ) . '" class="button button-small button-primary" onclick="return confirm(\'' . esc_js( __( 'Send newsletter to the Klaviyo list?', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '\');">' . esc_html__( 'Send', 'hge-automated-post-campaigns-for-klaviyo' ) . '</a> ';
             }
             if ( 'yes' === $sent || $error ) {
-                echo '<a href="' . esc_url( $reset_url ) . '" class="button button-small" onclick="return confirm(\'' . esc_js( __( 'Reset Klaviyo status?', 'hge-klaviyo-newsletter' ) ) . '\');">' . esc_html__( 'Reset', 'hge-klaviyo-newsletter' ) . '</a>';
+                echo '<a href="' . esc_url( $reset_url ) . '" class="button button-small" onclick="return confirm(\'' . esc_js( __( 'Reset Klaviyo status?', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '\');">' . esc_html__( 'Reset', 'hge-automated-post-campaigns-for-klaviyo' ) . '</a>';
             }
             echo '</td></tr>';
         }
@@ -625,7 +633,7 @@ if ( ! function_exists( 'hge_klaviyo_format_list_count' ) ) {
             return '';
         }
         $count = (int) $count;
-        $word  = _n( 'subscriber', 'subscribers', $count, 'hge-klaviyo-newsletter' );
+        $word  = _n( 'subscriber', 'subscribers', $count, 'hge-automated-post-campaigns-for-klaviyo' );
         return ' — ' . number_format_i18n( $count ) . ' ' . $word;
     }
 }
@@ -648,36 +656,36 @@ if ( ! function_exists( 'hge_klaviyo_friendly_api_error' ) ) {
         // No API key configured locally
         if ( false !== strpos( $raw, 'API key not configured' )
              || false !== stripos( $raw, 'klaviyo_api_no_key' ) ) {
-            return __( 'No Klaviyo API key configured. Fill in the <strong>Klaviyo API Key</strong> field above and click <strong>Save settings</strong>.', 'hge-klaviyo-newsletter' );
+            return __( 'No Klaviyo API key configured. Fill in the <strong>Klaviyo API Key</strong> field above and click <strong>Save settings</strong>.', 'hge-automated-post-campaigns-for-klaviyo' );
         }
 
         // 401 — invalid / revoked / wrong key
         if ( false !== strpos( $raw, 'HTTP 401' )
              || false !== stripos( $raw, 'authentication_failed' )
              || false !== stripos( $raw, 'Incorrect authentication credentials' ) ) {
-            return __( 'The Klaviyo API key is invalid or has been revoked. Generate a new key in Klaviyo &rarr; Settings &rarr; API Keys, replace it in the <strong>Klaviyo API Key</strong> field above and click <strong>Save settings</strong>.', 'hge-klaviyo-newsletter' );
+            return __( 'The Klaviyo API key is invalid or has been revoked. Generate a new key in Klaviyo &rarr; Settings &rarr; API Keys, replace it in the <strong>Klaviyo API Key</strong> field above and click <strong>Save settings</strong>.', 'hge-automated-post-campaigns-for-klaviyo' );
         }
 
         // 403 — insufficient scopes
         if ( false !== strpos( $raw, 'HTTP 403' ) ) {
-            return __( 'The Klaviyo API key lacks the required scopes. Required: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>, <code>segments:read</code>. Generate a new key with all scopes checked and save.', 'hge-klaviyo-newsletter' );
+            return __( 'The Klaviyo API key lacks the required scopes. Required: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>, <code>segments:read</code>. Generate a new key with all scopes checked and save.', 'hge-automated-post-campaigns-for-klaviyo' );
         }
 
         // 429 — rate limited
         if ( false !== strpos( $raw, 'HTTP 429' ) ) {
-            return __( 'Klaviyo applied rate-limiting (too many requests in a short window). Wait a few minutes and try again.', 'hge-klaviyo-newsletter' );
+            return __( 'Klaviyo applied rate-limiting (too many requests in a short window). Wait a few minutes and try again.', 'hge-automated-post-campaigns-for-klaviyo' );
         }
 
         // 5xx — Klaviyo down
         if ( preg_match( '/HTTP 5\d\d/', $raw ) ) {
-            return __( 'The Klaviyo server is not responding correctly (5xx). Try again in a few minutes. If the issue persists, check <a href="https://status.klaviyo.com/" target="_blank" rel="noopener">status.klaviyo.com</a>.', 'hge-klaviyo-newsletter' );
+            return __( 'The Klaviyo server is not responding correctly (5xx). Try again in a few minutes. If the issue persists, check <a href="https://status.klaviyo.com/" target="_blank" rel="noopener">status.klaviyo.com</a>.', 'hge-automated-post-campaigns-for-klaviyo' );
         }
 
         // Network / timeout
         if ( false !== stripos( $raw, 'cURL error' )
              || false !== stripos( $raw, 'timed out' )
              || false !== stripos( $raw, 'could not resolve host' ) ) {
-            return __( 'Network error. The WordPress server cannot reach <code>a.klaviyo.com</code>. Check DNS, the firewall, or whether an outbound proxy is in place on this install.', 'hge-klaviyo-newsletter' );
+            return __( 'Network error. The WordPress server cannot reach <code>a.klaviyo.com</code>. Check DNS, the firewall, or whether an outbound proxy is in place on this install.', 'hge-automated-post-campaigns-for-klaviyo' );
         }
 
         // Default — strip JSON-API noise but keep something readable
@@ -701,7 +709,14 @@ add_action( 'admin_post_hge_klaviyo_refresh_api',    'hge_klaviyo_handle_refresh
  */
 if ( ! function_exists( 'hge_klaviyo_handle_save_settings' ) ) {
     function hge_klaviyo_handle_save_settings() {
+        // Capability + nonce checks first — Plugin Check expects ANY $_POST
+        // read (even for diagnostic logging) to happen AFTER the referer
+        // verification. Logging the audit entry moves below the
+        // unslash+sanitize step.
         if ( ! current_user_can( 'manage_options' ) ) {
+            if ( class_exists( 'HgE_Klaviyo_Logger' ) ) {
+                HgE_Klaviyo_Logger::error( 'Settings save denied — user lacks manage_options' );
+            }
             wp_die( 'Forbidden', 403 );
         }
         check_admin_referer( 'hge_klaviyo_save_settings' );
@@ -710,6 +725,19 @@ if ( ! function_exists( 'hge_klaviyo_handle_save_settings' ) ) {
             // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- nested array, each leaf is sanitized later in $partial + hge_klaviyo_nl_sanitize_settings filter chain.
             ? wp_unslash( $_POST['hge_klaviyo'] )
             : array();
+
+        // Always-on audit log — settings save is a critical operation; admins
+        // need a record of WHO saved, WHEN, and WHAT keys came through.
+        // Reads the already-unslashed + nonce-verified $input, not $_POST
+        // directly. Sensitive values are length-only, never logged in
+        // cleartext.
+        if ( class_exists( 'HgE_Klaviyo_Logger' ) ) {
+            HgE_Klaviyo_Logger::warning( 'Settings save handler invoked', array(
+                'user_id'     => get_current_user_id(),
+                'has_payload' => ! empty( $input ),
+                'post_keys'   => array_keys( $input ),
+            ) );
+        }
 
         $partial = array(
             'api_key'            => isset( $input['api_key'] )            ? (string) $input['api_key']            : '',
@@ -725,6 +753,20 @@ if ( ! function_exists( 'hge_klaviyo_handle_save_settings' ) ) {
                 : array(),
         );
 
+        // Diagnostic: log lengths (not values) of incoming sensitive fields so
+        // we can tell whether the input arrived intact, was stripped by a
+        // sanitiser, or never reached the handler. Keys map 1:1 to the form.
+        if ( class_exists( 'HgE_Klaviyo_Logger' ) ) {
+            HgE_Klaviyo_Logger::warning( 'Settings save — partial built', array(
+                'api_key_len'       => strlen( $partial['api_key'] ),
+                'feed_token_len'    => strlen( $partial['feed_token'] ),
+                'reply_to_email'    => $partial['reply_to_email'],
+                'min_interval_hours'=> $partial['min_interval_hours'],
+                'debug_mode'        => $partial['debug_mode'],
+                'tag_rules_count'   => count( $partial['tag_rules'] ),
+            ) );
+        }
+
         /**
          * Filter — let Pro feature modules pull their own POST keys into the partial
          * before update_settings sanitises and persists.
@@ -735,7 +777,17 @@ if ( ! function_exists( 'hge_klaviyo_handle_save_settings' ) ) {
          */
         $partial = apply_filters( 'hge_klaviyo_settings_save_partial', $partial, $input );
 
-        hge_klaviyo_nl_update_settings( $partial );
+        $clean = hge_klaviyo_nl_update_settings( $partial );
+
+        // Diagnostic: verify what actually landed in the DB after sanitise +
+        // update_option. Length-only — never log the cleartext key.
+        if ( class_exists( 'HgE_Klaviyo_Logger' ) ) {
+            HgE_Klaviyo_Logger::warning( 'Settings save — persisted', array(
+                'api_key_len_db'    => strlen( $clean['api_key'] ?? '' ),
+                'feed_token_len_db' => strlen( $clean['feed_token'] ?? '' ),
+                'rules_count_db'    => count( $clean['tag_rules'] ?? array() ),
+            ) );
+        }
 
         wp_safe_redirect( add_query_arg( 'klaviyo_msg', 'klaviyo_settings_saved', admin_url( 'tools.php?page=hge-klaviyo-newsletter&tab=settings' ) ) );
         exit;
@@ -827,13 +879,13 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
 
         // ====== Section 1 — global settings (API key, feed token, etc.) ======
 
-        echo '<h2>' . esc_html__( 'General settings', 'hge-klaviyo-newsletter' ) . '</h2>';
+        echo '<h2>' . esc_html__( 'General settings', 'hge-automated-post-campaigns-for-klaviyo' ) . '</h2>';
         echo '<table class="form-table" role="presentation">';
 
         // API Key
-        echo '<tr><th scope="row"><label for="hge_klaviyo_api_key">' . esc_html__( 'Klaviyo API Key', 'hge-klaviyo-newsletter' ) . '</label></th><td>';
+        echo '<tr><th scope="row"><label for="hge_klaviyo_api_key">' . esc_html__( 'Klaviyo API Key', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label></th><td>';
         echo '<input type="password" id="hge_klaviyo_api_key" name="hge_klaviyo[api_key]" value="' . esc_attr( $s['api_key'] ) . '" class="regular-text" autocomplete="new-password" />';
-        echo '<p class="description">' . wp_kses_post( __( 'Private API key (Klaviyo → Settings → API Keys). Required scopes: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>, <code>segments:read</code>.', 'hge-klaviyo-newsletter' ) ) . '</p>';
+        echo '<p class="description">' . wp_kses_post( __( 'Private API key (Klaviyo → Settings → API Keys). Required scopes: <code>campaigns:write</code>, <code>templates:write</code>, <code>lists:read</code>, <code>segments:read</code>.', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '</p>';
         echo '</td></tr>';
 
         // Feed Token — visible only in debug mode (since 3.0.8).
@@ -845,9 +897,9 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
         // reduce clutter; show it only when debug_mode is on (same toggle
         // that gates the Status tab).
         if ( ! empty( $s['debug_mode'] ) ) {
-            echo '<tr><th scope="row"><label for="hge_klaviyo_feed_token">' . esc_html__( 'Feed token', 'hge-klaviyo-newsletter' ) . '</label></th><td>';
+            echo '<tr><th scope="row"><label for="hge_klaviyo_feed_token">' . esc_html__( 'Feed token', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label></th><td>';
             echo '<input type="text" id="hge_klaviyo_feed_token" name="hge_klaviyo[feed_token]" value="' . esc_attr( $s['feed_token'] ) . '" class="regular-text" />';
-            echo '<p class="description">' . wp_kses_post( __( 'Random string (32+ chars) used to authenticate requests to <code>/feed/klaviyo*.json</code>. Auto-generated on first save when empty; rotate manually with <code>openssl rand -hex 32</code>.', 'hge-klaviyo-newsletter' ) ) . '</p>';
+            echo '<p class="description">' . wp_kses_post( __( 'Random string (32+ chars) used to authenticate requests to <code>/feed/klaviyo*.json</code>. Auto-generated on first save when empty; rotate manually with <code>openssl rand -hex 32</code>.', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '</p>';
             echo '</td></tr>';
         } else {
             // Hidden field preserves the saved value through the form post
@@ -857,8 +909,8 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
 
         // Refresh API cache
         if ( $can_query_api ) {
-            echo '<tr><th scope="row">' . esc_html__( 'Klaviyo data', 'hge-klaviyo-newsletter' ) . '</th><td>';
-            echo '<a href="' . esc_url( $refresh_url ) . '" class="button">' . esc_html__( 'Reload from Klaviyo', 'hge-klaviyo-newsletter' ) . '</a>';
+            echo '<tr><th scope="row">' . esc_html__( 'Klaviyo data', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th><td>';
+            echo '<a href="' . esc_url( $refresh_url ) . '" class="button">' . esc_html__( 'Reload from Klaviyo', 'hge-automated-post-campaigns-for-klaviyo' ) . '</a>';
             if ( $api_error ) {
                 $friendly = hge_klaviyo_friendly_api_error( $api_error );
                 echo ' <span style="color:#c00;">⚠ ' . wp_kses_post( $friendly ) . '</span>';
@@ -869,7 +921,7 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
                 echo ' <span style="color:#666;">' . esc_html(
                     sprintf(
                         /* translators: 1: number of lists, 2: number of segments, 3: number of templates */
-                        __( '%1$d lists, %2$d segments, %3$d templates (5 min cache)', 'hge-klaviyo-newsletter' ),
+                        __( '%1$d lists, %2$d segments, %3$d templates (5 min cache)', 'hge-automated-post-campaigns-for-klaviyo' ),
                         $list_count,
                         $segment_count,
                         $tpl_count
@@ -878,37 +930,37 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
 
                 if ( $segments_error && 0 === $segment_count ) {
                     $seg_friendly = hge_klaviyo_friendly_api_error( $segments_error );
-                    echo '<br><span style="color:#c00;font-size:12px;">⚠ ' . esc_html__( 'Segments:', 'hge-klaviyo-newsletter' ) . ' ' . wp_kses_post( $seg_friendly ) . '</span>';
+                    echo '<br><span style="color:#c00;font-size:12px;">⚠ ' . esc_html__( 'Segments:', 'hge-automated-post-campaigns-for-klaviyo' ) . ' ' . wp_kses_post( $seg_friendly ) . '</span>';
                 }
 
                 if ( $templates_error && 0 === $tpl_count ) {
                     $tpl_friendly = hge_klaviyo_friendly_api_error( $templates_error );
-                    echo '<br><span style="color:#c00;font-size:12px;">⚠ ' . esc_html__( 'Templates:', 'hge-klaviyo-newsletter' ) . ' ' . wp_kses_post( $tpl_friendly ) . '</span>';
+                    echo '<br><span style="color:#c00;font-size:12px;">⚠ ' . esc_html__( 'Templates:', 'hge-automated-post-campaigns-for-klaviyo' ) . ' ' . wp_kses_post( $tpl_friendly ) . '</span>';
                 }
 
                 if ( ! $templates_error && 0 === $tpl_count && $list_count > 0 ) {
-                    echo '<p class="description" style="margin-top:6px;">' . wp_kses_post( __( 'No template saved in your Klaviyo account. Create one in <a href="https://www.klaviyo.com/email-templates" target="_blank" rel="noopener">Klaviyo &rarr; Email Templates</a> (any name + Code/HTML or Drag & Drop editor), then click <strong>Reload from Klaviyo</strong>.', 'hge-klaviyo-newsletter' ) ) . '</p>';
+                    echo '<p class="description" style="margin-top:6px;">' . wp_kses_post( __( 'No template saved in your Klaviyo account. Create one in <a href="https://www.klaviyo.com/email-templates" target="_blank" rel="noopener">Klaviyo &rarr; Email Templates</a> (any name + Code/HTML or Drag & Drop editor), then click <strong>Reload from Klaviyo</strong>.', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '</p>';
                 }
             }
             echo '</td></tr>';
         }
 
         // Reply-to
-        echo '<tr><th scope="row"><label for="hge_klaviyo_reply_to">' . esc_html__( 'Reply-to address (optional)', 'hge-klaviyo-newsletter' ) . '</label></th><td>';
+        echo '<tr><th scope="row"><label for="hge_klaviyo_reply_to">' . esc_html__( 'Reply-to address (optional)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label></th><td>';
         echo '<input type="email" id="hge_klaviyo_reply_to" name="hge_klaviyo[reply_to_email]" value="' . esc_attr( $s['reply_to_email'] ) . '" class="regular-text" placeholder="contact@example.com" />';
-        echo '<p class="description">' . esc_html__( 'When set, overrides the reply-to configured in Klaviyo. Leave empty to use the Klaviyo account default.', 'hge-klaviyo-newsletter' ) . '</p>';
+        echo '<p class="description">' . esc_html__( 'When set, overrides the reply-to configured in Klaviyo. Leave empty to use the Klaviyo account default.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
         echo '</td></tr>';
 
         // Min interval
-        echo '<tr><th scope="row"><label for="hge_klaviyo_interval">' . esc_html__( 'Minimum interval between sends (hours)', 'hge-klaviyo-newsletter' ) . '</label></th><td>';
+        echo '<tr><th scope="row"><label for="hge_klaviyo_interval">' . esc_html__( 'Minimum interval between sends (hours)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label></th><td>';
         echo '<input type="number" id="hge_klaviyo_interval" name="hge_klaviyo[min_interval_hours]" value="' . esc_attr( (int) $s['min_interval_hours'] ) . '" min="0" max="168" step="1" class="small-text" />';
-        echo '<p class="description">' . wp_kses_post( __( 'Default 12. Cooldown is applied <strong>per rule</strong> (per tag). Set 0 to disable.', 'hge-klaviyo-newsletter' ) ) . '</p>';
+        echo '<p class="description">' . wp_kses_post( __( 'Default 12. Cooldown is applied <strong>per rule</strong> (per tag). Set 0 to disable.', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '</p>';
         echo '</td></tr>';
 
         // Debug mode
-        echo '<tr><th scope="row">' . esc_html__( 'Debug mode', 'hge-klaviyo-newsletter' ) . '</th><td>';
-        echo '<label><input type="checkbox" name="hge_klaviyo[debug_mode]" value="1" ' . checked( ! empty( $s['debug_mode'] ), true, false ) . '> ' . wp_kses_post( __( 'Enable the <strong>Status</strong> tab + show internal credentials (Feed token, Pro webhook secret) in the admin UI', 'hge-klaviyo-newsletter' ) ) . '</label>';
-        echo '<p class="description">' . esc_html__( 'Leave off in production. Turn on when you need to inspect the webhook / dispatch / API response flow, or to copy the auto-generated Feed token / webhook secret into an external system.', 'hge-klaviyo-newsletter' ) . '</p>';
+        echo '<tr><th scope="row">' . esc_html__( 'Debug mode', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th><td>';
+        echo '<label><input type="checkbox" name="hge_klaviyo[debug_mode]" value="1" ' . checked( ! empty( $s['debug_mode'] ), true, false ) . '> ' . wp_kses_post( __( 'Enable the <strong>Status</strong> tab, show internal credentials (Feed token, Pro webhook secret) in the admin UI, and write detailed entries to <strong>WooCommerce → Status → Logs</strong> (source <code>hge-klaviyo</code>).', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '</label>';
+        echo '<p class="description">' . esc_html__( 'Leave off in production. Turn on when you need to inspect the webhook / dispatch / API response flow, copy the auto-generated Feed token / webhook secret into an external system, or trace a delivery issue end-to-end. ERROR and WARNING entries are always written regardless of this setting.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
         echo '</td></tr>';
 
         echo '</table>';
@@ -919,15 +971,15 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
         $rule_count = count( $rules );
 
         $plan_label = ( 'pro' === $plan )
-            ? __( 'PRO', 'hge-klaviyo-newsletter' )
-            : ( ( 'core' === $plan ) ? __( 'CORE', 'hge-klaviyo-newsletter' ) : __( 'FREE', 'hge-klaviyo-newsletter' ) );
+            ? __( 'PRO', 'hge-automated-post-campaigns-for-klaviyo' )
+            : ( ( 'core' === $plan ) ? __( 'CORE', 'hge-automated-post-campaigns-for-klaviyo' ) : __( 'FREE', 'hge-automated-post-campaigns-for-klaviyo' ) );
 
-        echo '<h2 style="margin-top:24px;">' . esc_html__( 'Newsletter rules', 'hge-klaviyo-newsletter' ) . '</h2>';
-        echo '<p class="description" style="max-width:780px;">' . wp_kses_post( __( 'Each rule maps a post <strong>tag</strong> to a configuration: <em>recipient list(s)</em>, <em>excluded list(s)</em> (Core+), <em>Klaviyo template</em> (Pro) and <em>Web Feed mode</em> (Pro). When a post is published, the plugin matches the first rule whose tag is present on the post (card order = priority) and dispatches using that rule. Cooldown is applied separately per rule (per tag).', 'hge-klaviyo-newsletter' ) ) . '</p>';
-        echo '<p class="description" style="max-width:780px;"><strong>' . esc_html__( 'Current plan:', 'hge-klaviyo-newsletter' ) . '</strong> ' . esc_html( $plan_label ) . ' — ' . esc_html(
+        echo '<h2 style="margin-top:24px;">' . esc_html__( 'Newsletter rules', 'hge-automated-post-campaigns-for-klaviyo' ) . '</h2>';
+        echo '<p class="description" style="max-width:780px;">' . wp_kses_post( __( 'Each rule maps a post <strong>tag</strong> to a configuration: <em>recipient list(s)</em>, <em>excluded list(s)</em> (Core+), <em>Klaviyo template</em> (Pro) and <em>Web Feed mode</em> (Pro). When a post is published, the plugin matches the first rule whose tag is present on the post (card order = priority) and dispatches using that rule. Cooldown is applied separately per rule (per tag).', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '</p>';
+        echo '<p class="description" style="max-width:780px;"><strong>' . esc_html__( 'Current plan:', 'hge-automated-post-campaigns-for-klaviyo' ) . '</strong> ' . esc_html( $plan_label ) . ' — ' . esc_html(
             sprintf(
                 /* translators: %d is the maximum number of rules */
-                _n( 'max %d rule', 'max %d rules', $max_rules, 'hge-klaviyo-newsletter' ),
+                _n( 'max %d rule', 'max %d rules', $max_rules, 'hge-automated-post-campaigns-for-klaviyo' ),
                 $max_rules
             )
         ) . '.';
@@ -937,9 +989,9 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
         echo '</p>';
 
         if ( ! $can_query_api ) {
-            echo '<div class="notice notice-warning inline" style="margin:8px 0;"><p>' . wp_kses_post( __( 'Save the <strong>Klaviyo API Key</strong> above first so that lists and templates can be loaded into the rule cards.', 'hge-klaviyo-newsletter' ) ) . '</p></div>';
+            echo '<div class="notice notice-warning inline" style="margin:8px 0;"><p>' . wp_kses_post( __( 'Save the <strong>Klaviyo API Key</strong> above first so that lists and templates can be loaded into the rule cards.', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '</p></div>';
         } elseif ( $api_error ) {
-            echo '<div class="notice notice-error inline" style="margin:8px 0;"><p>' . esc_html__( 'Could not load lists from Klaviyo:', 'hge-klaviyo-newsletter' ) . ' ' . wp_kses_post( hge_klaviyo_friendly_api_error( $api_error ) ) . '</p></div>';
+            echo '<div class="notice notice-error inline" style="margin:8px 0;"><p>' . esc_html__( 'Could not load lists from Klaviyo:', 'hge-automated-post-campaigns-for-klaviyo' ) . ' ' . wp_kses_post( hge_klaviyo_friendly_api_error( $api_error ) ) . '</p></div>';
         }
 
         echo '<div id="hge-klaviyo-rules" data-max="' . esc_attr( $max_rules ) . '">';
@@ -954,7 +1006,7 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
 
         $can_add = $rule_count < $max_rules;
         echo '<p style="margin:8px 0 0 0;">';
-        echo '<button type="button" id="hge-klaviyo-add-rule" class="button"' . ( $can_add ? '' : ' disabled' ) . '>' . esc_html__( 'Add rule', 'hge-klaviyo-newsletter' ) . '</button>';
+        echo '<button type="button" id="hge-klaviyo-add-rule" class="button"' . ( $can_add ? '' : ' disabled' ) . '>' . esc_html__( 'Add rule', 'hge-automated-post-campaigns-for-klaviyo' ) . '</button>';
         if ( ! $can_add ) {
             echo ' <span class="description">' . wp_kses_post(
                 sprintf(
@@ -963,7 +1015,7 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
                         'You have reached the plan limit for <strong>%1$s</strong> (%2$d rule).',
                         'You have reached the plan limit for <strong>%1$s</strong> (%2$d rules).',
                         $max_rules,
-                        'hge-klaviyo-newsletter'
+                        'hge-automated-post-campaigns-for-klaviyo'
                     ),
                     esc_html( $plan_label ),
                     (int) $max_rules
@@ -1060,10 +1112,10 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
                     ev.preventDefault();
                     var cards = container.querySelectorAll('.hge-klaviyo-rule-card');
                     if ( cards.length <= 1 ) {
-                        if ( ! confirm('<?php echo esc_js( __( 'This is the only rule. Deleting it stops all automatic sends. Continue?', 'hge-klaviyo-newsletter' ) ); ?>') ) {
+                        if ( ! confirm('<?php echo esc_js( __( 'This is the only rule. Deleting it stops all automatic sends. Continue?', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?>') ) {
                             return;
                         }
-                    } else if ( ! confirm('<?php echo esc_js( __( 'Delete this rule? The change takes effect after Save.', 'hge-klaviyo-newsletter' ) ); ?>') ) {
+                    } else if ( ! confirm('<?php echo esc_js( __( 'Delete this rule? The change takes effect after Save.', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?>') ) {
                         return;
                     }
                     var card = t.closest('.hge-klaviyo-rule-card');
@@ -1162,10 +1214,10 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
             // click-outside / Esc / Tab closes; × clears selection.
             // -------------------------------------------------------------
             var I18N = {
-                tpl_one:        <?php echo wp_json_encode( __( 'template', 'hge-klaviyo-newsletter' ) ); ?>,
-                tpl_many:       <?php echo wp_json_encode( __( 'templates', 'hge-klaviyo-newsletter' ) ); ?>,
-                showing:        <?php echo wp_json_encode( __( 'Showing', 'hge-klaviyo-newsletter' ) ); ?>,
-                none_match:     <?php echo wp_json_encode( __( 'No template matches that search.', 'hge-klaviyo-newsletter' ) ); ?>
+                tpl_one:        <?php echo wp_json_encode( __( 'template', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?>,
+                tpl_many:       <?php echo wp_json_encode( __( 'templates', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?>,
+                showing:        <?php echo wp_json_encode( __( 'Showing', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?>,
+                none_match:     <?php echo wp_json_encode( __( 'No template matches that search.', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?>
             };
 
             function tplComboParts( anchorEl ) {
@@ -1397,7 +1449,7 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
          */
         do_action( 'hge_klaviyo_render_settings_extra', $s );
 
-        submit_button( __( 'Save settings', 'hge-klaviyo-newsletter' ) );
+        submit_button( __( 'Save settings', 'hge-automated-post-campaigns-for-klaviyo' ) );
         echo '</form>';
     }
 }
@@ -1457,22 +1509,22 @@ HTML;
             <div class="hge-wf-modal-dialog" role="document">
                 <div class="hge-wf-modal-header">
                     <h2 id="hge-wf-modal-title" style="margin:0;font-size:18px;">
-                        <?php esc_html_e( 'Quick start: Klaviyo digest template', 'hge-klaviyo-newsletter' ); ?>
+                        <?php esc_html_e( 'Quick start: Klaviyo digest template', 'hge-automated-post-campaigns-for-klaviyo' ); ?>
                     </h2>
-                    <button type="button" class="hge-wf-modal-close button-link" aria-label="<?php echo esc_attr__( 'Close', 'hge-klaviyo-newsletter' ); ?>" style="font-size:24px;line-height:1;background:none;border:0;cursor:pointer;color:#666;">✕</button>
+                    <button type="button" class="hge-wf-modal-close button-link" aria-label="<?php echo esc_attr__( 'Close', 'hge-automated-post-campaigns-for-klaviyo' ); ?>" style="font-size:24px;line-height:1;background:none;border:0;cursor:pointer;color:#666;">✕</button>
                 </div>
 
                 <div class="hge-wf-modal-body">
 
                     <p class="description" style="background:#f0f6fc;border-left:4px solid #2271b1;padding:10px 12px;margin:0 0 16px;font-size:13px;">
-                        <strong><?php esc_html_e( 'Alternative path:', 'hge-klaviyo-newsletter' ); ?></strong>
+                        <strong><?php esc_html_e( 'Alternative path:', 'hge-automated-post-campaigns-for-klaviyo' ); ?></strong>
                         <?php
                         echo wp_kses_post(
-                            __( 'if you already have a Klaviyo template built with <strong>Global Blocks</strong> (drag-and-drop), you can use it directly — just pick it from the <em>Klaviyo template</em> dropdown in step 4 and skip the manual HTML in steps 2 and 3. See Klaviyo\'s reference:', 'hge-klaviyo-newsletter' )
+                            __( 'if you already have a Klaviyo template built with <strong>Global Blocks</strong> (drag-and-drop), you can use it directly — just pick it from the <em>Klaviyo template</em> dropdown in step 4 and skip the manual HTML in steps 2 and 3. See Klaviyo\'s reference:', 'hge-automated-post-campaigns-for-klaviyo' )
                         );
                         ?>
                         <a href="https://help.klaviyo.com/hc/en-us/articles/115005258768" target="_blank" rel="noopener noreferrer">
-                            <?php esc_html_e( 'Template editor options', 'hge-klaviyo-newsletter' ); ?>
+                            <?php esc_html_e( 'Template editor options', 'hge-automated-post-campaigns-for-klaviyo' ); ?>
                             <span aria-hidden="true">↗</span>
                         </a>.
                     </p>
@@ -1480,62 +1532,62 @@ HTML;
                     <ol style="padding-left:1.4em;">
 
                         <li style="margin-bottom:18px;">
-                            <strong><?php esc_html_e( 'Create the Web Feed in Klaviyo', 'hge-klaviyo-newsletter' ); ?></strong>
+                            <strong><?php esc_html_e( 'Create the Web Feed in Klaviyo', 'hge-automated-post-campaigns-for-klaviyo' ); ?></strong>
                             <p>
-                                <?php echo wp_kses_post( __( 'Klaviyo → <strong>Settings → Web Feeds → Add web feed</strong>. Fill in:', 'hge-klaviyo-newsletter' ) ); ?>
+                                <?php echo wp_kses_post( __( 'Klaviyo → <strong>Settings → Web Feeds → Add web feed</strong>. Fill in:', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?>
                             </p>
                             <ul style="list-style:disc;padding-left:1.4em;">
-                                <li><strong><?php esc_html_e( 'Name:', 'hge-klaviyo-newsletter' ); ?></strong> <code class="hge-wf-name">newsletter_feed</code></li>
-                                <li><strong><?php esc_html_e( 'URL:', 'hge-klaviyo-newsletter' ); ?></strong>
+                                <li><strong><?php esc_html_e( 'Name:', 'hge-automated-post-campaigns-for-klaviyo' ); ?></strong> <code class="hge-wf-name">newsletter_feed</code></li>
+                                <li><strong><?php esc_html_e( 'URL:', 'hge-automated-post-campaigns-for-klaviyo' ); ?></strong>
                                     <code class="hge-wf-url" style="word-break:break-all;font-size:11px;">—</code>
-                                    <button type="button" class="button button-small hge-wf-copy" data-target=".hge-wf-url" style="margin-left:6px;"><?php esc_html_e( 'Copy URL', 'hge-klaviyo-newsletter' ); ?></button>
+                                    <button type="button" class="button button-small hge-wf-copy" data-target=".hge-wf-url" style="margin-left:6px;"><?php esc_html_e( 'Copy URL', 'hge-automated-post-campaigns-for-klaviyo' ); ?></button>
                                 </li>
-                                <li><strong><?php esc_html_e( 'Refresh interval:', 'hge-klaviyo-newsletter' ); ?></strong> 5 <?php esc_html_e( 'minutes (Klaviyo default)', 'hge-klaviyo-newsletter' ); ?></li>
-                                <li><strong><?php esc_html_e( 'Content type:', 'hge-klaviyo-newsletter' ); ?></strong> JSON</li>
+                                <li><strong><?php esc_html_e( 'Refresh interval:', 'hge-automated-post-campaigns-for-klaviyo' ); ?></strong> 5 <?php esc_html_e( 'minutes (Klaviyo default)', 'hge-automated-post-campaigns-for-klaviyo' ); ?></li>
+                                <li><strong><?php esc_html_e( 'Content type:', 'hge-automated-post-campaigns-for-klaviyo' ); ?></strong> JSON</li>
                             </ul>
-                            <p class="description"><?php esc_html_e( 'Save it; Klaviyo will fetch the feed and verify access.', 'hge-klaviyo-newsletter' ); ?></p>
+                            <p class="description"><?php esc_html_e( 'Save it; Klaviyo will fetch the feed and verify access.', 'hge-automated-post-campaigns-for-klaviyo' ); ?></p>
                         </li>
 
                         <li style="margin-bottom:18px;">
-                            <strong><?php esc_html_e( 'Create a Code template in Klaviyo', 'hge-klaviyo-newsletter' ); ?></strong>
+                            <strong><?php esc_html_e( 'Create a Code template in Klaviyo', 'hge-automated-post-campaigns-for-klaviyo' ); ?></strong>
                             <p>
-                                <?php echo wp_kses_post( __( 'Klaviyo → <strong>Email Templates → Create template → HTML editor</strong>. Paste this starter, then customise:', 'hge-klaviyo-newsletter' ) ); ?>
+                                <?php echo wp_kses_post( __( 'Klaviyo → <strong>Email Templates → Create template → HTML editor</strong>. Paste this starter, then customise:', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?>
                             </p>
                             <pre class="hge-wf-snippet" id="hge-wf-starter-html" style="background:#f6f7f7;padding:10px;font-size:11px;max-height:240px;overflow:auto;border:1px solid #ddd;border-radius:3px;"><?php echo esc_html( $starter_html ); ?></pre>
                             <p>
-                                <button type="button" class="button hge-wf-copy" data-target="#hge-wf-starter-html"><?php esc_html_e( 'Copy starter HTML', 'hge-klaviyo-newsletter' ); ?></button>
-                                <span class="description" style="margin-left:8px;"><?php echo wp_kses_post( __( 'Save the template with a memorable name — it appears in the plugin\'s <em>Klaviyo template</em> dropdown.', 'hge-klaviyo-newsletter' ) ); ?></span>
+                                <button type="button" class="button hge-wf-copy" data-target="#hge-wf-starter-html"><?php esc_html_e( 'Copy starter HTML', 'hge-automated-post-campaigns-for-klaviyo' ); ?></button>
+                                <span class="description" style="margin-left:8px;"><?php echo wp_kses_post( __( 'Save the template with a memorable name — it appears in the plugin\'s <em>Klaviyo template</em> dropdown.', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?></span>
                             </p>
-                            <p class="description"><strong><?php esc_html_e( 'Note:', 'hge-klaviyo-newsletter' ); ?></strong> <?php echo wp_kses_post( __( 'every <code>NAME</code> placeholder in the snippet is the Web Feed name from step 1. The Copy button substitutes it automatically.', 'hge-klaviyo-newsletter' ) ); ?></p>
+                            <p class="description"><strong><?php esc_html_e( 'Note:', 'hge-automated-post-campaigns-for-klaviyo' ); ?></strong> <?php echo wp_kses_post( __( 'every <code>NAME</code> placeholder in the snippet is the Web Feed name from step 1. The Copy button substitutes it automatically.', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?></p>
                         </li>
 
                         <li style="margin-bottom:18px;">
-                            <strong><?php esc_html_e( 'Render multiple articles (digest layout)', 'hge-klaviyo-newsletter' ); ?></strong>
-                            <p><?php esc_html_e( 'Replace the single-article block in the starter with a Jinja for-loop to render N articles:', 'hge-klaviyo-newsletter' ); ?></p>
+                            <strong><?php esc_html_e( 'Render multiple articles (digest layout)', 'hge-automated-post-campaigns-for-klaviyo' ); ?></strong>
+                            <p><?php esc_html_e( 'Replace the single-article block in the starter with a Jinja for-loop to render N articles:', 'hge-automated-post-campaigns-for-klaviyo' ); ?></p>
                             <pre class="hge-wf-snippet" id="hge-wf-digest-html" style="background:#f6f7f7;padding:10px;font-size:11px;max-height:200px;overflow:auto;border:1px solid #ddd;border-radius:3px;"><?php echo esc_html( $digest_html ); ?></pre>
                             <p>
-                                <button type="button" class="button hge-wf-copy" data-target="#hge-wf-digest-html"><?php esc_html_e( 'Copy digest loop', 'hge-klaviyo-newsletter' ); ?></button>
+                                <button type="button" class="button hge-wf-copy" data-target="#hge-wf-digest-html"><?php esc_html_e( 'Copy digest loop', 'hge-automated-post-campaigns-for-klaviyo' ); ?></button>
                             </p>
-                            <p class="description"><?php echo wp_kses_post( __( '<code>items[:3]</code> renders the top 3 articles; change the number to taste. Available fields per item: <code>id</code>, <code>title</code>, <code>url</code>, <code>excerpt</code>, <code>image</code>, <code>published_at</code>, <code>updated_at</code>, <code>date</code>, <code>author</code>, <code>categories[]</code>, <code>tags[]</code>.', 'hge-klaviyo-newsletter' ) ); ?></p>
+                            <p class="description"><?php echo wp_kses_post( __( '<code>items[:3]</code> renders the top 3 articles; change the number to taste. Available fields per item: <code>id</code>, <code>title</code>, <code>url</code>, <code>excerpt</code>, <code>image</code>, <code>published_at</code>, <code>updated_at</code>, <code>date</code>, <code>author</code>, <code>categories[]</code>, <code>tags[]</code>.', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?></p>
                         </li>
 
                         <li style="margin-bottom:18px;">
-                            <strong><?php esc_html_e( 'Wire the template to this rule', 'hge-klaviyo-newsletter' ); ?></strong>
+                            <strong><?php esc_html_e( 'Wire the template to this rule', 'hge-automated-post-campaigns-for-klaviyo' ); ?></strong>
                             <p>
-                                <?php echo wp_kses_post( __( 'Back here in WordPress → this rule card:', 'hge-klaviyo-newsletter' ) ); ?>
+                                <?php echo wp_kses_post( __( 'Back here in WordPress → this rule card:', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?>
                             </p>
                             <ol style="list-style:decimal;padding-left:1.4em;">
-                                <li><?php echo wp_kses_post( __( 'Pick the new template from the <em>Klaviyo template</em> dropdown.', 'hge-klaviyo-newsletter' ) ); ?></li>
-                                <li><?php echo wp_kses_post( __( 'Check <em>Use Web Feed</em>.', 'hge-klaviyo-newsletter' ) ); ?></li>
-                                <li><?php echo wp_kses_post( __( 'Confirm the <em>Web Feed name in Klaviyo</em> matches step 1 (<code class="hge-wf-name">newsletter_feed</code>).', 'hge-klaviyo-newsletter' ) ); ?></li>
-                                <li><?php esc_html_e( 'Save settings.', 'hge-klaviyo-newsletter' ); ?></li>
+                                <li><?php echo wp_kses_post( __( 'Pick the new template from the <em>Klaviyo template</em> dropdown.', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?></li>
+                                <li><?php echo wp_kses_post( __( 'Check <em>Use Web Feed</em>.', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?></li>
+                                <li><?php echo wp_kses_post( __( 'Confirm the <em>Web Feed name in Klaviyo</em> matches step 1 (<code class="hge-wf-name">newsletter_feed</code>).', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?></li>
+                                <li><?php esc_html_e( 'Save settings.', 'hge-automated-post-campaigns-for-klaviyo' ); ?></li>
                             </ol>
                         </li>
 
                         <li>
-                            <strong><?php esc_html_e( 'Test', 'hge-klaviyo-newsletter' ); ?></strong>
+                            <strong><?php esc_html_e( 'Test', 'hge-automated-post-campaigns-for-klaviyo' ); ?></strong>
                             <p>
-                                <?php echo wp_kses_post( __( 'Publish a post with this rule\'s trigger tag. Within ~30 seconds you should see a draft campaign in Klaviyo with the template assigned + a send-job launched. Use <em>Send test</em> from Klaviyo first if you want to preview without dispatching to the audience.', 'hge-klaviyo-newsletter' ) ); ?>
+                                <?php echo wp_kses_post( __( 'Publish a post with this rule\'s trigger tag. Within ~30 seconds you should see a draft campaign in Klaviyo with the template assigned + a send-job launched. Use <em>Send test</em> from Klaviyo first if you want to preview without dispatching to the audience.', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?>
                             </p>
                         </li>
 
@@ -1544,7 +1596,7 @@ HTML;
                 </div>
 
                 <div class="hge-wf-modal-footer" style="text-align:right;padding:10px 16px;border-top:1px solid #ddd;">
-                    <button type="button" class="button button-primary hge-wf-modal-close"><?php esc_html_e( 'Got it', 'hge-klaviyo-newsletter' ); ?></button>
+                    <button type="button" class="button button-primary hge-wf-modal-close"><?php esc_html_e( 'Got it', 'hge-automated-post-campaigns-for-klaviyo' ); ?></button>
                 </div>
             </div>
         </div>
@@ -1608,7 +1660,7 @@ HTML;
                     if ( navigator.clipboard && navigator.clipboard.writeText ) {
                         navigator.clipboard.writeText(text).then(function(){
                             var prev = t.textContent;
-                            t.textContent = '<?php echo esc_js( __( '✓ Copied', 'hge-klaviyo-newsletter' ) ); ?>';
+                            t.textContent = '<?php echo esc_js( __( '✓ Copied', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?>';
                             setTimeout(function(){ t.textContent = prev; }, 1500);
                         });
                     } else {
@@ -1620,7 +1672,7 @@ HTML;
                         try { document.execCommand('copy'); } catch (e) {}
                         document.body.removeChild(ta);
                         var prev2 = t.textContent;
-                        t.textContent = '<?php echo esc_js( __( '✓ Copied', 'hge-klaviyo-newsletter' ) ); ?>';
+                        t.textContent = '<?php echo esc_js( __( '✓ Copied', 'hge-automated-post-campaigns-for-klaviyo' ) ); ?>';
                         setTimeout(function(){ t.textContent = prev2; }, 1500);
                     }
                 }
@@ -1678,8 +1730,8 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
         echo '<div class="hge-klaviyo-rule-card" data-idx="' . esc_attr( $idx ) . '" style="border:1px solid #c3c4c7;border-left:4px solid #2271b1;background:#fff;padding:14px 18px;margin:10px 0;border-radius:3px;">';
 
         echo '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
-        echo '<h3 style="margin:0;font-size:14px;">' . esc_html__( 'Rule', 'hge-klaviyo-newsletter' ) . ' <span class="hge-rule-num">#' . esc_html( $idx + 1 ) . '</span></h3>';
-        echo '<button type="button" class="button-link hge-rule-remove" style="color:#b32d2e;text-decoration:none;">✕ ' . esc_html__( 'Delete rule', 'hge-klaviyo-newsletter' ) . '</button>';
+        echo '<h3 style="margin:0;font-size:14px;">' . esc_html__( 'Rule', 'hge-automated-post-campaigns-for-klaviyo' ) . ' <span class="hge-rule-num">#' . esc_html( $idx + 1 ) . '</span></h3>';
+        echo '<button type="button" class="button-link hge-rule-remove" style="color:#b32d2e;text-decoration:none;">✕ ' . esc_html__( 'Delete rule', 'hge-automated-post-campaigns-for-klaviyo' ) . '</button>';
         echo '</div>';
 
         echo '<table class="form-table" role="presentation" style="margin-top:0;">';
@@ -1687,16 +1739,16 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
         // tag_slug
         $slug_id    = $id_prefix . 'slug';
         $slug_label = $supports_multi
-            ? __( 'Trigger tag(s)', 'hge-klaviyo-newsletter' )
-            : __( 'Trigger tag', 'hge-klaviyo-newsletter' );
+            ? __( 'Trigger tag(s)', 'hge-automated-post-campaigns-for-klaviyo' )
+            : __( 'Trigger tag', 'hge-automated-post-campaigns-for-klaviyo' );
         echo '<tr><th scope="row" style="width:200px;"><label for="' . esc_attr( $slug_id ) . '">' . esc_html( $slug_label ) . '</label></th><td>';
         echo '<input type="text" id="' . esc_attr( $slug_id ) . '" name="' . esc_attr( $name_prefix ) . '[tag_slug]" value="' . esc_attr( $rule['tag_slug'] ) . '" class="regular-text" placeholder="newsletter" />';
         if ( $supports_multi ) {
-            echo '<p class="description">' . wp_kses_post( __( 'WordPress tag slug that triggers this rule. <strong>Pro:</strong> multiple comma-separated tags, e.g. <code>news,promo,events</code> (any present tag fires the rule — OR semantics).', 'hge-klaviyo-newsletter' ) ) . '</p>';
+            echo '<p class="description">' . wp_kses_post( __( 'WordPress tag slug that triggers this rule. <strong>Pro:</strong> multiple comma-separated tags, e.g. <code>news,promo,events</code> (any present tag fires the rule — OR semantics).', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '</p>';
         } else {
-            echo '<p class="description">' . wp_kses_post( __( 'WordPress tag slug that triggers this rule. Ex: <code>newsletter</code>.', 'hge-klaviyo-newsletter' ) );
+            echo '<p class="description">' . wp_kses_post( __( 'WordPress tag slug that triggers this rule. Ex: <code>newsletter</code>.', 'hge-automated-post-campaigns-for-klaviyo' ) );
             if ( 'free' === $plan ) {
-                echo ' ' . wp_kses_post( hge_klaviyo_upgrade_cta_html( 'pro' ) ) . ' ' . esc_html__( 'for multi-tag (comma-separated).', 'hge-klaviyo-newsletter' );
+                echo ' ' . wp_kses_post( hge_klaviyo_upgrade_cta_html( 'pro' ) ) . ' ' . esc_html__( 'for multi-tag (comma-separated).', 'hge-automated-post-campaigns-for-klaviyo' );
             }
             echo '</p>';
         }
@@ -1710,7 +1762,7 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
             $selected_ids = array_map( 'strval', (array) $selected_ids );
             $out          = '';
             if ( ! empty( $lists_data ) ) {
-                $out .= '<optgroup label="' . esc_attr__( 'Lists', 'hge-klaviyo-newsletter' ) . '">';
+                $out .= '<optgroup label="' . esc_attr__( 'Lists', 'hge-automated-post-campaigns-for-klaviyo' ) . '">';
                 foreach ( $lists_data as $list ) {
                     $sel   = in_array( (string) $list['id'], $selected_ids, true ) ? ' selected' : '';
                     $count = isset( $list['profile_count'] ) ? $list['profile_count'] : null;
@@ -1728,7 +1780,7 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
             // IDs from a license-downgrade scenario are surfaced as a warning
             // line elsewhere — they're not silently kept in the dropdown.
             if ( 'pro' === $plan && ! empty( $segments_data ) ) {
-                $out .= '<optgroup label="' . esc_attr__( 'Segments', 'hge-klaviyo-newsletter' ) . '">';
+                $out .= '<optgroup label="' . esc_attr__( 'Segments', 'hge-automated-post-campaigns-for-klaviyo' ) . '">';
                 foreach ( $segments_data as $seg ) {
                     $sel   = in_array( (string) $seg['id'], $selected_ids, true ) ? ' selected' : '';
                     $count = isset( $seg['profile_count'] ) ? $seg['profile_count'] : null;
@@ -1745,16 +1797,16 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
         // included_list_ids
         $inc_id   = $id_prefix . 'included';
         $inc_mult = $caps['max_included'] > 1;
-        echo '<tr><th scope="row"><label for="' . esc_attr( $inc_id ) . '">' . esc_html__( 'Recipient list(s)', 'hge-klaviyo-newsletter' ) . '</label></th><td>';
+        echo '<tr><th scope="row"><label for="' . esc_attr( $inc_id ) . '">' . esc_html__( 'Recipient list(s)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label></th><td>';
         if ( $included_disabled ) {
-            echo '<em>' . esc_html__( 'Save the API Key to load the lists.', 'hge-klaviyo-newsletter' ) . '</em>';
+            echo '<em>' . esc_html__( 'Save the API Key to load the lists.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</em>';
         } else {
             echo '<select id="' . esc_attr( $inc_id ) . '" name="' . esc_attr( $name_prefix ) . '[included_list_ids][]"'
                 . ( $inc_mult ? ' multiple size="5"' : '' )
                 . ' class="hge-audience-select" data-audience-role="included" data-card-idx="' . esc_attr( $idx ) . '"'
                 . ' style="min-width:340px;">';
             if ( ! $inc_mult ) {
-                echo '<option value="">— ' . esc_html__( 'choose a list or segment', 'hge-klaviyo-newsletter' ) . ' —</option>';
+                echo '<option value="">— ' . esc_html__( 'choose a list or segment', 'hge-automated-post-campaigns-for-klaviyo' ) . ' —</option>';
             }
             // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- closure builds pre-escaped <option> markup (esc_attr + esc_html on every dynamic value).
             echo $render_audience_options( $rule['included_list_ids'] );
@@ -1763,26 +1815,26 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
         echo '<p class="description">' . wp_kses_post(
             sprintf(
                 /* translators: %d is the maximum number of lists per rule */
-                _n( 'Max <strong>%d</strong> list per rule.', 'Max <strong>%d</strong> lists or segments per rule.', $caps['max_included'], 'hge-klaviyo-newsletter' ),
+                _n( 'Max <strong>%d</strong> list per rule.', 'Max <strong>%d</strong> lists or segments per rule.', $caps['max_included'], 'hge-automated-post-campaigns-for-klaviyo' ),
                 (int) $caps['max_included']
             )
         );
         if ( $inc_mult && ! $included_disabled ) {
-            echo ' ' . esc_html__( 'Hold Ctrl (Windows) / Cmd (Mac) and click to add or remove items in the multi-select.', 'hge-klaviyo-newsletter' );
+            echo ' ' . esc_html__( 'Hold Ctrl (Windows) / Cmd (Mac) and click to add or remove items in the multi-select.', 'hge-automated-post-campaigns-for-klaviyo' );
         }
         if ( 'pro' !== $plan ) {
-            echo ' ' . wp_kses_post( hge_klaviyo_upgrade_cta_html( 'pro' ) ) . ' ' . esc_html__( 'for up to 15 lists/segments per rule.', 'hge-klaviyo-newsletter' );
+            echo ' ' . wp_kses_post( hge_klaviyo_upgrade_cta_html( 'pro' ) ) . ' ' . esc_html__( 'for up to 15 lists/segments per rule.', 'hge-automated-post-campaigns-for-klaviyo' );
         }
         echo '</p>';
         echo '</td></tr>';
 
         // excluded_list_ids
         $exc_id = $id_prefix . 'excluded';
-        echo '<tr><th scope="row"><label for="' . esc_attr( $exc_id ) . '">' . esc_html__( 'Excluded list(s)', 'hge-klaviyo-newsletter' ) . '</label></th><td>';
+        echo '<tr><th scope="row"><label for="' . esc_attr( $exc_id ) . '">' . esc_html__( 'Excluded list(s)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label></th><td>';
         if ( ! $excluded_allowed ) {
-            echo '<em>—</em> <span class="description">' . wp_kses_post( hge_klaviyo_upgrade_cta_html( 'core' ) ) . ' ' . esc_html__( 'to be able to exclude lists from the audience.', 'hge-klaviyo-newsletter' ) . '</span>';
+            echo '<em>—</em> <span class="description">' . wp_kses_post( hge_klaviyo_upgrade_cta_html( 'core' ) ) . ' ' . esc_html__( 'to be able to exclude lists from the audience.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</span>';
         } elseif ( $included_disabled ) {
-            echo '<em>' . esc_html__( 'Save the API Key to load the lists.', 'hge-klaviyo-newsletter' ) . '</em>';
+            echo '<em>' . esc_html__( 'Save the API Key to load the lists.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</em>';
         } else {
             echo '<select id="' . esc_attr( $exc_id ) . '" name="' . esc_attr( $name_prefix ) . '[excluded_list_ids][]"'
                 . ' multiple size="4"'
@@ -1794,18 +1846,18 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
             echo '<p class="description">' . wp_kses_post(
                 sprintf(
                     /* translators: %d is the maximum number of excluded lists per rule */
-                    _n( 'Max <strong>%d</strong> excluded list.', 'Max <strong>%d</strong> excluded lists or segments.', $caps['max_excluded'], 'hge-klaviyo-newsletter' ),
+                    _n( 'Max <strong>%d</strong> excluded list.', 'Max <strong>%d</strong> excluded lists or segments.', $caps['max_excluded'], 'hge-automated-post-campaigns-for-klaviyo' ),
                     (int) $caps['max_excluded']
                 )
-            ) . ' ' . esc_html__( 'Klaviyo limit: included + excluded ≤ 15.', 'hge-klaviyo-newsletter' ) . '</p>';
+            ) . ' ' . esc_html__( 'Klaviyo limit: included + excluded ≤ 15.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
         }
         echo '</td></tr>';
 
         // template_id (Pro only — Core / Free hidden + locked to '')
         $tpl_id = $id_prefix . 'template';
-        echo '<tr><th scope="row"><label for="' . esc_attr( $tpl_id ) . '">' . esc_html__( 'Klaviyo template', 'hge-klaviyo-newsletter' ) . '</label></th><td>';
+        echo '<tr><th scope="row"><label for="' . esc_attr( $tpl_id ) . '">' . esc_html__( 'Klaviyo template', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label></th><td>';
         if ( ! $template_allowed ) {
-            echo '<em>' . esc_html__( 'Built-in HTML template', 'hge-klaviyo-newsletter' ) . '</em> <span class="description">' . wp_kses_post( hge_klaviyo_upgrade_cta_html( 'pro' ) ) . ' ' . esc_html__( 'to pick a template from your Klaviyo account.', 'hge-klaviyo-newsletter' ) . '</span>';
+            echo '<em>' . esc_html__( 'Built-in HTML template', 'hge-automated-post-campaigns-for-klaviyo' ) . '</em> <span class="description">' . wp_kses_post( hge_klaviyo_upgrade_cta_html( 'pro' ) ) . ' ' . esc_html__( 'to pick a template from your Klaviyo account.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</span>';
             // Keep an existing saved value (backward-compat for tier downgrades)
             if ( ! empty( $rule['template_id'] ) ) {
                 echo '<input type="hidden" name="' . esc_attr( $name_prefix ) . '[template_id]" value="' . esc_attr( $rule['template_id'] ) . '">';
@@ -1835,7 +1887,7 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
             $tpl_count_id  = $id_prefix . 'template-count';
             $tpl_total     = count( $templates_data );
             $selected_id   = (string) $rule['template_id'];
-            $builtin_label = '— ' . __( 'use the built-in HTML template', 'hge-klaviyo-newsletter' ) . ' —';
+            $builtin_label = '— ' . __( 'use the built-in HTML template', 'hge-automated-post-campaigns-for-klaviyo' ) . ' —';
             // The visible input always displays the current selection's label
             // (template name OR the built-in sentinel) so the user sees what
             // they picked. Empty template_id → show the sentinel label.
@@ -1856,13 +1908,13 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
                 . ' aria-controls="' . esc_attr( $tpl_list_id ) . '"'
                 . ' data-list="' . esc_attr( $tpl_list_id ) . '"'
                 . ' data-count="' . esc_attr( $tpl_count_id ) . '"'
-                . ' placeholder="' . esc_attr__( 'Choose or search a Klaviyo template…', 'hge-klaviyo-newsletter' ) . '"'
+                . ' placeholder="' . esc_attr__( 'Choose or search a Klaviyo template…', 'hge-automated-post-campaigns-for-klaviyo' ) . '"'
                 . ' value="' . esc_attr( $selected_name ) . '"'
                 . ' style="min-width:340px;padding-right:28px;" />';
 
             // Clear (×) button — visible only when something is selected; CSS
             // handles the empty-input case via :placeholder-shown / fallback.
-            echo '<button type="button" class="hge-tpl-clear" aria-label="' . esc_attr__( 'Clear template selection', 'hge-klaviyo-newsletter' ) . '"'
+            echo '<button type="button" class="hge-tpl-clear" aria-label="' . esc_attr__( 'Clear template selection', 'hge-automated-post-campaigns-for-klaviyo' ) . '"'
                 . ' style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;font-size:18px;color:#888;cursor:pointer;padding:0 4px;">✕</button>';
 
             // Hidden field — what actually submits. Same name as the v3.0.0 <select>.
@@ -1898,7 +1950,7 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
             echo ' <span id="' . esc_attr( $tpl_count_id ) . '" class="hge-tpl-count description" style="margin-left:8px;color:#666;">' . esc_html(
                 sprintf(
                     /* translators: %d is the number of Klaviyo templates */
-                    _n( '%d template', '%d templates', $tpl_total, 'hge-klaviyo-newsletter' ),
+                    _n( '%d template', '%d templates', $tpl_total, 'hge-automated-post-campaigns-for-klaviyo' ),
                     $tpl_total
                 )
             ) . '</span>';
@@ -1907,68 +1959,95 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
             // reference, starter HTML and step-by-step Web Feed setup all live
             // in the modal opened from the Web Feed row below — much friendlier
             // for first-time digest builders.
-            echo '<p class="description">' . esc_html__( 'For Web Feed mode (digest emails), see the “Quick start” button under Web Feed mode below.', 'hge-klaviyo-newsletter' ) . '</p>';
+            echo '<p class="description">' . esc_html__( 'For Web Feed mode (digest emails), see the “Quick start” button under Web Feed mode below.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
         }
         echo '</td></tr>';
 
-        // Web Feed mode — split gating since 3.0.11:
-        //   - The "Use Web Feed" CHECKBOX (mode toggle) stays Pro-gated; on Free/Core
-        //     we only show the upgrade CTA, no live toggle that can be flipped.
-        //   - The "Web Feed name in Klaviyo" TEXT INPUT is editable on every tier so
-        //     admins can pre-configure the name they intend to use in Klaviyo even
-        //     before they buy Pro. Saving on Free still rejects use_web_feed=1
-        //     server-side via the sanitiser, so the name alone has no effect at
-        //     dispatch time — but the configured value survives the upgrade.
+        // Web Feed mode — re-scoped in 3.0.13:
+        //   - The plugin ALWAYS exposes the `/feed/klaviyo-current.json` endpoint,
+        //     on every tier (Free included). Customers can paste the per-rule
+        //     URL into Klaviyo → Settings → Web Feeds and use it inside any
+        //     Klaviyo template they build, regardless of plan.
+        //   - The "Use Web Feed" CHECKBOX (which makes THIS plugin's auto-dispatch
+        //     send a Klaviyo master-template campaign that pulls from the feed
+        //     instead of the built-in inline HTML template) stays Pro-gated.
+        //     That's the actual Pro value-add: server-side selection of the
+        //     Klaviyo template + dispatch as a feed-driven campaign.
+        //   - The "Web Feed name" text input is editable on every tier so the
+        //     name (which becomes the `?name=` query parameter) can be set to
+        //     match Klaviyo's Web Feed name. The URL preview below uses this
+        //     value verbatim.
         $wn_id = $id_prefix . 'web_feed_name';
-        echo '<tr><th scope="row">' . esc_html__( 'Web Feed mode', 'hge-klaviyo-newsletter' ) . '</th><td>';
+        echo '<tr><th scope="row">' . esc_html__( 'Klaviyo Web Feed (dynamic content for your Klaviyo templates)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th><td>';
+
+        // 1. The auto-dispatch toggle stays Pro-gated on Free/Core.
         if ( ! $web_feed_allowed ) {
-            // Toggle replaced by an inert CTA. The "Use Web Feed" boolean stays
-            // out of the form on this plan, so no hidden input — sanitiser
-            // will treat it as false on save.
-            echo '<em>' . esc_html__( 'Use Web Feed (1 master template + dynamic data) — unavailable on this plan.', 'hge-klaviyo-newsletter' ) . '</em>';
-            echo ' <span class="description">' . wp_kses_post( hge_klaviyo_upgrade_cta_html( 'pro' ) ) . ' ' . esc_html__( 'for Web Feed mode.', 'hge-klaviyo-newsletter' ) . '</span>';
+            echo '<p><em>' . wp_kses_post( __( '<strong>Auto-dispatch via Web Feed mode</strong> (this plugin sends a Klaviyo master-template campaign that pulls dynamic content from your feed instead of the built-in inline HTML template) — <strong>Pro plan</strong>.', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '</em> ';
+            echo wp_kses_post( hge_klaviyo_upgrade_cta_html( 'pro' ) );
+            echo '</p>';
         } else {
             $wf_id = $id_prefix . 'use_web_feed';
-            echo '<label><input type="checkbox" id="' . esc_attr( $wf_id ) . '" name="' . esc_attr( $name_prefix ) . '[use_web_feed]" value="1"' . checked( ! empty( $rule['use_web_feed'] ), true, false ) . ' /> ' . esc_html__( 'Use Web Feed (1 master template + dynamic data)', 'hge-klaviyo-newsletter' ) . '</label>';
+            echo '<p><label><input type="checkbox" id="' . esc_attr( $wf_id ) . '" name="' . esc_attr( $name_prefix ) . '[use_web_feed]" value="1"' . checked( ! empty( $rule['use_web_feed'] ), true, false ) . ' /> ' . esc_html__( 'Use Web Feed mode (1 master template + dynamic data)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label></p>';
         }
-        // Name input — editable on every tier (since 3.0.11) so the value
-        // can be staged ahead of a Pro upgrade.
-        echo '<br><label for="' . esc_attr( $wn_id ) . '" style="display:inline-block;margin-top:8px;">' . esc_html__( 'Web Feed name in Klaviyo:', 'hge-klaviyo-newsletter' ) . '</label> ';
-        echo '<input type="text" id="' . esc_attr( $wn_id ) . '" name="' . esc_attr( $name_prefix ) . '[web_feed_name]" value="' . esc_attr( $rule['web_feed_name'] ) . '" class="regular-text" style="max-width:200px;" placeholder="newsletter_feed" />';
-        echo '<p class="description">' . esc_html__( 'Exact name configured in Klaviyo → Settings → Web Feeds.', 'hge-klaviyo-newsletter' );
-        if ( ! $web_feed_allowed ) {
-            echo ' ' . esc_html__( '(Pre-configurable on this plan — only activates after upgrade.)', 'hge-klaviyo-newsletter' );
-        }
-        echo '</p>';
-        if ( $web_feed_allowed ) {
 
-            // Per-rule feed URL preview (since 3.0.0). Keyed on web_feed_name so
-            // each rule gets a distinct URL that Klaviyo can pull from.
-            $feed_token = function_exists( 'hge_klaviyo_nl_resolve_feed_token' ) ? hge_klaviyo_nl_resolve_feed_token() : '';
-            $feed_name_sanitized = sanitize_key( (string) $rule['web_feed_name'] );
-            $feed_url = '';
-            if ( '' !== $feed_token && '' !== $feed_name_sanitized && ! $is_template ) {
-                $feed_url = add_query_arg(
-                    array( 'key' => $feed_token, 'name' => $feed_name_sanitized ),
-                    home_url( '/feed/klaviyo-current.json' )
-                );
-                echo '<p class="description" style="margin-top:6px;"><strong>' . esc_html__( 'URL for Klaviyo Web Feed (this rule):', 'hge-klaviyo-newsletter' ) . '</strong><br>'
-                    . '<code style="font-size:11px;word-break:break-all;">' . esc_html( $feed_url ) . '</code></p>';
+        // 2. The feed URL itself — shown on every tier (since 3.0.13).
+        //    Customers on Free can paste this into Klaviyo and use it inside
+        //    custom campaigns / templates they build themselves, even without
+        //    upgrading to the auto-dispatch Pro feature.
+        $feed_token = function_exists( 'hge_klaviyo_nl_resolve_feed_token' ) ? hge_klaviyo_nl_resolve_feed_token() : '';
+        $feed_name_sanitized = sanitize_key( (string) ( $rule['web_feed_name'] ?? '' ) );
+        $feed_url = '';
+        if ( '' !== $feed_token && '' !== $feed_name_sanitized && ! $is_template ) {
+            $feed_url = add_query_arg(
+                array( 'key' => $feed_token, 'name' => $feed_name_sanitized ),
+                home_url( '/feed/klaviyo-current.json' )
+            );
+        }
+
+        // 3. The name input — used to scope the feed transient lookup, also
+        //    becomes the `?name=` query parameter in the URL. Editable on
+        //    every tier so customers can match the name they configured in
+        //    Klaviyo → Settings → Web Feeds.
+        echo '<p><label for="' . esc_attr( $wn_id ) . '"><strong>' . esc_html__( 'Web Feed name (used in the URL below and in Klaviyo → Settings → Web Feeds):', 'hge-automated-post-campaigns-for-klaviyo' ) . '</strong></label><br>';
+        echo '<input type="text" id="' . esc_attr( $wn_id ) . '" name="' . esc_attr( $name_prefix ) . '[web_feed_name]" value="' . esc_attr( $rule['web_feed_name'] ) . '" class="regular-text" style="max-width:240px;" placeholder="newsletter_feed" /></p>';
+
+        // 4. Feed URL preview + setup steps — always shown.
+        if ( '' !== $feed_url ) {
+            echo '<div style="background:#f6f7f7;border-left:4px solid #2271b1;padding:10px 12px;margin-top:10px;">';
+            echo '<p style="margin-top:0;"><strong>' . esc_html__( 'Your feed URL — paste this into Klaviyo:', 'hge-automated-post-campaigns-for-klaviyo' ) . '</strong></p>';
+            echo '<p><code style="font-size:11px;word-break:break-all;">' . esc_html( $feed_url ) . '</code></p>';
+            echo '<p style="margin-bottom:0;"><strong>' . esc_html__( 'How to use it (Free works the same as Pro for the feed itself):', 'hge-automated-post-campaigns-for-klaviyo' ) . '</strong></p>';
+            echo '<ol style="margin:6px 0 0 24px;">';
+            echo '<li>' . wp_kses_post( __( 'In Klaviyo, open <em>Settings → Other → Web Feeds</em> and click <em>Add Web Feed</em>.', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '</li>';
+            echo '<li>' . wp_kses_post( sprintf(
+                /* translators: %s is the Web Feed name configured in the field above */
+                __( 'Set <em>Feed name</em> to exactly <code>%s</code> (match the field above).', 'hge-automated-post-campaigns-for-klaviyo' ),
+                $feed_name_sanitized
+            ) ) . '</li>';
+            echo '<li>' . esc_html__( 'Paste the URL above into the Feed URL field. Save.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</li>';
+            echo '<li>' . wp_kses_post( sprintf(
+                /* translators: %s is the Web Feed name (becomes the Klaviyo template variable) */
+                __( 'In any Klaviyo template / email block, reference the feed via the dynamic-data syntax. The published WordPress post that triggered the campaign appears as <code>{{ feeds.%s.items[0] }}</code> (title, url, excerpt, image, published_at, author, categories, tags).', 'hge-automated-post-campaigns-for-klaviyo' ),
+                esc_html( $feed_name_sanitized )
+            ) ) . '</li>';
+            echo '</ol>';
+            if ( ! $web_feed_allowed ) {
+                echo '<p style="margin-bottom:0;color:#1d2327;">' . wp_kses_post( __( '✔ <strong>On the Free plan</strong> the feed is fully functional — build any Klaviyo template or flow against it. The feed content is the latest published post that matched a rule (single article). <br><br><strong>The Pro plan adds:</strong><ul style="margin:6px 0 0 24px;list-style:disc;"><li><em>Auto-dispatch via Web Feed mode</em> — this plugin sends a Klaviyo master-template campaign automatically every time a tagged post is published, instead of the built-in inline HTML template.</li><li><em>Per-feed content filters</em> — checkboxes for which post categories, tags, or other taxonomies should be included in (or excluded from) the feed, so the same site can power multiple Klaviyo Web Feeds for distinct audiences (e.g. one feed for <code>stiri</code>, another for <code>promotii</code>, another for a specific author or custom taxonomy term).</li></ul>', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '</p>';
             }
-
-            // Quick start trigger (since 3.0.9) — opens the shared modal
-            // rendered once at the bottom of render_settings_tab. The button
-            // carries per-rule data via data-* attributes; the JS reads them
-            // and substitutes the placeholders inside the modal template
-            // before opening. Single modal in the DOM instead of N per card.
-            echo '<p style="margin-top:10px;">'
-                . '<button type="button" class="button hge-wf-quickstart"'
-                . ' data-feed-name="' . esc_attr( $feed_name_sanitized ) . '"'
-                . ' data-feed-url="' . esc_attr( $feed_url ) . '">'
-                . esc_html__( '📖 Quick start: build a Klaviyo digest template', 'hge-klaviyo-newsletter' )
-                . '</button>'
-                . '</p>';
+            echo '</div>';
+        } elseif ( '' === $feed_token ) {
+            echo '<p class="description" style="color:#b32d2e;">' . esc_html__( 'Feed token not configured yet. Save the settings once — a 64-character token is auto-generated on first save and the URL will appear here.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
         }
+
+        // 5. Quick start modal — always available.
+        echo '<p style="margin-top:10px;">'
+            . '<button type="button" class="button hge-wf-quickstart"'
+            . ' data-feed-name="' . esc_attr( $feed_name_sanitized ) . '"'
+            . ' data-feed-url="' . esc_attr( $feed_url ) . '">'
+            . esc_html__( '📖 Quick start: build a Klaviyo digest template', 'hge-automated-post-campaigns-for-klaviyo' )
+            . '</button>'
+            . '</p>';
+
         echo '</td></tr>';
 
         echo '</table>';
@@ -1978,8 +2057,8 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
 
 // Add the new admin notice messages for Settings actions
 add_filter( 'hge_klaviyo_admin_notice_messages', static function ( $messages ) {
-    $messages['klaviyo_settings_saved'] = array( 'success', __( 'Settings saved.', 'hge-klaviyo-newsletter' ) );
-    $messages['klaviyo_api_refreshed']  = array( 'success', __( 'Klaviyo API cache cleared. The next render will fetch fresh data.', 'hge-klaviyo-newsletter' ) );
+    $messages['klaviyo_settings_saved'] = array( 'success', __( 'Settings saved.', 'hge-automated-post-campaigns-for-klaviyo' ) );
+    $messages['klaviyo_api_refreshed']  = array( 'success', __( 'Klaviyo API cache cleared. The next render will fetch fresh data.', 'hge-automated-post-campaigns-for-klaviyo' ) );
     return $messages;
 } );
 

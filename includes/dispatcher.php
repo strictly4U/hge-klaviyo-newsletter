@@ -158,8 +158,10 @@ if ( ! function_exists( 'hge_klaviyo_dispatch_newsletter' ) ) {
             $rule = hge_klaviyo_nl_get_matching_rule( $post );
         }
         if ( null === $rule ) {
-            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- intentional admin diagnostic; production dispatch failures must be visible in debug.log.
-            error_log( '[HgE Klaviyo NL] No matching rule for post ' . $post_id . ' (slug arg: ' . $tag_slug . ')' );
+            HgE_Klaviyo_Logger::warning( 'No matching rule for post', array(
+                'post_id'  => $post_id,
+                'tag_slug' => $tag_slug,
+            ) );
             update_post_meta( $post_id, HGE_KLAVIYO_NL_META_ERROR, 'no_matching_rule' );
             return;
         }
@@ -170,8 +172,10 @@ if ( ! function_exists( 'hge_klaviyo_dispatch_newsletter' ) ) {
         if ( '' !== $existing_camp ) {
             update_post_meta( $post_id, HGE_KLAVIYO_NL_META_SENT, 'yes' );
             update_post_meta( $post_id, HGE_KLAVIYO_NL_META_ERROR, 'duplicate_prevented: campaign already created (' . $existing_camp . ')' );
-            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- intentional admin diagnostic; production dispatch failures must be visible in debug.log.
-            error_log( '[HgE Klaviyo NL] Post ' . $post_id . ' already has campaign ' . $existing_camp . ' — duplicate prevented' );
+            HgE_Klaviyo_Logger::warning( 'Duplicate dispatch prevented — post already has a Klaviyo campaign', array(
+                'post_id'     => $post_id,
+                'campaign_id' => $existing_camp,
+            ) );
             return;
         }
 
@@ -181,8 +185,12 @@ if ( ! function_exists( 'hge_klaviyo_dispatch_newsletter' ) ) {
         $excluded = (array) ( $rule['excluded_list_ids'] ?? array() );
 
         if ( '' === $api_key || empty( $included ) ) {
-            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- intentional admin diagnostic; production dispatch failures must be visible in debug.log.
-            error_log( '[HgE Klaviyo NL] Missing settings (api_key or rule included_list_ids) for post ' . $post_id . ' rule slug ' . $rule['tag_slug'] );
+            HgE_Klaviyo_Logger::error( 'Missing settings — cannot dispatch', array(
+                'post_id'       => $post_id,
+                'rule_tag_slug' => $rule['tag_slug'] ?? '',
+                'has_api_key'   => '' !== $api_key,
+                'lists_count'   => count( $included ),
+            ) );
             update_post_meta( $post_id, HGE_KLAVIYO_NL_META_ERROR, 'missing_settings' );
             return;
         }
@@ -400,8 +408,11 @@ if ( ! function_exists( 'hge_klaviyo_dispatch_newsletter' ) ) {
             delete_post_meta( $post_id, HGE_KLAVIYO_NL_META_ERROR );
 
         } catch ( \Throwable $e ) {
-            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- intentional admin diagnostic; production dispatch failures must be visible in debug.log.
-            error_log( '[HgE Klaviyo NL] Post ' . $post_id . ': ' . $e->getMessage() );
+            HgE_Klaviyo_Logger::error( 'Dispatch threw exception', array(
+                'post_id' => $post_id,
+                'class'   => get_class( $e ),
+                'message' => $e->getMessage(),
+            ) );
             update_post_meta( $post_id, HGE_KLAVIYO_NL_META_ERROR, $e->getMessage() );
         } finally {
             delete_post_meta( $post_id, HGE_KLAVIYO_NL_META_LOCK );

@@ -1,6 +1,6 @@
-=== HgE Klaviyo Newsletter ===
+=== HgE Automated Post Campaigns for Klaviyo ===
 Contributors: hge
-Tags: klaviyo, newsletter, email, woocommerce, action-scheduler
+Tags: klaviyo, campaigns, newsletter, automation, woocommerce
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
@@ -8,7 +8,11 @@ Stable tag: 3.0.13
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Auto-trigger Klaviyo email campaigns from tagged WordPress posts. UI-driven settings, list selection, secure JSON feeds, deliverability hardening.
+Automatically send a Klaviyo email campaign from a tagged WordPress post. Built-in HTML template, list selection, secure JSON feeds.
+
+== Trademark Notice ==
+
+Klaviyo® is a registered trademark of Klaviyo Inc. This plugin is an independent integration developed by HgE and is not affiliated with, endorsed by, or sponsored by Klaviyo Inc.
 
 == Description ==
 
@@ -33,7 +37,7 @@ When a WordPress post tagged with a configured slug (default: `newsletter`) is p
 
 **Pro plan (separate plugin, sold outside WordPress.org)**
 
-The base Free plugin handles a single list and one campaign at a time. The Pro extension plugin (`hge-klaviyo-newsletter-pro`, distributed independently) adds:
+The base Free plugin handles a single list and one campaign at a time. The Pro extension plugin (`hge-automated-post-campaigns-for-klaviyo-pro`, distributed independently outside WordPress.org) adds:
 
 * **Core plan** — delay window, multiple selectable templates, manual excerpt/image override, dynamic UTM, retry with backoff, DB log table, exclude unsubscribed
 * **Pro plan** — multi-list (up to 15 included + excluded combined, Klaviyo limit), dynamic segments, A/B testing, multi-article digest, template builder, analytics dashboard, WooCommerce product cross-sell, editorial workflow, multi-site, dead queue
@@ -47,7 +51,7 @@ The base Free plugin handles a single list and one campaign at a time. The Pro e
 
 == Installation ==
 
-1. Upload the `hge-klaviyo-newsletter` folder to `/wp-content/plugins/` or install via the WordPress Plugins screen.
+1. Upload the `hge-automated-post-campaigns-for-klaviyo` folder to `/wp-content/plugins/` or install via the WordPress Plugins screen.
 2. Activate the plugin through the **Plugins** menu.
 3. Navigate to **Tools → Klaviyo Newsletter → Settings** and fill in the **Setări generale** section:
    * **Klaviyo API Key** — the Private API key from your Klaviyo account.

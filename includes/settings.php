@@ -499,15 +499,46 @@ if ( ! function_exists( 'hge_klaviyo_nl_settings_complete' ) ) {
      */
     function hge_klaviyo_nl_settings_complete() {
         $s = hge_klaviyo_nl_get_settings();
-        if ( '' === $s['api_key'] || '' === $s['feed_token'] ) {
-            return false;
-        }
-        foreach ( (array) $s['tag_rules'] as $rule ) {
-            if ( ! empty( $rule['tag_slug'] ) && ! empty( $rule['included_list_ids'] ) ) {
-                return true;
+
+        $api_key_ok    = '' !== $s['api_key'];
+        $feed_token_ok = '' !== $s['feed_token'];
+        $rules_count   = is_array( $s['tag_rules'] ?? null ) ? count( $s['tag_rules'] ) : 0;
+        $rule_ok       = false;
+        $rule_diag     = array(); // per-rule reason for failure, for the log
+        if ( is_array( $s['tag_rules'] ?? null ) ) {
+            foreach ( $s['tag_rules'] as $idx => $rule ) {
+                $has_slug  = ! empty( $rule['tag_slug'] );
+                $has_lists = ! empty( $rule['included_list_ids'] );
+                $rule_diag[] = array(
+                    'idx'                       => $idx,
+                    'tag_slug'                  => $rule['tag_slug'] ?? '',
+                    'has_tag_slug'              => $has_slug,
+                    'included_list_ids_count'   => is_array( $rule['included_list_ids'] ?? null ) ? count( $rule['included_list_ids'] ) : 0,
+                );
+                if ( $has_slug && $has_lists ) {
+                    $rule_ok = true;
+                }
             }
         }
-        return false;
+
+        $complete = $api_key_ok && $feed_token_ok && $rule_ok;
+
+        // Diagnostic log — fires every time the admin notice or dispatch
+        // gate is evaluated. Tells us exactly which of the three checks
+        // failed (api_key / feed_token / no rule with both tag_slug +
+        // list). Always-on (warning level) because the "config incomplete"
+        // notice is one of the most common support tickets.
+        if ( ! $complete && class_exists( 'HgE_Klaviyo_Logger' ) ) {
+            HgE_Klaviyo_Logger::warning( 'settings_complete() = false', array(
+                'api_key_ok'    => $api_key_ok,
+                'feed_token_ok' => $feed_token_ok,
+                'rules_count'   => $rules_count,
+                'rule_ok'       => $rule_ok,
+                'rules_diag'    => $rule_diag,
+            ) );
+        }
+
+        return $complete;
     }
 }
 

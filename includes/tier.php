@@ -53,8 +53,8 @@ if ( ! function_exists( 'hge_klaviyo_upgrade_cta_html' ) ) {
      */
     function hge_klaviyo_upgrade_cta_html( $required = 'core' ) {
         $label = ( 'pro' === $required )
-            ? __( 'Available in Pro plan', 'hge-klaviyo-newsletter' )
-            : __( 'Available in Core plan', 'hge-klaviyo-newsletter' );
+            ? __( 'Available in Pro plan', 'hge-automated-post-campaigns-for-klaviyo' )
+            : __( 'Available in Core plan', 'hge-automated-post-campaigns-for-klaviyo' );
         $color = ( 'pro' === $required ) ? '#7b1fa2' : '#1565c0';
         return '<span style="display:inline-block;margin-left:8px;padding:2px 8px;background:' . esc_attr( $color ) . ';color:#fff;font-size:11px;border-radius:3px;">' . esc_html( $label ) . '</span>';
     }

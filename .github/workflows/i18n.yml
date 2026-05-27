@@ -24,9 +24,9 @@ jobs:
 
       - name: Generate .pot via wp-cli i18n make-pot
         run: |
-          wp i18n make-pot . languages/hge-klaviyo-newsletter.pot \
-            --slug=hge-klaviyo-newsletter \
-            --domain=hge-klaviyo-newsletter \
+          wp i18n make-pot . languages/hge-automated-post-campaigns-for-klaviyo.pot \
+            --slug=hge-automated-post-campaigns-for-klaviyo \
+            --domain=hge-automated-post-campaigns-for-klaviyo \
             --skip-audit
 
       - name: Strip POT-Creation-Date for determinism
@@ -35,16 +35,16 @@ jobs:
           # only changes when actual source strings change (matches the output
           # of bin/extract-pot.py and keeps the "no commit if unchanged" guard
           # below working as intended).
-          sed -i '/^"POT-Creation-Date:/d' languages/hge-klaviyo-newsletter.pot
+          sed -i '/^"POT-Creation-Date:/d' languages/hge-automated-post-campaigns-for-klaviyo.pot
 
       - name: Commit + push regenerated .pot if changed
         run: |
-          if git diff --quiet languages/hge-klaviyo-newsletter.pot; then
+          if git diff --quiet languages/hge-automated-post-campaigns-for-klaviyo.pot; then
             echo "No change in .pot — skipping commit."
           else
             git config user.name  "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add languages/hge-klaviyo-newsletter.pot
+            git add languages/hge-automated-post-campaigns-for-klaviyo.pot
             git commit -m "i18n: regenerate .pot (auto)"
             git push
           fi

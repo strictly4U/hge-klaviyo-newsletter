@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name:       HgE Klaviyo Newsletter
- * Plugin URI:        https://github.com/strictly4U/hge-klaviyo-newsletter
- * Description:       Auto-trigger Klaviyo email campaigns when a tagged WordPress post is published. Tier 1 (Free): single list, basic UTM, built-in HTML template. Pro extension available for delay/window control, multi-template, multi-list (up to 15), retry, A/B testing, analytics and more.
+ * Plugin Name:       HgE Automated Post Campaigns for Klaviyo
+ * Plugin URI:        https://github.com/strictly4U/hge-automated-post-campaigns-for-klaviyo
+ * Description:       Automatically send a Klaviyo email campaign from a WordPress post — when a post is published with a configured tag, the plugin renders a built-in HTML template populated with the post (title, excerpt, featured image, link with UTM) and dispatches the campaign to your Klaviyo list. Free: single list, basic UTM, built-in template. Pro extension adds Klaviyo templates with WooCommerce product feed, multi-list (up to 15), exclusions, delay window, retry and A/B testing.
  * Version:           3.0.13
  * Requires at least: 6.0
  * Requires PHP:      8.0
@@ -10,7 +10,7 @@
  * Author URI:        https://github.com/strictly4U
  * License:           GPLv2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       hge-klaviyo-newsletter
+ * Text Domain:       hge-automated-post-campaigns-for-klaviyo
  * Domain Path:       /languages
  *
  * Requires Plugins:  woocommerce
@@ -44,6 +44,10 @@ add_action( 'before_woocommerce_init', static function () {
         \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
     }
 } );
+
+// WooCommerce-backed logger (writes to WC → Status → Logs, source `hge-klaviyo`).
+// Loaded first so subsequent includes can call HgE_Klaviyo_Logger::* freely.
+require_once HGE_KLAVIYO_NL_PLUGIN_DIR . 'includes/class-hge-klaviyo-logger.php';
 
 // Core: constants + helpers
 require_once HGE_KLAVIYO_NL_PLUGIN_DIR . 'includes/config.php';
