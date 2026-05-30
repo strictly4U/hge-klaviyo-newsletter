@@ -112,20 +112,52 @@ if ( ! function_exists( 'hge_klaviyo_feed_handler' ) ) {
             exit;
         }
 
-        $cache_key = 'hge_klaviyo_feed_v1';
-        $payload   = get_transient( $cache_key );
+        // Cache key includes the ?name= scope so each Pro Web Feed with its
+        // own filter set gets its own cached payload. Legacy un-named calls
+        // (pre-3.0.14) reuse the original key for back-compat.
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token-auth endpoint already authorized above; name only routes to a cache key (no DB write).
+        $name_for_cache = isset( $_GET['name'] ) ? sanitize_key( wp_unslash( $_GET['name'] ) ) : '';
+        $cache_key      = '' === $name_for_cache ? 'hge_klaviyo_feed_v1' : 'hge_klaviyo_feed_v1_' . md5( $name_for_cache );
+        $payload        = get_transient( $cache_key );
 
         if ( false === $payload ) {
-            $query = new WP_Query( array(
+            // Per-feed content filters (since 3.0.14 / FcRapid1923-dvs).
+            // When the request includes `?name=<feed_name>` and a rule with
+            // that web_feed_name has feed_filters set, we build a tax_query
+            // from those filters. Otherwise we fall back to the legacy
+            // hardcoded `category_name=stiri` for back-compat with installs
+            // that have rules without filters configured.
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- token-auth endpoint already authorized above via hash_equals(); name is sanitized via sanitize_key.
+            $feed_name_param = isset( $_GET['name'] ) ? sanitize_key( wp_unslash( $_GET['name'] ) ) : '';
+            $tax_query       = null;
+            if ( '' !== $feed_name_param && function_exists( 'hge_klaviyo_nl_get_settings' ) ) {
+                $cfg = hge_klaviyo_nl_get_settings();
+                foreach ( (array) ( $cfg['tag_rules'] ?? array() ) as $r ) {
+                    if ( ( $r['web_feed_name'] ?? '' ) === $feed_name_param ) {
+                        if ( function_exists( 'hge_klaviyo_nl_feed_filters_to_tax_query' ) ) {
+                            $tax_query = hge_klaviyo_nl_feed_filters_to_tax_query( $r['feed_filters'] ?? array() );
+                        }
+                        break;
+                    }
+                }
+            }
+
+            $query_args = array(
                 'post_type'              => 'post',
-                'category_name'          => 'stiri',
                 'posts_per_page'         => 8,
                 'post_status'            => 'publish',
                 'no_found_rows'          => true,
                 'ignore_sticky_posts'    => true,
                 'update_post_term_cache' => true,
                 'update_post_meta_cache' => false,
-            ) );
+            );
+            if ( null !== $tax_query ) {
+                $query_args['tax_query'] = $tax_query; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- intentional per-rule taxonomy filter for the Klaviyo Web Feed; cached 5 min.
+            } else {
+                // Legacy fallback — pre-3.0.14 behaviour.
+                $query_args['category_name'] = 'stiri';
+            }
+            $query = new WP_Query( $query_args );
 
             $items = array();
 
@@ -311,7 +343,15 @@ if ( ! function_exists( 'hge_klaviyo_feed_invalidate' ) ) {
         if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
             return;
         }
+        // Wipe both the legacy unnamed cache and any per-rule named caches
+        // (since 3.0.14 / FcRapid1923-dvs). Direct DB sweep — there's no WP
+        // helper for prefix-deleting transients.
         delete_transient( 'hge_klaviyo_feed_v1' );
+        global $wpdb;
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- transient-by-prefix sweep; WP has no API for prefix-deleting transients.
+        $wpdb->query(
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_hge_klaviyo_feed_v1_%' OR option_name LIKE '_transient_timeout_hge_klaviyo_feed_v1_%'"
+        );
     }
 }
 

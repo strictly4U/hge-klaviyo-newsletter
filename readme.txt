@@ -4,7 +4,7 @@ Tags: klaviyo, campaigns, newsletter, automation, woocommerce
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 3.0.13
+Stable tag: 3.0.14
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -123,6 +123,10 @@ The result is stored in `hge_klaviyo_pro_license_plan` and read by `hge_klaviyo_
 This plugin sends post titles, excerpts, featured images and post URLs to Klaviyo over HTTPS. No subscriber data is collected by the plugin itself; subscribers are managed entirely in your Klaviyo account.
 
 == Changelog ==
+
+= 3.0.14 =
+* **New**: Tier-enforced sending cap — Free is capped to 1 newsletter / 30 days and Core to 1 / 6 days per rule, enforced at dispatch time (Pro stays fully customer-controlled). The "Minimum interval between sends" field now shows the effective floor on Free/Core, and a one-shot notice explains when a publish was skipped by the cap.
+* **New (Pro backend)**: Per-feed content filters — each rule's Klaviyo Web Feed can be scoped by categories, tags, and custom taxonomies (include/exclude), so one site can power several distinct feeds. Empty filters keep the legacy `stiri` behaviour, so existing installs are unchanged. (Pro configurator UI ships in a follow-up.)
 
 = 3.0.9 =
 * **New**: Klaviyo template selector is now a single combobox — one text input doubles as search and selection display, click an option (or press Enter on the highlighted one) to set it. Keyboard: ↑ ↓ Home End navigate, Esc closes, Tab moves on naturally. `×` button clears the selection. Supersedes the v3.0.7 separate search input + dropdown pair.

@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'HGE_KLAVIYO_NL_TAG_SLUG' ) ) {
-    define( 'HGE_KLAVIYO_NL_VERSION',           '3.0.13' );
+    define( 'HGE_KLAVIYO_NL_VERSION',           '3.0.14' );
     // Default tag slug for the first rule on fresh installs. Customers configure
     // their actual trigger tag in Setări → Reguli newsletter; this constant is
     // only the bootstrap seed value.
@@ -161,16 +161,28 @@ if ( ! function_exists( 'hge_klaviyo_safe_subject' ) ) {
 }
 
 if ( ! function_exists( 'hge_klaviyo_min_interval_seconds' ) ) {
+    /**
+     * Effective cooldown between newsletter dispatches, in seconds.
+     *
+     * Since 3.0.14 (FcRapid1923-omh) the customer-facing setting is floored
+     * by a tier-imposed minimum: Free 720h (30 days), Core 144h (6 days),
+     * Pro 0 (no floor). The customer can SAVE any value, but at dispatch
+     * time the dispatcher always sees the larger of the two. Re-evaluated
+     * at every send so a Pro license expiring back to Free takes effect
+     * immediately, without the customer needing to re-save settings.
+     */
     function hge_klaviyo_min_interval_seconds() {
+        $customer_hours = HGE_KLAVIYO_NL_DEFAULT_INTERVAL_H;
         if ( function_exists( 'hge_klaviyo_nl_get_settings' ) ) {
             $s = hge_klaviyo_nl_get_settings();
-            $hours = max( 0, (int) ( $s['min_interval_hours'] ?? HGE_KLAVIYO_NL_DEFAULT_INTERVAL_H ) );
-            return $hours * HOUR_IN_SECONDS;
+            $customer_hours = (int) ( $s['min_interval_hours'] ?? HGE_KLAVIYO_NL_DEFAULT_INTERVAL_H );
+        } elseif ( defined( 'KLAVIYO_NEWSLETTER_MIN_INTERVAL_HOURS' ) ) {
+            $customer_hours = (int) KLAVIYO_NEWSLETTER_MIN_INTERVAL_HOURS;
         }
-        $hours = defined( 'KLAVIYO_NEWSLETTER_MIN_INTERVAL_HOURS' )
-            ? max( 0, (int) KLAVIYO_NEWSLETTER_MIN_INTERVAL_HOURS )
-            : HGE_KLAVIYO_NL_DEFAULT_INTERVAL_H;
-        return $hours * HOUR_IN_SECONDS;
+        $effective_hours = function_exists( 'hge_klaviyo_nl_effective_min_interval_hours' )
+            ? hge_klaviyo_nl_effective_min_interval_hours( $customer_hours )
+            : max( 0, $customer_hours );
+        return $effective_hours * HOUR_IN_SECONDS;
     }
 }
 

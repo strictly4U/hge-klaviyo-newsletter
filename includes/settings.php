@@ -55,6 +55,21 @@ if ( ! function_exists( 'hge_klaviyo_nl_default_rule' ) ) {
             // Default Web Feed name on fresh installs. Customers usually rename
             // this to match what's configured in Klaviyo → Settings → Web Feeds.
             'web_feed_name'     => 'newsletter_feed',
+            // Per-feed content filters (since 3.0.14 / FcRapid1923-dvs).
+            // Pro-gated in the UI but the schema lives on every tier so an
+            // upgrade activates filters without any data migration. Empty =
+            // no filter applied (matches the pre-3.0.14 behaviour).
+            'feed_filters'      => array(
+                'include_category_ids' => array(), // term IDs from 'category'
+                'exclude_category_ids' => array(),
+                'include_tag_ids'      => array(), // term IDs from 'post_tag'
+                'exclude_tag_ids'      => array(),
+                // Future-proofed: custom taxonomies addressed by taxonomy slug.
+                //   'include_custom' => [ taxonomy_slug => [ term_id, ... ] ]
+                //   'exclude_custom' => [ taxonomy_slug => [ term_id, ... ] ]
+                'include_custom'       => array(),
+                'exclude_custom'       => array(),
+            ),
         );
     }
 }
@@ -163,17 +178,18 @@ if ( ! function_exists( 'hge_klaviyo_nl_rule_caps' ) ) {
     /**
      * Per-rule list/template caps based on plan.
      *
-     * @return array{ max_included:int, max_excluded:int, allow_template:bool, allow_web_feed:bool }
+     * @return array{ max_included:int, max_excluded:int, allow_template:bool, allow_web_feed:bool, allow_feed_filters:bool }
      */
     function hge_klaviyo_nl_rule_caps() {
         $plan = function_exists( 'hge_klaviyo_active_plan' ) ? hge_klaviyo_active_plan() : 'free';
         switch ( $plan ) {
             case 'pro':
-                return array( 'max_included' => 15, 'max_excluded' => 15, 'allow_template' => true, 'allow_web_feed' => true );
+                // allow_feed_filters: per-rule category/tag/taxonomy include+exclude filters (since 3.0.14 / FcRapid1923-dvs).
+                return array( 'max_included' => 15, 'max_excluded' => 15, 'allow_template' => true, 'allow_web_feed' => true, 'allow_feed_filters' => true );
             case 'core':
-                return array( 'max_included' => 1,  'max_excluded' => 1,  'allow_template' => true, 'allow_web_feed' => true );
+                return array( 'max_included' => 1,  'max_excluded' => 1,  'allow_template' => true, 'allow_web_feed' => true, 'allow_feed_filters' => false );
             default:
-                return array( 'max_included' => 1,  'max_excluded' => 0,  'allow_template' => false, 'allow_web_feed' => false );
+                return array( 'max_included' => 1,  'max_excluded' => 0,  'allow_template' => false, 'allow_web_feed' => false, 'allow_feed_filters' => false );
         }
     }
 }
@@ -210,6 +226,21 @@ if ( ! function_exists( 'hge_klaviyo_nl_get_matching_rule' ) ) {
             $tags = array_filter( array_map( 'trim', explode( ',', $slug ) ), 'strlen' );
             foreach ( $tags as $t ) {
                 if ( has_tag( $t, $post ) ) {
+                    // Per-feed content filters check (since 3.0.14 / FcRapid1923-dvs).
+                    // A rule "matches" only when the post ALSO satisfies the rule's
+                    // include/exclude category, tag, and custom-taxonomy filters.
+                    // Empty filters = no constraint (legacy behaviour).
+                    if ( ! hge_klaviyo_nl_post_matches_feed_filters( $post, $rule['feed_filters'] ?? array() ) ) {
+                        if ( class_exists( 'HgE_Klaviyo_Logger' ) ) {
+                            HgE_Klaviyo_Logger::log( 'Rule tag matched but feed_filters rejected the post', array(
+                                'post_id'  => (int) $post->ID,
+                                'rule_idx' => $idx,
+                                'tag_slug' => $slug,
+                                'matched_tag' => $t,
+                            ) );
+                        }
+                        continue 2; // skip this rule entirely; try the next one
+                    }
                     $rule['_rule_idx']         = $idx;
                     $rule['_rule_tag_matched'] = $t;
                     $matched                   = $rule;
@@ -356,7 +387,17 @@ if ( ! function_exists( 'hge_klaviyo_nl_sanitize_rules' ) ) {
         $supports_multi = hge_klaviyo_nl_supports_multi_tag_rule();
         $clean         = array();
 
-        foreach ( $raw_rules as $raw ) {
+        // Prior stored rules — used to preserve Pro-set feed_filters across a
+        // Free/Core save. The editor is locked on those tiers, so the form
+        // cannot legitimately carry feed_filters; we read the pre-save snapshot
+        // here (get_settings reads the stored option, which update_option has
+        // not overwritten yet) and reuse it by row position below.
+        $stored_settings = function_exists( 'hge_klaviyo_nl_get_settings' ) ? hge_klaviyo_nl_get_settings() : array();
+        $stored_rules    = ( isset( $stored_settings['tag_rules'] ) && is_array( $stored_settings['tag_rules'] ) )
+            ? array_values( $stored_settings['tag_rules'] )
+            : array();
+
+        foreach ( $raw_rules as $raw_index => $raw ) {
             if ( count( $clean ) >= $max_rules ) {
                 break;
             }
@@ -425,6 +466,31 @@ if ( ! function_exists( 'hge_klaviyo_nl_sanitize_rules' ) ) {
                 }
             }
 
+            // Per-feed content filters (since 3.0.14 / FcRapid1923-dvs).
+            // Schema lives on every tier so an upgrade activates filters
+            // without data migration, but the editing UI is Pro-gated via
+            // the `allow_feed_filters` cap. On Free/Core the sanitiser
+            // ignores the form submission and reuses whatever was already
+            // stored — so a Pro-customer-downgraded-to-Free keeps their
+            // filters intact (just can't edit them) and re-upgrading
+            // restores everything.
+            if ( ! empty( $caps['allow_feed_filters'] ) ) {
+                $feed_filters = hge_klaviyo_nl_sanitize_feed_filters(
+                    isset( $raw['feed_filters'] ) && is_array( $raw['feed_filters'] ) ? $raw['feed_filters'] : array()
+                );
+            } else {
+                // Free/Core: the editor is locked, so the submitted form must
+                // NOT be trusted to set feed_filters — otherwise a crafted POST
+                // (feed_filters[...] / feed_filters_locked[...]) would bypass the
+                // Pro gate. Reuse the prior stored value for this row instead,
+                // so Pro data survives a downgrade and re-activates on upgrade.
+                // Matched by row position in the stored rules.
+                $prior_filters = ( isset( $stored_rules[ $raw_index ]['feed_filters'] ) && is_array( $stored_rules[ $raw_index ]['feed_filters'] ) )
+                    ? $stored_rules[ $raw_index ]['feed_filters']
+                    : array();
+                $feed_filters = hge_klaviyo_nl_sanitize_feed_filters( $prior_filters );
+            }
+
             $clean[] = array(
                 'tag_slug'          => $tag_slug,
                 'included_list_ids' => $included,
@@ -432,9 +498,211 @@ if ( ! function_exists( 'hge_klaviyo_nl_sanitize_rules' ) ) {
                 'template_id'       => $template_id,
                 'use_web_feed'      => $use_web_feed,
                 'web_feed_name'     => $web_feed_name,
+                'feed_filters'      => $feed_filters,
             );
         }
         return $clean;
+    }
+}
+
+if ( ! function_exists( 'hge_klaviyo_nl_sanitize_feed_filters' ) ) {
+    /**
+     * Sanitise per-rule feed filters: include / exclude lists for
+     * categories, tags, and custom taxonomies.
+     *
+     * Term IDs are validated against term_exists() so deleted terms drop
+     * silently. Custom taxonomies must be registered AND public (skipping
+     * Categories/post_tag — those have dedicated buckets above for clarity).
+     *
+     * @since 3.0.14 (FcRapid1923-dvs)
+     */
+    function hge_klaviyo_nl_sanitize_feed_filters( $raw ) {
+        $defaults = array(
+            'include_category_ids' => array(),
+            'exclude_category_ids' => array(),
+            'include_tag_ids'      => array(),
+            'exclude_tag_ids'      => array(),
+            'include_custom'       => array(),
+            'exclude_custom'       => array(),
+        );
+
+        // Validate flat term-id lists against their taxonomy.
+        $clean_terms = static function ( $value, $taxonomy ) {
+            if ( ! is_array( $value ) ) {
+                return array();
+            }
+            $out = array();
+            foreach ( $value as $term_id ) {
+                $term_id = (int) $term_id;
+                if ( $term_id > 0 && term_exists( $term_id, $taxonomy ) ) {
+                    $out[] = $term_id;
+                }
+            }
+            return array_values( array_unique( $out ) );
+        };
+
+        $clean = array(
+            'include_category_ids' => $clean_terms( $raw['include_category_ids'] ?? array(), 'category' ),
+            'exclude_category_ids' => $clean_terms( $raw['exclude_category_ids'] ?? array(), 'category' ),
+            'include_tag_ids'      => $clean_terms( $raw['include_tag_ids']      ?? array(), 'post_tag' ),
+            'exclude_tag_ids'      => $clean_terms( $raw['exclude_tag_ids']      ?? array(), 'post_tag' ),
+            'include_custom'       => array(),
+            'exclude_custom'       => array(),
+        );
+
+        // Custom taxonomies — keyed on taxonomy slug. Skip the two built-in
+        // ones (covered above) and anything not registered as public.
+        foreach ( array( 'include_custom', 'exclude_custom' ) as $bucket ) {
+            $raw_bucket = isset( $raw[ $bucket ] ) && is_array( $raw[ $bucket ] ) ? $raw[ $bucket ] : array();
+            foreach ( $raw_bucket as $tax_slug => $term_ids ) {
+                $tax_slug = sanitize_key( (string) $tax_slug );
+                if ( '' === $tax_slug || in_array( $tax_slug, array( 'category', 'post_tag' ), true ) ) {
+                    continue;
+                }
+                if ( ! taxonomy_exists( $tax_slug ) ) {
+                    continue;
+                }
+                $tax_obj = get_taxonomy( $tax_slug );
+                if ( ! $tax_obj || empty( $tax_obj->public ) ) {
+                    continue;
+                }
+                $cleaned = $clean_terms( $term_ids, $tax_slug );
+                if ( ! empty( $cleaned ) ) {
+                    $clean[ $bucket ][ $tax_slug ] = $cleaned;
+                }
+            }
+        }
+
+        return wp_parse_args( $clean, $defaults );
+    }
+}
+
+if ( ! function_exists( 'hge_klaviyo_nl_post_matches_feed_filters' ) ) {
+    /**
+     * Per-post check for whether a published post satisfies the rule's
+     * include/exclude category/tag/taxonomy filters. Called by the rule
+     * matcher so that a tagged-but-wrong-category post does not trigger
+     * a Klaviyo campaign on Pro accounts that use feed filters.
+     *
+     * Empty filters = pass-through (back-compat with rules saved before
+     * 3.0.14 that have no feed_filters at all).
+     *
+     * @since 3.0.14 (FcRapid1923-dvs)
+     *
+     * @param WP_Post $post
+     * @param array   $feed_filters As stored on the rule.
+     * @return bool   true when post matches (or no filters set); false when rejected.
+     */
+    function hge_klaviyo_nl_post_matches_feed_filters( $post, $feed_filters ) {
+        if ( ! ( $post instanceof WP_Post ) ) {
+            return false;
+        }
+        if ( ! is_array( $feed_filters ) || empty( $feed_filters ) ) {
+            return true;
+        }
+
+        $check = static function ( $taxonomy, $include_ids, $exclude_ids, $post_id ) {
+            // Convert IDs to ints once.
+            $include_ids = array_map( 'intval', (array) $include_ids );
+            $exclude_ids = array_map( 'intval', (array) $exclude_ids );
+            if ( empty( $include_ids ) && empty( $exclude_ids ) ) {
+                return true;
+            }
+            $post_term_ids = wp_get_post_terms( $post_id, $taxonomy, array( 'fields' => 'ids' ) );
+            if ( is_wp_error( $post_term_ids ) ) {
+                $post_term_ids = array();
+            }
+            if ( ! empty( $include_ids ) && empty( array_intersect( $post_term_ids, $include_ids ) ) ) {
+                return false; // must have at least one of the included terms
+            }
+            if ( ! empty( $exclude_ids ) && ! empty( array_intersect( $post_term_ids, $exclude_ids ) ) ) {
+                return false; // must NOT have any of the excluded terms
+            }
+            return true;
+        };
+
+        if ( ! $check( 'category', $feed_filters['include_category_ids'] ?? array(), $feed_filters['exclude_category_ids'] ?? array(), $post->ID ) ) {
+            return false;
+        }
+        if ( ! $check( 'post_tag', $feed_filters['include_tag_ids'] ?? array(), $feed_filters['exclude_tag_ids'] ?? array(), $post->ID ) ) {
+            return false;
+        }
+
+        // Custom taxonomies: include + exclude each addressed by taxonomy slug.
+        $include_custom = isset( $feed_filters['include_custom'] ) && is_array( $feed_filters['include_custom'] ) ? $feed_filters['include_custom'] : array();
+        $exclude_custom = isset( $feed_filters['exclude_custom'] ) && is_array( $feed_filters['exclude_custom'] ) ? $feed_filters['exclude_custom'] : array();
+        $custom_taxonomies = array_unique( array_merge( array_keys( $include_custom ), array_keys( $exclude_custom ) ) );
+        foreach ( $custom_taxonomies as $tax_slug ) {
+            $tax_slug = (string) $tax_slug;
+            if ( ! taxonomy_exists( $tax_slug ) ) {
+                continue;
+            }
+            $inc = $include_custom[ $tax_slug ] ?? array();
+            $exc = $exclude_custom[ $tax_slug ] ?? array();
+            if ( ! $check( $tax_slug, $inc, $exc, $post->ID ) ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+
+if ( ! function_exists( 'hge_klaviyo_nl_feed_filters_to_tax_query' ) ) {
+    /**
+     * Convert a rule's `feed_filters` array into a WP_Query `tax_query`.
+     *
+     * Returned tax_query uses relation=AND between include/exclude buckets
+     * (within the same taxonomy AND across different taxonomies). Empty
+     * buckets are omitted entirely so the result is back-compatible with
+     * rules saved before 3.0.14 (no filter applied).
+     *
+     * @since 3.0.14 (FcRapid1923-dvs)
+     *
+     * @param array $feed_filters As returned by hge_klaviyo_nl_sanitize_feed_filters().
+     * @return array|null tax_query argument array, or null when no filters set.
+     */
+    function hge_klaviyo_nl_feed_filters_to_tax_query( $feed_filters ) {
+        if ( ! is_array( $feed_filters ) ) {
+            return null;
+        }
+        $clauses = array();
+
+        $append = static function ( $taxonomy, $ids, $operator ) use ( &$clauses ) {
+            if ( empty( $ids ) ) {
+                return;
+            }
+            $clauses[] = array(
+                'taxonomy' => $taxonomy,
+                'field'    => 'term_id',
+                'terms'    => array_map( 'intval', $ids ),
+                'operator' => $operator,
+            );
+        };
+
+        $append( 'category', $feed_filters['include_category_ids'] ?? array(), 'IN' );
+        $append( 'category', $feed_filters['exclude_category_ids'] ?? array(), 'NOT IN' );
+        $append( 'post_tag', $feed_filters['include_tag_ids']      ?? array(), 'IN' );
+        $append( 'post_tag', $feed_filters['exclude_tag_ids']      ?? array(), 'NOT IN' );
+
+        // Guard custom taxonomies with taxonomy_exists() (mirrors
+        // post_matches_feed_filters) — an unregistered taxonomy would otherwise
+        // produce an invalid tax_query clause.
+        foreach ( ( $feed_filters['include_custom'] ?? array() ) as $tax => $ids ) {
+            if ( taxonomy_exists( (string) $tax ) ) {
+                $append( (string) $tax, $ids, 'IN' );
+            }
+        }
+        foreach ( ( $feed_filters['exclude_custom'] ?? array() ) as $tax => $ids ) {
+            if ( taxonomy_exists( (string) $tax ) ) {
+                $append( (string) $tax, $ids, 'NOT IN' );
+            }
+        }
+
+        if ( empty( $clauses ) ) {
+            return null;
+        }
+        return array_merge( array( 'relation' => 'AND' ), $clauses );
     }
 }
 

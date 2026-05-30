@@ -77,6 +77,66 @@ if ( ! function_exists( 'hge_klaviyo_maybe_enqueue' ) ) {
         $hook = HGE_KLAVIYO_NL_HOOK;
         $args = array( (int) $post->ID, (string) $rule['tag_slug'] );
 
+        // Tier-cap enforcement (since 3.0.14 / FcRapid1923-omh).
+        // The customer's min_interval_hours setting is fully editable on every
+        // tier, but Free + Core have a hard tier floor applied at dispatch time:
+        //   - Free = 30 days between newsletters per rule
+        //   - Core = 6 days
+        //   - Pro  = no floor (customer setting governs, can be 0)
+        // When the floor isn't met, FREE+CORE plans SUPPRESS the dispatch
+        // entirely — the post is dropped (no deferred send). Pro keeps the
+        // existing static_time deferral. Re-evaluated here so a license
+        // downgrade (Pro -> Free at license expiry) takes effect immediately.
+        $cooldown_plan = function_exists( 'hge_klaviyo_nl_compute_send_time_for_slug' )
+            ? hge_klaviyo_nl_compute_send_time_for_slug( $rule['tag_slug'] )
+            : array( 'mode' => 'immediate', 'time' => time() );
+
+        if ( 'immediate' !== $cooldown_plan['mode'] ) {
+            $active_plan = function_exists( 'hge_klaviyo_active_plan' )
+                ? hge_klaviyo_active_plan()
+                : 'free';
+            if ( in_array( $active_plan, array( 'free', 'core' ), true ) ) {
+                $last_send       = function_exists( 'hge_klaviyo_nl_get_last_send_for_slug' )
+                    ? (int) hge_klaviyo_nl_get_last_send_for_slug( $rule['tag_slug'] )
+                    : 0;
+                $floor_hours     = function_exists( 'hge_klaviyo_nl_tier_min_interval_hours' )
+                    ? (int) hge_klaviyo_nl_tier_min_interval_hours( $active_plan )
+                    : 0;
+                $next_allowed_at = (int) $cooldown_plan['time'];
+
+                if ( class_exists( 'HgE_Klaviyo_Logger' ) ) {
+                    HgE_Klaviyo_Logger::warning( 'Dispatch suppressed by tier cap', array(
+                        'post_id'          => (int) $post->ID,
+                        'plan'             => $active_plan,
+                        'rule_tag_slug'    => (string) $rule['tag_slug'],
+                        'last_send_at'     => $last_send ? gmdate( DATE_ATOM, $last_send ) : null,
+                        'next_allowed_at'  => gmdate( DATE_ATOM, $next_allowed_at ),
+                        'tier_floor_hours' => $floor_hours,
+                    ) );
+                }
+
+                update_post_meta( (int) $post->ID, HGE_KLAVIYO_NL_META_ERROR, sprintf(
+                    /* translators: 1: plan key (free|core), 2: tier floor in hours, 3: ISO datetime of the next allowed dispatch */
+                    'tier_cooldown: %1$s plan caps to 1 newsletter per %2$d hours; next allowed at %3$s',
+                    $active_plan,
+                    $floor_hours,
+                    gmdate( DATE_ATOM, $next_allowed_at )
+                ) );
+
+                // Stash the suppressed event so the post-edit screen can show
+                // a one-shot admin notice the next time the editor opens it.
+                update_post_meta( (int) $post->ID, '_hge_klaviyo_tier_suppressed', array(
+                    'plan'             => $active_plan,
+                    'last_send'        => $last_send,
+                    'next_allowed_at'  => $next_allowed_at,
+                    'tier_floor_hours' => $floor_hours,
+                    'suppressed_at'    => time(),
+                ) );
+
+                return; // no schedule, no deferred send — Free/Core caps are hard
+            }
+        }
+
         // In Web Feed mode the dispatch must run "now" (transient with post_id has 1h TTL),
         // so we honour cooldown by scheduling AS at the future time. Other modes can use
         // Klaviyo's `static` send strategy and dispatch immediately.

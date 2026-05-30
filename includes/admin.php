@@ -214,6 +214,68 @@ if ( ! function_exists( 'hge_klaviyo_handle_reset_cooldown' ) ) {
 
 add_action( 'admin_notices', 'hge_klaviyo_admin_notices' );
 
+// Tier-cap suppressed-dispatch notice (since 3.0.14 / FcRapid1923-omh).
+// Shows a one-shot notice on the post-edit screen when the dispatch for
+// that post was suppressed by the Free/Core tier cap. Deletes the
+// `_hge_klaviyo_tier_suppressed` meta after the first render so the
+// notice never repeats.
+add_action( 'admin_notices', 'hge_klaviyo_tier_suppressed_notice' );
+
+if ( ! function_exists( 'hge_klaviyo_tier_suppressed_notice' ) ) {
+    function hge_klaviyo_tier_suppressed_notice() {
+        global $pagenow;
+        if ( 'post.php' !== $pagenow ) {
+            return;
+        }
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only check for the post being edited; non-mutating display flag.
+        $post_id = isset( $_GET['post'] ) ? (int) $_GET['post'] : 0;
+        if ( $post_id <= 0 ) {
+            return;
+        }
+        if ( ! current_user_can( 'edit_post', $post_id ) ) {
+            return;
+        }
+        $suppressed = get_post_meta( $post_id, '_hge_klaviyo_tier_suppressed', true );
+        if ( ! is_array( $suppressed ) || empty( $suppressed ) ) {
+            return;
+        }
+        delete_post_meta( $post_id, '_hge_klaviyo_tier_suppressed' );
+
+        $plan_key   = isset( $suppressed['plan'] ) ? (string) $suppressed['plan'] : 'free';
+        $plan_label = 'core' === $plan_key
+            ? __( 'Core', 'hge-automated-post-campaigns-for-klaviyo' )
+            : __( 'Free', 'hge-automated-post-campaigns-for-klaviyo' );
+        $floor      = isset( $suppressed['tier_floor_hours'] ) ? (int) $suppressed['tier_floor_hours'] : 0;
+        $floor_days = $floor > 0 ? max( 1, (int) round( $floor / 24 ) ) : 0;
+        $last       = isset( $suppressed['last_send'] ) ? (int) $suppressed['last_send'] : 0;
+        $next       = isset( $suppressed['next_allowed_at'] ) ? (int) $suppressed['next_allowed_at'] : 0;
+
+        echo '<div class="notice notice-warning is-dismissible"><p>';
+        echo wp_kses_post( sprintf(
+            /* translators: 1: plan label, 2: tier floor in days */
+            __( '<strong>Klaviyo newsletter not sent for this post.</strong> The %1$s plan caps newsletters to <strong>1 per %2$d days</strong> per rule.', 'hge-automated-post-campaigns-for-klaviyo' ),
+            esc_html( $plan_label ),
+            $floor_days
+        ) );
+        if ( $last > 0 ) {
+            echo ' ' . esc_html( sprintf(
+                /* translators: %s: human-readable time (e.g. "5 days ago") */
+                __( 'Last newsletter for this rule was sent %s.', 'hge-automated-post-campaigns-for-klaviyo' ),
+                human_time_diff( $last, time() ) . ' ' . __( 'ago', 'hge-automated-post-campaigns-for-klaviyo' )
+            ) );
+        }
+        if ( $next > time() ) {
+            echo ' ' . esc_html( sprintf(
+                /* translators: %s: human-readable time (e.g. "in 22 days") */
+                __( 'Next dispatch allowed in %s.', 'hge-automated-post-campaigns-for-klaviyo' ),
+                human_time_diff( time(), $next )
+            ) );
+        }
+        echo ' ' . esc_html__( 'Upgrade for shorter cooldowns.', 'hge-automated-post-campaigns-for-klaviyo' );
+        echo '</p></div>';
+    }
+}
+
 if ( ! function_exists( 'hge_klaviyo_admin_notices' ) ) {
     function hge_klaviyo_admin_notices() {
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display flag from a redirect after a nonced admin-post action; no DB write or auth side effect from reading this.
@@ -951,10 +1013,29 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
         echo '<p class="description">' . esc_html__( 'When set, overrides the reply-to configured in Klaviyo. Leave empty to use the Klaviyo account default.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
         echo '</td></tr>';
 
-        // Min interval
+        // Min interval — tier-aware helper text added since 3.0.14 (FcRapid1923-omh).
+        // The customer's value is fully editable on every tier, but the dispatcher
+        // applies a hard floor on Free + Core (the field stays editable so the
+        // value survives an upgrade — Pro will then honour whatever the customer
+        // saved here).
+        $active_plan_for_help = function_exists( 'hge_klaviyo_active_plan' ) ? hge_klaviyo_active_plan() : 'free';
+        $tier_floor_hours     = function_exists( 'hge_klaviyo_nl_tier_min_interval_hours' )
+            ? (int) hge_klaviyo_nl_tier_min_interval_hours( $active_plan_for_help )
+            : 0;
         echo '<tr><th scope="row"><label for="hge_klaviyo_interval">' . esc_html__( 'Minimum interval between sends (hours)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label></th><td>';
         echo '<input type="number" id="hge_klaviyo_interval" name="hge_klaviyo[min_interval_hours]" value="' . esc_attr( (int) $s['min_interval_hours'] ) . '" min="0" max="168" step="1" class="small-text" />';
-        echo '<p class="description">' . wp_kses_post( __( 'Default 12. Cooldown is applied <strong>per rule</strong> (per tag). Set 0 to disable.', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '</p>';
+        echo '<p class="description"><strong>' . esc_html__( 'Default 12.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</strong> ' . esc_html__( 'Cooldown is applied per rule (per tag). Set 0 to disable.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
+        if ( $tier_floor_hours > 0 ) {
+            $floor_days   = (int) round( $tier_floor_hours / 24 );
+            $plan_label   = 'free' === $active_plan_for_help ? __( 'Free', 'hge-automated-post-campaigns-for-klaviyo' ) : __( 'Core', 'hge-automated-post-campaigns-for-klaviyo' );
+            echo '<p class="description" style="color:#996800;background:#fcf9e8;border-left:4px solid #dba617;padding:6px 10px;">' . wp_kses_post( sprintf(
+                /* translators: 1: plan label (Free|Core), 2: tier floor in hours, 3: tier floor in days */
+                __( '<strong>Tier limit (%1$s plan):</strong> the dispatcher enforces a minimum of <strong>%2$d hours (%3$d days)</strong> between newsletters, per rule. Values below this floor are accepted by the form (they survive an upgrade) but the dispatcher will hard-suppress dispatches that would violate the floor — the post is not deferred, it is dropped, with a one-shot notice on the post edit screen. Upgrade to Pro for unrestricted cooldown control.', 'hge-automated-post-campaigns-for-klaviyo' ),
+                $plan_label,
+                $tier_floor_hours,
+                $floor_days
+            ) ) . '</p>';
+        }
         echo '</td></tr>';
 
         // Debug mode
@@ -2049,6 +2130,19 @@ if ( ! function_exists( 'hge_klaviyo_render_rule_card' ) ) {
             . '</p>';
 
         echo '</td></tr>';
+
+        // Per-feed content filters UI removed per user request 2026-05-27.
+        // The backing infrastructure (schema in default_rule, sanitiser in
+        // sanitize_rules, dispatch check in get_matching_rule, tax_query in
+        // feed-endpoints.php) is kept intact so empty filters are a clean
+        // no-op — and so a future UI iteration can re-expose the editor
+        // without touching backend code. See FcRapid1923-bqn for the planned
+        // future UX. For now, the rule is fully defined by:
+        //   - Triggered tag(s)
+        //   - Recipient list(s) (+ excluded lists, Pro)
+        //   - (Pro) Klaviyo template
+        //   - (Pro) Web Feed mode toggle
+        //   - Web Feed name in Klaviyo
 
         echo '</table>';
         echo '</div>';

@@ -4,6 +4,56 @@ All notable changes to HgE Klaviyo Newsletter are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.14] — 2026-05-30
+
+### Added — Tier-enforced dispatch cap (`FcRapid1923-omh`)
+
+Hard, server-side per-tier floor on how often a tagged-post campaign can be
+dispatched, so Free/Core customers can't bypass the upsell by lowering the
+customer-facing `min_interval_hours` setting.
+
+- **`includes/tier.php`** — new `hge_klaviyo_nl_tier_min_interval_hours( $plan )`
+  returning the floor in hours: Free = 720h (30 days), Core = 144h (6 days),
+  Pro = 0 (no floor). The effective interval is
+  `MAX( customer.min_interval_hours, tier_floor[plan] )`.
+- **`includes/dispatcher.php`** — the per-slug cooldown gate now applies the
+  tier floor. When a publish is suppressed it logs a `warning`
+  ("Dispatch suppressed by tier cap") and writes the `tier_cooldown` post-meta
+  error; the post is skipped, not queued for a delayed send.
+- **`includes/config.php`** — the customer `min_interval_hours` is floored at
+  dispatch time (the saved value is preserved so it carries over on upgrade).
+- **`includes/admin.php`** — tier-aware helper text under the
+  "Minimum interval between sends" field on Free/Core, plus a one-shot
+  post-edit admin notice when a publish was suppressed by the cap.
+- Plan changes take effect at dispatch time (downgrade gates immediately,
+  upgrade lifts the cap immediately) — no grace period, no carryover credits.
+
+### Added — Per-feed content filters: storage + feed query (`FcRapid1923-dvs`)
+
+Pro-gated backend for scoping each per-rule Klaviyo Web Feed to a combination
+of categories, tags, and custom taxonomies, so one site can power multiple
+distinct feeds. (The Pro admin configurator UI is tracked separately in
+`FcRapid1923-bqn`; this release ships the schema, sanitiser, and feed query.)
+
+- **`includes/settings.php`** — `tag_rules[]` gains a `feed_filters` key
+  (include/exclude categories, tags, and custom taxonomies). New
+  `hge_klaviyo_nl_sanitize_feed_filters()` validates each term against its
+  registered taxonomy and silently drops unknown/deleted terms. Gated by the
+  per-tier `allow_feed_filters` cap (Pro only); on Free/Core the sanitiser
+  ignores the submitted form entirely and reuses the prior stored value by row
+  position — so a crafted POST can't inject filters past the Pro gate, and a
+  Pro→Free downgrade keeps the filters intact (locked, not wiped) for re-upgrade.
+  `hge_klaviyo_nl_post_matches_feed_filters()` and
+  `hge_klaviyo_nl_feed_filters_to_tax_query()` added (custom taxonomies are
+  `taxonomy_exists()`-guarded before entering the tax_query).
+- **`includes/feed-endpoints.php`** — the feed handlers build a `tax_query`
+  from the matching rule's `feed_filters`, falling back to the legacy
+  `category_name='stiri'` default when no filters are set (full back-compat
+  with 3.0.x installs).
+- **Dispatcher coupling** — a post whose taxonomies don't match the rule's
+  `feed_filters` no longer triggers a campaign even if it carries the rule's
+  trigger tag.
+
 ## [3.0.13] — 2026-05-22
 
 ### Fixed — WordPress.org Plugin Check round 2 (`vno`, P1)
