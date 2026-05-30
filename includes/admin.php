@@ -132,6 +132,81 @@ if ( ! function_exists( 'hge_klaviyo_render_meta_box' ) ) {
             );
             echo '<p style="margin-top:8px;"><a href="' . esc_url( $reset_url ) . '" class="button" onclick="return confirm(\'' . esc_js( __( 'Reset the Klaviyo status for this post? This allows re-sending.', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '\');">' . esc_html__( 'Reset status', 'hge-automated-post-campaigns-for-klaviyo' ) . '</a></p>';
         }
+
+        // Per-post newsletter overrides (since 3.0.15 / FcRapid1923-dcr) — Core+ only.
+        $dcr_plan = function_exists( 'hge_klaviyo_active_plan' ) ? hge_klaviyo_active_plan() : 'free';
+        if ( in_array( $dcr_plan, array( 'core', 'pro' ), true ) ) {
+            $ov_excerpt = (string) get_post_meta( $post->ID, '_klaviyo_newsletter_excerpt', true );
+            $ov_image   = (string) get_post_meta( $post->ID, '_klaviyo_newsletter_image', true );
+            wp_nonce_field( 'hge_klaviyo_meta_' . $post->ID, 'hge_klaviyo_meta_nonce' );
+            echo '<hr style="margin:12px 0 8px;">';
+            echo '<p style="margin:0 0 6px;"><strong>' . esc_html__( 'Newsletter overrides', 'hge-automated-post-campaigns-for-klaviyo' ) . '</strong></p>';
+            echo '<p style="margin:0 0 8px;"><label for="hge_klaviyo_ov_excerpt" style="display:block;font-size:12px;margin-bottom:2px;">' . esc_html__( 'Excerpt override (max 200)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label>';
+            echo '<textarea id="hge_klaviyo_ov_excerpt" name="hge_klaviyo_ov_excerpt" rows="3" maxlength="200" style="width:100%;box-sizing:border-box;">' . esc_textarea( $ov_excerpt ) . '</textarea></p>';
+            echo '<p style="margin:0;"><label for="hge_klaviyo_ov_image" style="display:block;font-size:12px;margin-bottom:2px;">' . esc_html__( 'Image URL fallback', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label>';
+            echo '<input type="url" id="hge_klaviyo_ov_image" name="hge_klaviyo_ov_image" value="' . esc_attr( $ov_image ) . '" style="width:100%;box-sizing:border-box;" placeholder="https://…" /></p>';
+            echo '<p class="description" style="font-size:11px;">' . esc_html__( 'Used in the built-in newsletter instead of the post excerpt / featured image when set.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
+            // Per-post Klaviyo template override (FcRapid1923-bn2).
+            echo '<p style="margin:10px 0 0;"><label for="hge_klaviyo_ov_template" style="display:block;font-size:12px;margin-bottom:2px;">' . esc_html__( 'Template for this post', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label>';
+            hge_klaviyo_nl_render_template_select( 'hge_klaviyo_ov_template', (string) get_post_meta( $post->ID, '_klaviyo_template_id', true ), __( 'Use default', 'hge-automated-post-campaigns-for-klaviyo' ), 'hge_klaviyo_ov_template' );
+            echo '</p>';
+        } elseif ( function_exists( 'hge_klaviyo_upgrade_cta_html' ) ) {
+            echo '<hr style="margin:12px 0 8px;"><p style="font-size:12px;margin:0;">' . esc_html__( 'Per-post excerpt / image override', 'hge-automated-post-campaigns-for-klaviyo' ) . wp_kses_post( hge_klaviyo_upgrade_cta_html( 'core' ) ) . '</p>';
+        }
+    }
+}
+
+// Save the per-post newsletter override fields (FcRapid1923-dcr).
+add_action( 'save_post_post', 'hge_klaviyo_save_meta_box', 10, 2 );
+
+if ( ! function_exists( 'hge_klaviyo_save_meta_box' ) ) {
+    function hge_klaviyo_save_meta_box( $post_id, $post ) {
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+            return;
+        }
+        if ( ! isset( $_POST['hge_klaviyo_meta_nonce'] ) ) {
+            return;
+        }
+        $nonce = sanitize_text_field( wp_unslash( $_POST['hge_klaviyo_meta_nonce'] ) );
+        if ( ! wp_verify_nonce( $nonce, 'hge_klaviyo_meta_' . $post_id ) ) {
+            return;
+        }
+        if ( ! current_user_can( 'edit_post', $post_id ) ) {
+            return;
+        }
+        // Core+ only — fields aren't rendered on Free, so ignore any crafted POST.
+        $plan = function_exists( 'hge_klaviyo_active_plan' ) ? hge_klaviyo_active_plan() : 'free';
+        if ( ! in_array( $plan, array( 'core', 'pro' ), true ) ) {
+            return;
+        }
+
+        $excerpt = isset( $_POST['hge_klaviyo_ov_excerpt'] )
+            ? mb_substr( sanitize_textarea_field( wp_unslash( $_POST['hge_klaviyo_ov_excerpt'] ) ), 0, 200 )
+            : '';
+        if ( '' !== trim( $excerpt ) ) {
+            update_post_meta( $post_id, '_klaviyo_newsletter_excerpt', $excerpt );
+        } else {
+            delete_post_meta( $post_id, '_klaviyo_newsletter_excerpt' );
+        }
+
+        $image = isset( $_POST['hge_klaviyo_ov_image'] )
+            ? esc_url_raw( wp_unslash( $_POST['hge_klaviyo_ov_image'] ) )
+            : '';
+        if ( '' !== $image ) {
+            update_post_meta( $post_id, '_klaviyo_newsletter_image', $image );
+        } else {
+            delete_post_meta( $post_id, '_klaviyo_newsletter_image' );
+        }
+
+        // Per-post Klaviyo template override (FcRapid1923-bn2).
+        $tpl = isset( $_POST['hge_klaviyo_ov_template'] )
+            ? preg_replace( '/[^A-Za-z0-9_\-]/', '', (string) wp_unslash( $_POST['hge_klaviyo_ov_template'] ) )
+            : '';
+        if ( '' !== $tpl ) {
+            update_post_meta( $post_id, '_klaviyo_template_id', $tpl );
+        } else {
+            delete_post_meta( $post_id, '_klaviyo_template_id' );
+        }
     }
 }
 
@@ -343,10 +418,14 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
         if ( $debug_enabled ) {
             $tabs['diagnostic'] = __( 'Status', 'hge-automated-post-campaigns-for-klaviyo' );
         }
+        // Logs tab (Core+ — FcRapid1923-8ou): queryable dispatch history.
+        if ( function_exists( 'hge_klaviyo_active_plan' ) && in_array( hge_klaviyo_active_plan(), array( 'core', 'pro' ), true ) ) {
+            $tabs['logs'] = __( 'Logs', 'hge-automated-post-campaigns-for-klaviyo' );
+        }
 
-        // Enforce display order: Setări → Licență Pro → Status (orice tab terț apare la final).
+        // Enforce display order: Setări → Licență Pro → Logs → Status (orice tab terț apare la final).
         $ordered = array();
-        foreach ( array( 'settings', 'license', 'diagnostic' ) as $known ) {
+        foreach ( array( 'settings', 'license', 'logs', 'diagnostic' ) as $known ) {
             if ( isset( $tabs[ $known ] ) ) {
                 $ordered[ $known ] = $tabs[ $known ];
             }
@@ -377,6 +456,13 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
 
         if ( 'settings' === $active_tab ) {
             hge_klaviyo_render_settings_tab();
+            echo '</div>';
+            return;
+        }
+
+        // Logs tab (Core+ — FcRapid1923-8ou).
+        if ( 'logs' === $active_tab && function_exists( 'hge_klaviyo_nl_render_logs_tab' ) ) {
+            hge_klaviyo_nl_render_logs_tab();
             echo '</div>';
             return;
         }
@@ -887,6 +973,38 @@ if ( ! function_exists( 'hge_klaviyo_handle_refresh_api_cache' ) ) {
  * @since 2.0.0
  * @since 3.0.0 Rewritten — cards system replaces single top-level list/template config.
  */
+if ( ! function_exists( 'hge_klaviyo_nl_render_template_select' ) ) {
+    /**
+     * Render a <select> of the customer's Klaviyo email templates (cached) plus a
+     * leading "built-in HTML" / "use default" option (value ""). Used by the
+     * Settings default-template field and the per-post override (FcRapid1923-bn2).
+     */
+    function hge_klaviyo_nl_render_template_select( $name, $selected, $builtin_label = '', $id = '' ) {
+        $templates = function_exists( 'hge_klaviyo_api_list_templates' ) ? hge_klaviyo_api_list_templates() : array();
+        if ( is_wp_error( $templates ) ) {
+            echo '<em>' . esc_html(
+                sprintf(
+                    /* translators: %s: API error message */
+                    __( 'Could not load Klaviyo templates: %s', 'hge-automated-post-campaigns-for-klaviyo' ),
+                    $templates->get_error_message()
+                )
+            ) . '</em>';
+            return;
+        }
+        echo '<select name="' . esc_attr( $name ) . '"' . ( '' !== $id ? ' id="' . esc_attr( $id ) . '"' : '' ) . '>';
+        echo '<option value="">' . esc_html( '' !== $builtin_label ? $builtin_label : __( 'Built-in HTML (default)', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '</option>';
+        foreach ( (array) $templates as $t ) {
+            $tid = isset( $t['id'] ) ? (string) $t['id'] : '';
+            if ( '' === $tid ) {
+                continue;
+            }
+            $label = isset( $t['name'] ) && '' !== $t['name'] ? (string) $t['name'] : $tid;
+            echo '<option value="' . esc_attr( $tid ) . '" ' . selected( (string) $selected, $tid, false ) . '>' . esc_html( $label ) . '</option>';
+        }
+        echo '</select>';
+    }
+}
+
 if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
     function hge_klaviyo_render_settings_tab() {
         $s              = hge_klaviyo_nl_get_settings();
@@ -1035,6 +1153,73 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
                 $tier_floor_hours,
                 $floor_days
             ) ) . '</p>';
+        }
+        echo '</td></tr>';
+
+        // Dynamic UTM (since 3.0.15 / FcRapid1923-5a3) — available on every plan.
+        $utm_source      = isset( $s['utm_source'] ) ? (string) $s['utm_source'] : 'klaviyo';
+        $utm_medium      = isset( $s['utm_medium'] ) ? (string) $s['utm_medium'] : 'email';
+        $utm_camp_slug   = array_key_exists( 'utm_campaign_use_slug', $s ) ? (bool) $s['utm_campaign_use_slug'] : true;
+        $utm_cont_postid = ! empty( $s['utm_content_use_post_id'] );
+        echo '<tr><th scope="row">' . esc_html__( 'Link tracking (UTM)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th><td>';
+        echo '<p style="margin:0 0 6px;"><label style="display:inline-block;min-width:120px;">' . esc_html__( 'utm_source', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label> '
+            . '<input type="text" name="hge_klaviyo[utm_source]" value="' . esc_attr( $utm_source ) . '" class="regular-text" placeholder="klaviyo" /></p>';
+        echo '<p style="margin:0 0 6px;"><label style="display:inline-block;min-width:120px;">' . esc_html__( 'utm_medium', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label> '
+            . '<input type="text" name="hge_klaviyo[utm_medium]" value="' . esc_attr( $utm_medium ) . '" class="regular-text" placeholder="email" /></p>';
+        echo '<p style="margin:0 0 6px;"><label><input type="checkbox" name="hge_klaviyo[utm_campaign_use_slug]" value="1" ' . checked( $utm_camp_slug, true, false ) . '> '
+            . esc_html__( 'utm_campaign = post slug (uncheck to use a stable post-<id> token)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label></p>';
+        echo '<p style="margin:0 0 6px;"><label><input type="checkbox" name="hge_klaviyo[utm_content_use_post_id]" value="1" ' . checked( $utm_cont_postid, true, false ) . '> '
+            . esc_html__( 'utm_content = post id (uncheck to use "newsletter")', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label></p>';
+        echo '<p class="description">' . esc_html__( 'Applied to the article link in the built-in HTML newsletter. Available on all plans. Klaviyo campaign id is not yet known when the link is built, so the non-slug campaign option uses a stable per-post token.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
+        echo '</td></tr>';
+
+        // Auto-retry on transient API failure (since 3.0.15 / FcRapid1923-mrb) — Core+.
+        $retry_plan = function_exists( 'hge_klaviyo_active_plan' ) ? hge_klaviyo_active_plan() : 'free';
+        $retry_max  = isset( $s['retry_max_attempts'] ) ? (int) $s['retry_max_attempts'] : 3;
+        echo '<tr><th scope="row">' . esc_html__( 'Auto-retry on API failure', 'hge-automated-post-campaigns-for-klaviyo' );
+        if ( ! in_array( $retry_plan, array( 'core', 'pro' ), true ) && function_exists( 'hge_klaviyo_upgrade_cta_html' ) ) {
+            echo wp_kses_post( hge_klaviyo_upgrade_cta_html( 'core' ) );
+        }
+        echo '</th><td>';
+        if ( in_array( $retry_plan, array( 'core', 'pro' ), true ) ) {
+            echo '<input type="number" name="hge_klaviyo[retry_max_attempts]" value="' . esc_attr( (string) max( 1, min( 5, $retry_max ) ) ) . '" min="1" max="5" step="1" class="small-text" /> ';
+            echo esc_html__( 'attempts (1–5)', 'hge-automated-post-campaigns-for-klaviyo' );
+            echo '<p class="description">' . esc_html__( 'On a transient Klaviyo API failure (HTTP 5xx / 429 rate limit / timeout) that happens before the campaign is created, the dispatch is retried with exponential backoff (+1, +5, +30 min). After the last attempt the post is marked failed. A campaign that was already created is never re-sent.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
+        } else {
+            echo '<p class="description">' . esc_html__( 'Automatically retries failed sends with exponential backoff. Available on Core and Pro.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
+        }
+        echo '</td></tr>';
+
+        // Auto-exclude unsubscribed (since 3.0.15 / FcRapid1923-8cx) — Core+.
+        $unsub_plan = function_exists( 'hge_klaviyo_active_plan' ) ? hge_klaviyo_active_plan() : 'free';
+        echo '<tr><th scope="row">' . esc_html__( 'Exclude unsubscribed', 'hge-automated-post-campaigns-for-klaviyo' );
+        if ( ! in_array( $unsub_plan, array( 'core', 'pro' ), true ) && function_exists( 'hge_klaviyo_upgrade_cta_html' ) ) {
+            echo wp_kses_post( hge_klaviyo_upgrade_cta_html( 'core' ) );
+        }
+        echo '</th><td>';
+        if ( in_array( $unsub_plan, array( 'core', 'pro' ), true ) ) {
+            $unsub_on = ! empty( $s['auto_exclude_unsubscribed'] );
+            $unsub_id = isset( $s['unsubscribed_list_id'] ) ? (string) $s['unsubscribed_list_id'] : '';
+            echo '<label><input type="checkbox" name="hge_klaviyo[auto_exclude_unsubscribed]" value="1" ' . checked( $unsub_on, true, false ) . '> ' . esc_html__( 'Add a suppression list/segment to every campaign\'s excluded audiences', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label>';
+            echo '<p style="margin:6px 0 0;"><label style="display:inline-block;min-width:160px;">' . esc_html__( 'Suppression list/segment ID', 'hge-automated-post-campaigns-for-klaviyo' ) . '</label> <input type="text" name="hge_klaviyo[unsubscribed_list_id]" value="' . esc_attr( $unsub_id ) . '" class="regular-text" placeholder="' . esc_attr__( 'Klaviyo list or segment ID', 'hge-automated-post-campaigns-for-klaviyo' ) . '" /></p>';
+            echo '<p class="description">' . esc_html__( 'Klaviyo already auto-suppresses unsubscribed profiles at send time. Set a suppression list/segment ID here to also exclude it explicitly from every newsletter campaign.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
+        } else {
+            echo '<p class="description">' . esc_html__( 'Explicitly exclude a suppression list/segment from every campaign. Available on Core and Pro.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
+        }
+        echo '</td></tr>';
+
+        // Reusable Klaviyo template (since 3.0.15 / FcRapid1923-bn2) — Core/Pro.
+        $tpl_plan = function_exists( 'hge_klaviyo_active_plan' ) ? hge_klaviyo_active_plan() : 'free';
+        echo '<tr><th scope="row">' . esc_html__( 'Default email template', 'hge-automated-post-campaigns-for-klaviyo' );
+        if ( ! in_array( $tpl_plan, array( 'core', 'pro' ), true ) && function_exists( 'hge_klaviyo_upgrade_cta_html' ) ) {
+            echo wp_kses_post( hge_klaviyo_upgrade_cta_html( 'core' ) );
+        }
+        echo '</th><td>';
+        if ( in_array( $tpl_plan, array( 'core', 'pro' ), true ) ) {
+            hge_klaviyo_nl_render_template_select( 'hge_klaviyo[default_template_id]', isset( $s['default_template_id'] ) ? (string) $s['default_template_id'] : '' );
+            echo '<p class="description">' . esc_html__( 'Reuse an email template you already built in Klaviyo — it is used on every send, so the plugin never creates a new template per campaign. Leave on "Built-in HTML" to keep the plugin-generated template. Each post can override this in the post editor.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
+        } else {
+            echo '<p class="description">' . esc_html__( 'Free uses the built-in HTML template. Core and Pro can reuse their own Klaviyo templates instead of generating one per send.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
         }
         echo '</td></tr>';
 

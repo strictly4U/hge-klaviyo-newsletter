@@ -47,6 +47,11 @@ if ( ! function_exists( 'hge_klaviyo_nl_activate' ) ) {
             hge_klaviyo_nl_migrate_from_wp_config();
         }
 
+        // 4b. Create / migrate the dispatch log table (Core+ feature — FcRapid1923-8ou).
+        if ( function_exists( 'hge_klaviyo_nl_log_install_table' ) ) {
+            hge_klaviyo_nl_log_install_table();
+        }
+
         // 5. Mark activation time + schedule a one-time admin notice if config is incomplete
         update_option( 'hge_klaviyo_nl_activated_at', time(), false );
 

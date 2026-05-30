@@ -154,6 +154,13 @@ if ( ! function_exists( 'hge_klaviyo_maybe_enqueue' ) ) {
                 hge_klaviyo_nl_set_last_send_for_slug( $rule['tag_slug'], (int) $when );
                 if ( $when > time() + 60 ) {
                     update_post_meta( $post->ID, HGE_KLAVIYO_NL_META_SCHED_FOR, gmdate( DATE_ATOM, $when ) );
+                    // Dispatch log (Core+ — FcRapid1923-8ou).
+                    if ( function_exists( 'hge_klaviyo_nl_log_event' ) ) {
+                        hge_klaviyo_nl_log_event( (int) $post->ID, 'scheduled', array(
+                            'rule_tag_slug' => (string) $rule['tag_slug'],
+                            'scheduled_for' => (int) $when,
+                        ) );
+                    }
                 }
                 return;
             }
@@ -244,6 +251,21 @@ if ( ! function_exists( 'hge_klaviyo_dispatch_newsletter' ) ) {
         $included = (array) ( $rule['included_list_ids'] ?? array() );
         $excluded = (array) ( $rule['excluded_list_ids'] ?? array() );
 
+        // Auto-exclude unsubscribed (since 3.0.15 / FcRapid1923-8cx) — Core+.
+        // Appends the configured suppression list/segment id to the campaign's
+        // excluded audiences. No-op until a suppression id is set (Klaviyo still
+        // auto-suppresses unsubscribed profiles at send time regardless).
+        if ( function_exists( 'hge_klaviyo_active_plan' )
+            && in_array( hge_klaviyo_active_plan(), array( 'core', 'pro' ), true )
+            && ! empty( $settings['auto_exclude_unsubscribed'] ) ) {
+            $supp_id = isset( $settings['unsubscribed_list_id'] )
+                ? preg_replace( '/[^A-Za-z0-9_\-]/', '', (string) $settings['unsubscribed_list_id'] )
+                : '';
+            if ( '' !== $supp_id && ! in_array( $supp_id, $excluded, true ) ) {
+                $excluded[] = $supp_id;
+            }
+        }
+
         if ( '' === $api_key || empty( $included ) ) {
             HgE_Klaviyo_Logger::error( 'Missing settings — cannot dispatch', array(
                 'post_id'       => $post_id,
@@ -266,26 +288,40 @@ if ( ! function_exists( 'hge_klaviyo_dispatch_newsletter' ) ) {
         try {
             $excerpt_max   = (int) apply_filters( 'hge_klaviyo_excerpt_length', 120 );
             $title         = trim( wp_strip_all_tags( get_the_title( $post ) ) );
-            $excerpt_full  = trim( wp_strip_all_tags( get_the_excerpt( $post ) ) );
+
+            // Manual per-post overrides (since 3.0.15 / FcRapid1923-dcr) — Core+ only.
+            // When set, the editable "Newsletter excerpt / image" fields in the post
+            // meta box take precedence over get_the_excerpt() / the featured image.
+            $dcr_ok     = function_exists( 'hge_klaviyo_active_plan' )
+                && in_array( hge_klaviyo_active_plan(), array( 'core', 'pro' ), true );
+            $ov_excerpt = $dcr_ok ? trim( (string) get_post_meta( $post_id, '_klaviyo_newsletter_excerpt', true ) ) : '';
+            $ov_image   = $dcr_ok ? trim( (string) get_post_meta( $post_id, '_klaviyo_newsletter_image', true ) ) : '';
+
+            $excerpt_full = '' !== $ov_excerpt
+                ? wp_strip_all_tags( $ov_excerpt )
+                : trim( wp_strip_all_tags( get_the_excerpt( $post ) ) );
             $excerpt_short = mb_substr( $excerpt_full, 0, $excerpt_max );
             if ( mb_strlen( $excerpt_full ) > $excerpt_max ) {
                 $excerpt_short = rtrim( $excerpt_short ) . '…';
             }
 
-            $image_url = get_the_post_thumbnail_url( $post_id, 'full' );
+            $image_url = '' !== $ov_image ? $ov_image : get_the_post_thumbnail_url( $post_id, 'full' );
             if ( ! $image_url ) {
                 $image_url = '';
             }
 
-            $url_with_utm = add_query_arg(
-                array(
-                    'utm_source'   => 'klaviyo',
-                    'utm_medium'   => 'email',
-                    'utm_campaign' => sanitize_title( $post->post_name ?: ( 'post-' . $post_id ) ),
-                    'utm_content'  => 'newsletter',
-                ),
-                get_permalink( $post )
-            );
+            // Dynamic UTM (since 3.0.15 / FcRapid1923-5a3) — configurable on every plan.
+            $url_with_utm = function_exists( 'hge_klaviyo_nl_build_post_url_with_utm' )
+                ? hge_klaviyo_nl_build_post_url_with_utm( $post, $post_id )
+                : add_query_arg(
+                    array(
+                        'utm_source'   => 'klaviyo',
+                        'utm_medium'   => 'email',
+                        'utm_campaign' => sanitize_title( $post->post_name ?: ( 'post-' . $post_id ) ),
+                        'utm_content'  => 'newsletter',
+                    ),
+                    get_permalink( $post )
+                );
 
             $is_web_feed = ! empty( $rule['use_web_feed'] ) && ! empty( $rule['template_id'] );
 
@@ -306,28 +342,51 @@ if ( ! function_exists( 'hge_klaviyo_dispatch_newsletter' ) ) {
                 $send_strategy = array( 'method' => 'immediate' );
                 $plan          = array( 'mode' => 'immediate', 'time' => time() );
             } else {
-                $rendered = hge_klaviyo_build_email_body( $post, $title, $excerpt_short, $image_url, $url_with_utm );
-                $template_payload = array(
-                    'data' => array(
-                        'type'       => 'template',
-                        'attributes' => array(
-                            'name'        => 'NL ' . $title . ' [' . $post_id . ']',
-                            'editor_type' => 'CODE',
-                            'html'        => $rendered['html'],
-                            'text'        => $rendered['text'],
-                        ),
-                    ),
-                );
-                $template = hge_klaviyo_api_request( 'POST', '/api/templates/', $template_payload );
-                if ( is_wp_error( $template ) ) {
-                    throw new RuntimeException( 'create_template: ' . $template->get_error_message() );
-                }
-                $template_id = isset( $template['data']['id'] ) ? (string) $template['data']['id'] : '';
-                if ( '' === $template_id ) {
-                    throw new RuntimeException( 'create_template: missing id' );
+                // Resolve which template to assign to the campaign-message.
+                //
+                // Reusable Klaviyo templates (since 3.0.15 / FcRapid1923-bn2) — Core/Pro:
+                // pick an existing template the customer already built in Klaviyo
+                // (per-post override → default setting) so we DON'T create a brand-new
+                // template on every send. Free (and Core/Pro that left it on "Built-in
+                // HTML") keep the built-in renderer, which creates a per-send CODE template.
+                $bn2_ok = function_exists( 'hge_klaviyo_active_plan' )
+                    && in_array( hge_klaviyo_active_plan(), array( 'core', 'pro' ), true );
+                $selected_template = '';
+                if ( $bn2_ok ) {
+                    $per_post = preg_replace( '/[^A-Za-z0-9_\-]/', '', (string) get_post_meta( $post_id, '_klaviyo_template_id', true ) );
+                    $selected_template = '' !== $per_post
+                        ? $per_post
+                        : preg_replace( '/[^A-Za-z0-9_\-]/', '', (string) ( $settings['default_template_id'] ?? '' ) );
                 }
 
-                // Per-rule cooldown: timer keyed on the rule's tag_slug
+                if ( '' !== $selected_template ) {
+                    // Reuse the customer's existing Klaviyo template — no template created.
+                    $template_id = $selected_template;
+                } else {
+                    $rendered = hge_klaviyo_build_email_body( $post, $title, $excerpt_short, $image_url, $url_with_utm );
+                    $template_payload = array(
+                        'data' => array(
+                            'type'       => 'template',
+                            'attributes' => array(
+                                'name'        => 'NL ' . $title . ' [' . $post_id . ']',
+                                'editor_type' => 'CODE',
+                                'html'        => $rendered['html'],
+                                'text'        => $rendered['text'],
+                            ),
+                        ),
+                    );
+                    $template = hge_klaviyo_api_request( 'POST', '/api/templates/', $template_payload );
+                    if ( is_wp_error( $template ) ) {
+                        throw new RuntimeException( 'create_template: ' . $template->get_error_message() );
+                    }
+                    $template_id = isset( $template['data']['id'] ) ? (string) $template['data']['id'] : '';
+                    if ( '' === $template_id ) {
+                        throw new RuntimeException( 'create_template: missing id' );
+                    }
+                }
+
+                // Per-rule cooldown: timer keyed on the rule's tag_slug (applies to both
+                // the reused-template and built-in-HTML paths).
                 $plan = function_exists( 'hge_klaviyo_nl_compute_send_time_for_slug' )
                     ? hge_klaviyo_nl_compute_send_time_for_slug( $rule['tag_slug'] )
                     : array( 'mode' => 'immediate', 'time' => time() );
@@ -466,14 +525,77 @@ if ( ! function_exists( 'hge_klaviyo_dispatch_newsletter' ) ) {
                 hge_klaviyo_nl_set_last_send_for_slug( $rule['tag_slug'], (int) $plan['time'] );
             }
             delete_post_meta( $post_id, HGE_KLAVIYO_NL_META_ERROR );
+            delete_post_meta( $post_id, '_klaviyo_retry_attempt' ); // clear any retry counter (FcRapid1923-mrb)
+
+            // Dispatch log (Core+ — FcRapid1923-8ou).
+            if ( function_exists( 'hge_klaviyo_nl_log_event' ) ) {
+                hge_klaviyo_nl_log_event( $post_id, 'sent', array(
+                    'rule_tag_slug' => (string) $rule['tag_slug'],
+                    'campaign_id'   => $campaign_id,
+                ) );
+            }
 
         } catch ( \Throwable $e ) {
+            $err_msg  = $e->getMessage();
+            $rule_slug = isset( $rule['tag_slug'] ) ? (string) $rule['tag_slug'] : '';
             HgE_Klaviyo_Logger::error( 'Dispatch threw exception', array(
                 'post_id' => $post_id,
                 'class'   => get_class( $e ),
-                'message' => $e->getMessage(),
+                'message' => $err_msg,
             ) );
-            update_post_meta( $post_id, HGE_KLAVIYO_NL_META_ERROR, $e->getMessage() );
+
+            // Automatic retry with exponential backoff (since 3.0.15 / FcRapid1923-mrb) — Core+.
+            // SAFETY: only retry transient failures (5xx / 429 / network) that happened
+            // BEFORE a campaign was created (create_template / create_campaign stage —
+            // identified by the exception message prefix), so a retry can never produce a
+            // duplicate Klaviyo campaign. assign_template / send failures are NOT retried.
+            $retry_plan_ok = function_exists( 'hge_klaviyo_active_plan' )
+                && in_array( hge_klaviyo_active_plan(), array( 'core', 'pro' ), true );
+            $pre_campaign  = ( 0 === strpos( $err_msg, 'create_template:' ) || 0 === strpos( $err_msg, 'create_campaign:' ) );
+            $transient     = (bool) preg_match( '/HTTP (5\d\d|429)|timed out|timeout|cURL error|could not resolve|Connection/i', $err_msg );
+
+            $retried = false;
+            if ( $retry_plan_ok && $pre_campaign && $transient ) {
+                $max     = (int) ( $settings['retry_max_attempts'] ?? 3 );
+                $max     = max( 1, min( 5, $max ) );
+                $attempt = (int) get_post_meta( $post_id, '_klaviyo_retry_attempt', true );
+                if ( $attempt < $max ) {
+                    $attempt++;
+                    update_post_meta( $post_id, '_klaviyo_retry_attempt', $attempt );
+                    $backoff = array( 1 => 60, 2 => 300, 3 => 1800 ); // +1min, +5min, +30min
+                    $delay   = isset( $backoff[ $attempt ] ) ? $backoff[ $attempt ] : 1800;
+                    $when    = time() + $delay;
+                    $retry_args = array( $post_id, $rule_slug );
+                    if ( function_exists( 'as_schedule_single_action' ) ) {
+                        as_schedule_single_action( $when, HGE_KLAVIYO_NL_HOOK, $retry_args, 'hge-klaviyo' );
+                    } elseif ( ! wp_next_scheduled( HGE_KLAVIYO_NL_HOOK, $retry_args ) ) {
+                        wp_schedule_single_event( $when, HGE_KLAVIYO_NL_HOOK, $retry_args );
+                    }
+                    update_post_meta( $post_id, HGE_KLAVIYO_NL_META_ERROR, sprintf( 'retry_%d_of_%d_scheduled: %s', $attempt, $max, $err_msg ) );
+                    HgE_Klaviyo_Logger::warning( 'Dispatch failed — retry scheduled (exponential backoff)', array(
+                        'post_id' => $post_id, 'attempt' => $attempt, 'max' => $max, 'delay_s' => $delay,
+                    ) );
+                    if ( function_exists( 'hge_klaviyo_nl_log_event' ) ) {
+                        hge_klaviyo_nl_log_event( $post_id, 'pending', array(
+                            'rule_tag_slug' => $rule_slug, 'attempt' => $attempt,
+                            'error' => $err_msg, 'scheduled_for' => $when,
+                        ) );
+                    }
+                    $retried = true;
+                }
+            }
+
+            if ( ! $retried ) {
+                // Not retryable, or retries exhausted — mark failed.
+                $final_attempt = (int) get_post_meta( $post_id, '_klaviyo_retry_attempt', true );
+                update_post_meta( $post_id, HGE_KLAVIYO_NL_META_ERROR, $err_msg );
+                delete_post_meta( $post_id, '_klaviyo_retry_attempt' );
+                if ( function_exists( 'hge_klaviyo_nl_log_event' ) ) {
+                    hge_klaviyo_nl_log_event( $post_id, 'failed', array(
+                        'rule_tag_slug' => $rule_slug, 'error' => $err_msg, 'attempt' => $final_attempt,
+                    ) );
+                }
+            }
         } finally {
             delete_post_meta( $post_id, HGE_KLAVIYO_NL_META_LOCK );
         }

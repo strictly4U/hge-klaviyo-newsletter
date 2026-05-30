@@ -89,6 +89,23 @@ if ( ! function_exists( 'hge_klaviyo_nl_settings_defaults' ) ) {
             'reply_to_email'     => '',
             'min_interval_hours' => 12,
             'debug_mode'         => false,
+            // Dynamic UTM (since 3.0.15 / FcRapid1923-5a3) — available on every plan.
+            'utm_source'              => 'klaviyo',
+            'utm_medium'              => 'email',
+            'utm_campaign_use_slug'   => true,  // true = post slug; false = stable post-<id> token
+            'utm_content_use_post_id' => false, // true = post id; false = "newsletter"
+            // Auto-retry on transient API failure (since 3.0.15 / FcRapid1923-mrb) — Core+.
+            'retry_max_attempts'      => 3,     // 1..5; backoff +1/+5/+30 min
+            // Auto-exclude unsubscribed (since 3.0.15 / FcRapid1923-8cx) — Core+.
+            // When ON and a suppression list/segment id is set, that id is added to
+            // every campaign's excluded audiences. (Klaviyo also auto-suppresses
+            // unsubscribed profiles at send time; this is an explicit extra guard.)
+            'auto_exclude_unsubscribed' => true,
+            'unsubscribed_list_id'      => '',
+            // Reusable Klaviyo template (since 3.0.15 / FcRapid1923-bn2) — Core/Pro.
+            // Empty = built-in HTML (Free behaviour). When set, the dispatcher reuses
+            // this existing Klaviyo template instead of creating one per send.
+            'default_template_id'       => '',
             'tag_rules'          => array( $default_rule ),
         ) );
     }
@@ -350,6 +367,34 @@ if ( ! function_exists( 'hge_klaviyo_nl_sanitize_settings' ) ) {
         }
         if ( isset( $input['debug_mode'] ) ) {
             $out['debug_mode'] = (bool) $input['debug_mode'];
+        }
+
+        // Dynamic UTM (since 3.0.15 / FcRapid1923-5a3) — every plan.
+        if ( isset( $input['utm_source'] ) ) {
+            $v = trim( sanitize_text_field( (string) $input['utm_source'] ) );
+            $out['utm_source'] = '' !== $v ? $v : 'klaviyo';
+        }
+        if ( isset( $input['utm_medium'] ) ) {
+            $v = trim( sanitize_text_field( (string) $input['utm_medium'] ) );
+            $out['utm_medium'] = '' !== $v ? $v : 'email';
+        }
+        $out['utm_campaign_use_slug']   = ! empty( $input['utm_campaign_use_slug'] );
+        $out['utm_content_use_post_id'] = ! empty( $input['utm_content_use_post_id'] );
+
+        // Auto-retry max attempts (since 3.0.15 / FcRapid1923-mrb) — clamp 1..5.
+        if ( isset( $input['retry_max_attempts'] ) ) {
+            $out['retry_max_attempts'] = max( 1, min( 5, (int) $input['retry_max_attempts'] ) );
+        }
+
+        // Auto-exclude unsubscribed (since 3.0.15 / FcRapid1923-8cx).
+        $out['auto_exclude_unsubscribed'] = ! empty( $input['auto_exclude_unsubscribed'] );
+        if ( isset( $input['unsubscribed_list_id'] ) ) {
+            $out['unsubscribed_list_id'] = preg_replace( '/[^A-Za-z0-9_\-]/', '', (string) $input['unsubscribed_list_id'] );
+        }
+
+        // Reusable Klaviyo template default (since 3.0.15 / FcRapid1923-bn2).
+        if ( isset( $input['default_template_id'] ) ) {
+            $out['default_template_id'] = preg_replace( '/[^A-Za-z0-9_\-]/', '', (string) $input['default_template_id'] );
         }
 
         if ( isset( $input['tag_rules'] ) && is_array( $input['tag_rules'] ) ) {

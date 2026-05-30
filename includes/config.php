@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'HGE_KLAVIYO_NL_TAG_SLUG' ) ) {
-    define( 'HGE_KLAVIYO_NL_VERSION',           '3.0.14' );
+    define( 'HGE_KLAVIYO_NL_VERSION',           '3.0.15' );
     // Default tag slug for the first rule on fresh installs. Customers configure
     // their actual trigger tag in Setări → Reguli newsletter; this constant is
     // only the bootstrap seed value.
@@ -157,6 +157,57 @@ if ( ! function_exists( 'hge_klaviyo_safe_subject' ) ) {
         }
 
         return $clean;
+    }
+}
+
+if ( ! function_exists( 'hge_klaviyo_nl_build_post_url_with_utm' ) ) {
+    /**
+     * Build the post permalink with UTM params. Configurable on EVERY plan
+     * (since 3.0.15 / FcRapid1923-5a3): utm_source / utm_medium are free text
+     * (defaults klaviyo / email); utm_campaign is the post slug (default) or a
+     * stable per-post token; utm_content is "newsletter" (default) or the post id.
+     *
+     * Note: Klaviyo's campaign id does not exist yet when this URL is baked into
+     * the email template, so the non-slug utm_campaign option falls back to a
+     * stable "post-<id>" token rather than the eventual campaign id.
+     *
+     * @since 3.0.15 (FcRapid1923-5a3)
+     * @param WP_Post|null $post
+     * @param int          $post_id
+     * @return string
+     */
+    function hge_klaviyo_nl_build_post_url_with_utm( $post, $post_id ) {
+        $post_id = (int) $post_id;
+        $s = function_exists( 'hge_klaviyo_nl_get_settings' ) ? hge_klaviyo_nl_get_settings() : array();
+
+        $source = sanitize_text_field( (string) ( $s['utm_source'] ?? '' ) );
+        $medium = sanitize_text_field( (string) ( $s['utm_medium'] ?? '' ) );
+        if ( '' === trim( $source ) ) {
+            $source = 'klaviyo';
+        }
+        if ( '' === trim( $medium ) ) {
+            $medium = 'email';
+        }
+        $use_slug    = array_key_exists( 'utm_campaign_use_slug', $s ) ? (bool) $s['utm_campaign_use_slug'] : true;
+        $content_pid = ! empty( $s['utm_content_use_post_id'] );
+
+        $slug = ( $post instanceof WP_Post ) ? (string) $post->post_name : '';
+        if ( $use_slug ) {
+            $campaign = sanitize_title( '' !== $slug ? $slug : ( 'post-' . $post_id ) );
+        } else {
+            $campaign = 'post-' . $post_id;
+        }
+        $content = $content_pid ? (string) $post_id : 'newsletter';
+
+        return add_query_arg(
+            array(
+                'utm_source'   => $source,
+                'utm_medium'   => $medium,
+                'utm_campaign' => $campaign,
+                'utm_content'  => $content,
+            ),
+            get_permalink( $post )
+        );
     }
 }
 

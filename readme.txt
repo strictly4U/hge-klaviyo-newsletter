@@ -4,7 +4,7 @@ Tags: klaviyo, campaigns, newsletter, automation, woocommerce
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 3.0.14
+Stable tag: 3.0.15
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -123,6 +123,14 @@ The result is stored in `hge_klaviyo_pro_license_plan` and read by `hge_klaviyo_
 This plugin sends post titles, excerpts, featured images and post URLs to Klaviyo over HTTPS. No subscriber data is collected by the plugin itself; subscribers are managed entirely in your Klaviyo account.
 
 == Changelog ==
+
+= 3.0.15 =
+* **New (all plans)**: configurable UTM tags for the article link — utm_source / utm_medium plus toggles for campaign (slug vs token) and content (post id vs "newsletter").
+* **New (Core+)**: per-post excerpt / image override in the post meta box.
+* **New (Core+)**: dispatch Logs tab + history table (scheduled / pending / sent / failed) with filter + pagination.
+* **New (Core+)**: automatic retry with exponential backoff (+1/+5/+30 min) on transient API failures, before campaign creation only — never duplicates a campaign.
+* **New (Core+)**: optionally exclude a suppression list/segment from every campaign.
+* **New (Core/Pro)**: reuse your own Klaviyo email templates (default + per-post) instead of generating a new template on each send. Free keeps the built-in HTML template.
 
 = 3.0.14 =
 * **New**: Tier-enforced sending cap — Free is capped to 1 newsletter / 30 days and Core to 1 / 6 days per rule, enforced at dispatch time (Pro stays fully customer-controlled). The "Minimum interval between sends" field now shows the effective floor on Free/Core, and a one-shot notice explains when a publish was skipped by the cap.

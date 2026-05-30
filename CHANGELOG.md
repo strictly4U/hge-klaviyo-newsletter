@@ -4,6 +4,61 @@ All notable changes to HgE Klaviyo Newsletter are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.15] — 2026-05-30
+
+Tier 2 (Core) feature batch. Free is unchanged except for the new dynamic-UTM
+controls, which are available on every plan.
+
+### Added — Dynamic UTM, all plans (`FcRapid1923-5a3`)
+
+- New Settings → "Link tracking (UTM)" controls: `utm_source` / `utm_medium`
+  (free text, default `klaviyo` / `email`), plus toggles for `utm_campaign`
+  (post slug — default — vs a stable `post-<id>` token) and `utm_content`
+  (post id vs `newsletter`). Applied to the article link in the built-in
+  newsletter via `hge_klaviyo_nl_build_post_url_with_utm()`. Available on
+  Free, Core and Pro. (Klaviyo's campaign id is not known when the link is
+  baked into the template, so the non-slug campaign option uses the stable
+  per-post token.)
+
+### Added — Per-post excerpt / image override (`FcRapid1923-dcr`, Core+)
+
+- The post meta box gains "Excerpt override" (≤200 chars) and "Image URL
+  fallback" fields (`_klaviyo_newsletter_excerpt` / `_klaviyo_newsletter_image`).
+  When set, the dispatcher uses them instead of `get_the_excerpt()` /
+  the featured image. Free sees an upgrade CTA.
+
+### Added — Dispatch log table + Logs tab (`FcRapid1923-8ou`, Core+)
+
+- New `{prefix}hge_klaviyo_nl_log` table (created on activation / admin_init
+  version check) records each dispatch lifecycle event (scheduled → pending →
+  sent / failed) with post id, campaign id, rule slug, attempt, error and
+  timestamps. New Tools → "Logs" tab renders a filterable, paginated history
+  (native WP table — no third-party JS bundled). Free never accrues rows.
+
+### Added — Auto-retry with exponential backoff (`FcRapid1923-mrb`, Core+)
+
+- On a transient Klaviyo failure (HTTP 5xx / 429 / network) that occurs
+  *before* a campaign is created, the dispatch is retried via Action Scheduler
+  at +1 / +5 / +30 min (`retry_max_attempts`, 1–5, default 3). Failures after
+  campaign creation are never auto-retried, so a retry can never produce a
+  duplicate campaign. Exhausted retries mark the post failed.
+
+### Added — Explicit unsubscribed exclusion (`FcRapid1923-8cx`, Core+)
+
+- New `auto_exclude_unsubscribed` toggle + `unsubscribed_list_id`: when set,
+  the suppression list/segment id is added to every campaign's excluded
+  audiences. (Klaviyo also auto-suppresses unsubscribed profiles at send time;
+  this is an explicit extra guard.)
+
+### Added — Reusable Klaviyo templates (`FcRapid1923-bn2`, Core/Pro)
+
+- Core/Pro can select an email template they already built in Klaviyo —
+  Settings → "Default email template" plus a per-post override in the meta box.
+  When chosen, the dispatcher assigns that existing template to the campaign
+  instead of creating a brand-new CODE template on every send. Free keeps the
+  single built-in HTML template. Template list is pulled (cached) from the
+  Klaviyo Templates API.
+
 ## [3.0.14] — 2026-05-30
 
 ### Added — Tier-enforced dispatch cap (`FcRapid1923-omh`)

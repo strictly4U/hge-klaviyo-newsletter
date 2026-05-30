@@ -3,7 +3,7 @@
  * Plugin Name:       HgE Automated Post Campaigns for Klaviyo
  * Plugin URI:        https://github.com/strictly4U/hge-automated-post-campaigns-for-klaviyo
  * Description:       Automatically send a Klaviyo email campaign from a WordPress post — when a post is published with a configured tag, the plugin renders a built-in HTML template populated with the post (title, excerpt, featured image, link with UTM) and dispatches the campaign to your Klaviyo list. Free: single list, basic UTM, built-in template. Pro extension adds Klaviyo templates with WooCommerce product feed, multi-list (up to 15), exclusions, delay window, retry and A/B testing.
- * Version:           3.0.14
+ * Version:           3.0.15
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            HgE
@@ -57,6 +57,9 @@ require_once HGE_KLAVIYO_NL_PLUGIN_DIR . 'includes/tier.php';
 
 // Settings DB schema + getters/setters + migration shim from wp-config
 require_once HGE_KLAVIYO_NL_PLUGIN_DIR . 'includes/settings.php';
+
+// Dispatch log table (Core+ — queryable history for the Tools → Logs tab)
+require_once HGE_KLAVIYO_NL_PLUGIN_DIR . 'includes/log-table.php';
 
 // Klaviyo API client (api_request + list_lists/list_templates with cache)
 require_once HGE_KLAVIYO_NL_PLUGIN_DIR . 'includes/api-client.php';
