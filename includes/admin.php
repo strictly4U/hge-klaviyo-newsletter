@@ -520,6 +520,42 @@ if ( ! function_exists( 'hge_klaviyo_render_tools_page' ) ) {
                 : '<span style="color:#c00;">✗ ' . esc_html__( 'not loaded (check WooCommerce)', 'hge-automated-post-campaigns-for-klaviyo' ) . '</span>'
         );
 
+        // Background warmup status (since 3.0.16 / FcRapid1923-sbg)
+        $wu_state = esc_html__( 'on-demand (idle)', 'hge-automated-post-campaigns-for-klaviyo' );
+        $wu_color = '#1e8e3e';
+        if ( function_exists( 'hge_klaviyo_nl_background_disabled' ) && hge_klaviyo_nl_background_disabled() ) {
+            $wu_state = esc_html__( 'OFF — background jobs disabled (kill switch)', 'hge-automated-post-campaigns-for-klaviyo' );
+            $wu_color = '#c45500';
+        } elseif ( get_option( 'hge_klaviyo_nl_warmup_selfoff' ) ) {
+            $wu_state = esc_html__( 'OFF — self-disabled after repeatedly slow chains', 'hge-automated-post-campaigns-for-klaviyo' );
+            $wu_color = '#c00';
+        } elseif ( get_transient( 'hge_klaviyo_nl_warmup_pause' ) ) {
+            $wu_state = esc_html__( 'paused 6h after repeated failures', 'hge-automated-post-campaigns-for-klaviyo' );
+            $wu_color = '#c45500';
+        } elseif ( get_transient( 'hge_klaviyo_nl_warmup_lock' ) ) {
+            $wu_state = esc_html__( 'running now', 'hge-automated-post-campaigns-for-klaviyo' );
+        } elseif ( get_transient( 'hge_klaviyo_nl_admin_active' ) ) {
+            $wu_state = esc_html__( 'active (admin seen in last 24h — renews every ~22 min)', 'hge-automated-post-campaigns-for-klaviyo' );
+        }
+        $wu_status = get_option( 'hge_klaviyo_nl_warmup_status', array() );
+        $wu_detail = '';
+        if ( is_array( $wu_status ) && ! empty( $wu_status['last_run_gmt'] ) ) {
+            $wu_detail = sprintf(
+                ' — %s: <code>%s</code> (%s, %s ms, %s)',
+                esc_html__( 'last step', 'hge-automated-post-campaigns-for-klaviyo' ),
+                esc_html( (string) ( $wu_status['last_what'] ?? '?' ) ),
+                ! empty( $wu_status['last_ok'] ) ? '✓' : '✗',
+                esc_html( number_format_i18n( (int) ( $wu_status['last_duration_ms'] ?? 0 ) ) ),
+                esc_html( human_time_diff( (int) $wu_status['last_run_gmt'], time() ) . ' ' . __( 'ago', 'hge-automated-post-campaigns-for-klaviyo' ) )
+            );
+        }
+        printf( '<tr><td>%s</td><td><span style="color:%s;">%s</span>%s</td></tr>',
+            esc_html__( 'Background warmup', 'hge-automated-post-campaigns-for-klaviyo' ),
+            esc_attr( $wu_color ),
+            $wu_state,
+            $wu_detail
+        );
+
         printf( '<tr><td>%s</td><td>%d / %d (' . esc_html__( 'plan', 'hge-automated-post-campaigns-for-klaviyo' ) . ': <code>%s</code>)</td></tr>',
             esc_html__( 'Configured rules', 'hge-automated-post-campaigns-for-klaviyo' ),
             count( $rules ),

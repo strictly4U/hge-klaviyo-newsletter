@@ -415,7 +415,22 @@ if ( ! function_exists( 'hge_klaviyo_nl_maybe_enqueue_warmup' ) ) {
             return; // Action Scheduler not loaded (WC missing — unusual)
         }
 
+        // Self-disable re-enable request (from the admin notice). Nonce-gated.
+        if ( isset( $_GET['hge_klaviyo_warmup_reenable'] )
+            && check_admin_referer( 'hge_klaviyo_warmup_reenable' )
+            && current_user_can( 'manage_options' ) ) {
+            delete_option( 'hge_klaviyo_nl_warmup_selfoff' );
+            delete_option( 'hge_klaviyo_nl_warmup_status' );
+            update_option( 'hge_klaviyo_nl_warmup_fails', 0, false );
+            delete_transient( 'hge_klaviyo_nl_warmup_pause' );
+        }
+
         if ( hge_klaviyo_nl_background_disabled() ) {
+            return;
+        }
+        // Self-disabled after repeatedly slow chains (FcRapid1923-sbg) — stays
+        // off until an admin explicitly re-enables it via the notice link.
+        if ( get_option( 'hge_klaviyo_nl_warmup_selfoff' ) ) {
             return;
         }
         if ( ! function_exists( 'hge_klaviyo_nl_resolve_api_key' ) || '' === hge_klaviyo_nl_resolve_api_key() ) {
@@ -443,13 +458,67 @@ if ( ! function_exists( 'hge_klaviyo_nl_maybe_enqueue_warmup' ) ) {
     }
 }
 
+if ( ! function_exists( 'hge_klaviyo_nl_warmup_record' ) ) {
+    /**
+     * Observability (FcRapid1923-sbg): record every step's outcome + duration
+     * in one small option (shown in the Status tab, logged when debug is on).
+     * Self-protection: 3 consecutive steps slower than 60s → the warmup turns
+     * itself OFF (option flag) and an admin notice recommends the kill switch.
+     *
+     * @param string $what        lists|segments|templates
+     * @param bool   $ok          Step outcome.
+     * @param float  $duration_ms Step duration in milliseconds.
+     */
+    function hge_klaviyo_nl_warmup_record( $what, $ok, $duration_ms ) {
+        $status = get_option( 'hge_klaviyo_nl_warmup_status', array() );
+        $status = is_array( $status ) ? $status : array();
+
+        $slow_count = (int) ( $status['slow_count'] ?? 0 );
+        if ( $ok ) {
+            $slow_count = ( $duration_ms > 60000 ) ? $slow_count + 1 : 0;
+        }
+
+        $status = array(
+            'last_run_gmt'     => time(),
+            'last_what'        => (string) $what,
+            'last_ok'          => (bool) $ok,
+            'last_duration_ms' => (int) round( $duration_ms ),
+            'slow_count'       => $slow_count,
+        );
+        update_option( 'hge_klaviyo_nl_warmup_status', $status, false );
+
+        if ( $slow_count >= 3 && ! get_option( 'hge_klaviyo_nl_warmup_selfoff' ) ) {
+            update_option( 'hge_klaviyo_nl_warmup_selfoff', time(), true );
+            if ( function_exists( 'as_unschedule_all_actions' ) ) {
+                as_unschedule_all_actions( HGE_KLAVIYO_NL_WARMUP_HOOK, array(), 'hge-klaviyo' );
+            }
+            delete_transient( 'hge_klaviyo_nl_warmup_lock' );
+            delete_transient( 'hge_klaviyo_nl_warmup_acc' );
+            if ( class_exists( 'HgE_Klaviyo_Logger' ) ) {
+                HgE_Klaviyo_Logger::warning( 'Cache warmup SELF-DISABLED after 3 consecutive slow chains (>60s each)', array(
+                    'last_duration_ms' => (int) round( $duration_ms ),
+                ) );
+            }
+        } elseif ( class_exists( 'HgE_Klaviyo_Logger' ) && method_exists( 'HgE_Klaviyo_Logger', 'debug' ) ) {
+            HgE_Klaviyo_Logger::debug( 'Cache warmup step finished', array(
+                'what'        => (string) $what,
+                'ok'          => (bool) $ok,
+                'duration_ms' => (int) round( $duration_ms ),
+            ) );
+        }
+    }
+}
+
 if ( ! function_exists( 'hge_klaviyo_nl_warmup_fail' ) ) {
     /**
      * Failure bookkeeping (FcRapid1923-86d): count consecutive failed steps;
      * at 3, pause the whole warmup for 6h. Always cleans lock + accumulator
      * so the next chain starts fresh.
      */
-    function hge_klaviyo_nl_warmup_fail( $what, $message ) {
+    function hge_klaviyo_nl_warmup_fail( $what, $message, $duration_ms = 0 ) {
+        if ( function_exists( 'hge_klaviyo_nl_warmup_record' ) ) {
+            hge_klaviyo_nl_warmup_record( $what, false, $duration_ms );
+        }
         $fails = (int) get_option( 'hge_klaviyo_nl_warmup_fails', 0 ) + 1;
         update_option( 'hge_klaviyo_nl_warmup_fails', $fails, false );
         if ( $fails >= 3 ) {
@@ -481,8 +550,11 @@ if ( ! function_exists( 'hge_klaviyo_nl_warmup_step' ) ) {
      * @param array $job {what: lists|segments|templates, cursor: string, pages: int}
      */
     function hge_klaviyo_nl_warmup_step( $job = array() ) {
+        $hge_warmup_t0 = microtime( true );
         try {
-            if ( hge_klaviyo_nl_background_disabled() || get_transient( 'hge_klaviyo_nl_warmup_pause' ) ) {
+            if ( hge_klaviyo_nl_background_disabled()
+                || get_transient( 'hge_klaviyo_nl_warmup_pause' )
+                || get_option( 'hge_klaviyo_nl_warmup_selfoff' ) ) {
                 delete_transient( 'hge_klaviyo_nl_warmup_lock' );
                 delete_transient( 'hge_klaviyo_nl_warmup_acc' );
                 return;
@@ -515,7 +587,7 @@ if ( ! function_exists( 'hge_klaviyo_nl_warmup_step' ) ) {
                 $pages++;
                 $resp = hge_klaviyo_api_request( 'GET', $next, null, array( 'timeout' => HGE_KLAVIYO_NL_WARMUP_TIMEOUT ) );
                 if ( is_wp_error( $resp ) ) {
-                    hge_klaviyo_nl_warmup_fail( $what, $resp->get_error_message() );
+                    hge_klaviyo_nl_warmup_fail( $what, $resp->get_error_message(), ( microtime( true ) - $hge_warmup_t0 ) * 1000 );
                     return;
                 }
                 foreach ( (array) ( $resp['data'] ?? array() ) as $row ) {
@@ -561,6 +633,7 @@ if ( ! function_exists( 'hge_klaviyo_nl_warmup_step' ) ) {
                         'hge-klaviyo'
                     );
                 }
+                hge_klaviyo_nl_warmup_record( $what, true, ( microtime( true ) - $hge_warmup_t0 ) * 1000 );
                 return;
             }
 
@@ -580,6 +653,7 @@ if ( ! function_exists( 'hge_klaviyo_nl_warmup_step' ) ) {
                         'hge-klaviyo'
                     );
                 }
+                hge_klaviyo_nl_warmup_record( $what, true, ( microtime( true ) - $hge_warmup_t0 ) * 1000 );
                 return;
             }
 
@@ -594,6 +668,10 @@ if ( ! function_exists( 'hge_klaviyo_nl_warmup_step' ) ) {
             // hge_klaviyo_nl_maybe_enqueue_warmup().
             update_option( 'hge_klaviyo_nl_warmup_fails', 0, false );
             delete_transient( 'hge_klaviyo_nl_warmup_lock' );
+            hge_klaviyo_nl_warmup_record( $what, true, ( microtime( true ) - $hge_warmup_t0 ) * 1000 );
+            if ( get_option( 'hge_klaviyo_nl_warmup_selfoff' ) ) {
+                return; // the record above may have just self-disabled us — do not renew
+            }
             if ( get_transient( 'hge_klaviyo_nl_admin_active' ) && function_exists( 'as_schedule_single_action' ) ) {
                 as_schedule_single_action(
                     time() + 22 * MINUTE_IN_SECONDS,
@@ -605,11 +683,33 @@ if ( ! function_exists( 'hge_klaviyo_nl_warmup_step' ) ) {
         } catch ( \Throwable $e ) {
             hge_klaviyo_nl_warmup_fail(
                 is_array( $job ) && isset( $job['what'] ) ? (string) $job['what'] : '?',
-                get_class( $e ) . ': ' . $e->getMessage()
+                get_class( $e ) . ': ' . $e->getMessage(),
+                ( microtime( true ) - $hge_warmup_t0 ) * 1000
             );
         }
     }
 }
+
+// Admin notice when the warmup has self-disabled after repeatedly slow chains
+// (FcRapid1923-sbg). Offers one-click re-enable (nonce-gated, handled in
+// hge_klaviyo_nl_maybe_enqueue_warmup) and recommends the kill switch.
+add_action( 'admin_notices', static function () {
+    if ( ! current_user_can( 'manage_options' ) || ! get_option( 'hge_klaviyo_nl_warmup_selfoff' ) ) {
+        return;
+    }
+    $reenable_url = wp_nonce_url(
+        admin_url( 'tools.php?page=hge-klaviyo-newsletter&hge_klaviyo_warmup_reenable=1' ),
+        'hge_klaviyo_warmup_reenable'
+    );
+    $settings_url = admin_url( 'tools.php?page=hge-klaviyo-newsletter&tab=settings' );
+    echo '<div class="notice notice-warning"><p><strong>'
+        . esc_html__( 'Klaviyo Newsletter: background cache warmup disabled itself', 'hge-automated-post-campaigns-for-klaviyo' )
+        . '</strong> — '
+        . esc_html__( '3 consecutive refresh chains took longer than 60 seconds (slow or unreachable Klaviyo API). Campaign sending is NOT affected. You can re-enable the warmup once the API responds normally, or keep background jobs off via the setting.', 'hge-automated-post-campaigns-for-klaviyo' )
+        . ' <a href="' . esc_url( $reenable_url ) . '">' . esc_html__( 'Re-enable warmup', 'hge-automated-post-campaigns-for-klaviyo' ) . '</a>'
+        . ' | <a href="' . esc_url( $settings_url ) . '">' . esc_html__( 'Background jobs setting', 'hge-automated-post-campaigns-for-klaviyo' ) . '</a>'
+        . '</p></div>';
+} );
 
 // Kill switch flipped ON in Settings → immediately drain the warmup queue.
 add_action(

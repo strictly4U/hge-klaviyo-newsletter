@@ -57,6 +57,8 @@ delete_transient( 'hge_klaviyo_nl_activation_missing' );
 // Since 3.0.16 — warmup v2 chain state.
 delete_option( 'hge_klaviyo_nl_warmup_v2' );
 delete_option( 'hge_klaviyo_nl_warmup_fails' );
+delete_option( 'hge_klaviyo_nl_warmup_status' );
+delete_option( 'hge_klaviyo_nl_warmup_selfoff' );
 delete_transient( 'hge_klaviyo_nl_warmup_lock' );
 delete_transient( 'hge_klaviyo_nl_warmup_acc' );
 delete_transient( 'hge_klaviyo_nl_warmup_pause' );

@@ -46,10 +46,29 @@ must be switch-off-able.
   When on: no warmup at all — campaign dispatch and its retries keep working.
   Turning the checkbox on also drains any queued warmup actions.
 
+### Added — Observability + self-protection (`FcRapid1923-sbg`)
+
+- Every warmup step records its outcome + duration (one small non-autoloaded
+  option; DEBUG log entry per step, WARNING on failure).
+- Self-protection: 3 consecutive chains slower than 60s each → the warmup
+  turns itself OFF, drains its queue, and shows a dismissible admin notice
+  with a one-click nonce-gated "Re-enable warmup" link + a pointer to the
+  kill switch setting. Campaign sending is unaffected.
+- New "Background warmup" row in the Status tab: on-demand/active/running/
+  paused/self-disabled/kill-switch state + last step (endpoint, ✓/✗,
+  duration ms, how long ago).
+
 ### Changed — Lifecycle hygiene (`FcRapid1923-cl7`, Free part)
 
 - Deactivation and uninstall now also unschedule the new warmup-step hook and
-  drop all warmup chain state (lock, accumulator, pause, admin-active marker).
+  drop all warmup chain state (lock, accumulator, pause, admin-active marker,
+  status/self-off options).
+
+### Audited — Pro `hge_klaviyo_pro_daily_check` (`FcRapid1923-cl7`, Pro part — no code change)
+
+- Verified compliant with the ≤30s rule: ONE HTTP call per run, 15s timeout,
+  1-min stampede lock released in `finally`, 12h last-check TTL guard,
+  unscheduled on deactivation (since 1.1.5). Pro stays at 1.2.0.
 
 ## [3.0.15] — 2026-05-30
 
