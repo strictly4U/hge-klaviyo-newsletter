@@ -4,6 +4,53 @@ All notable changes to HgE Klaviyo Newsletter are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.16] — 2026-07-08
+
+Background-jobs hardening (Beads epic `FcRapid1923-qee`). Motivated by a
+production load test where the 3.0.6 recurring cache warmup (every 25 min,
+up to 3 endpoints × 50 pages × 25s HTTP timeout in ONE Action Scheduler
+action) got stuck during a campaign launch and had to be worked around by
+deactivating the plugin. Design rule going forward: no background job may
+hold a queue worker for more than ~30 seconds, and everything non-essential
+must be switch-off-able.
+
+### Changed — Warmup v2: on-demand, chained short steps (`FcRapid1923-yrm`, `FcRapid1923-82z`)
+
+- The 25-min recurring warmup job is REMOVED (one-time migration unschedules
+  it on upgrade; the legacy hook is kept as a no-op so an already-queued
+  occurrence completes silently).
+- Warmup now starts only when an admin opens Tools → Klaviyo Newsletter, and
+  self-renews (single actions, +22 min) only while the 24h "admin active"
+  marker is fresh. Sites where nobody opens the plugin admin have ZERO
+  background activity.
+- Each queue action fetches at most 5 pages of ONE endpoint (lists →
+  segments → templates as separate chained actions) with an 8s HTTP timeout
+  (`hge_klaviyo_api_request()` gained an `$opts['timeout']` parameter; the
+  send-critical path keeps 25s). Unfinished endpoints re-enqueue their own
+  continuation with the pagination cursor.
+
+### Added — Overlap lock + failure backoff (`FcRapid1923-86d`)
+
+- 10-min transient lock: two warmup chains can never run concurrently; the
+  lock is refreshed on every step and self-heals if a worker dies.
+- After 3 consecutive failed steps the warmup pauses for 6 hours. Any
+  `WP_Error` aborts the current chain immediately (no other endpoints are
+  attempted). The whole handler is wrapped in `try/catch (Throwable)` so a
+  fatal can never leave a stale lock or kill the queue worker. Failures are
+  logged (WARNING) via the plugin logger.
+
+### Added — Kill switch / low-resource mode (`FcRapid1923-lxe`)
+
+- New Settings checkbox "Disable background jobs" (every plan) and the
+  `HGE_KLAVIYO_NL_DISABLE_BACKGROUND` wp-config constant (host-level, wins).
+  When on: no warmup at all — campaign dispatch and its retries keep working.
+  Turning the checkbox on also drains any queued warmup actions.
+
+### Changed — Lifecycle hygiene (`FcRapid1923-cl7`, Free part)
+
+- Deactivation and uninstall now also unschedule the new warmup-step hook and
+  drop all warmup chain state (lock, accumulator, pause, admin-active marker).
+
 ## [3.0.15] — 2026-05-30
 
 Tier 2 (Core) feature batch. Free is unchanged except for the new dynamic-UTM

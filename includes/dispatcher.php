@@ -603,7 +603,12 @@ if ( ! function_exists( 'hge_klaviyo_dispatch_newsletter' ) ) {
 }
 
 if ( ! function_exists( 'hge_klaviyo_api_request' ) ) {
-    function hge_klaviyo_api_request( $method, $path, $body = null ) {
+    /**
+     * @param array $opts Optional. {timeout: int} — background jobs pass a
+     *              short timeout (8s, since 3.0.16); the send-critical path
+     *              keeps the 25s default.
+     */
+    function hge_klaviyo_api_request( $method, $path, $body = null, $opts = array() ) {
         $api_key = function_exists( 'hge_klaviyo_nl_resolve_api_key' )
             ? hge_klaviyo_nl_resolve_api_key()
             : ( defined( 'KLAVIYO_API_PRIVATE_KEY' ) ? KLAVIYO_API_PRIVATE_KEY : '' );
@@ -614,7 +619,7 @@ if ( ! function_exists( 'hge_klaviyo_api_request' ) ) {
 
         $args = array(
             'method'  => strtoupper( (string) $method ),
-            'timeout' => 25,
+            'timeout' => isset( $opts['timeout'] ) ? max( 1, (int) $opts['timeout'] ) : 25,
             'headers' => array(
                 'Authorization' => 'Klaviyo-API-Key ' . $api_key,
                 'revision'      => HGE_KLAVIYO_NL_API_REVISION,

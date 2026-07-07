@@ -54,9 +54,19 @@ delete_transient( 'hge_klaviyo_current_post_id' );
 delete_transient( 'hge_klaviyo_feed_v1' );
 delete_transient( 'hge_klaviyo_nl_activation_missing' );
 
+// Since 3.0.16 — warmup v2 chain state.
+delete_option( 'hge_klaviyo_nl_warmup_v2' );
+delete_option( 'hge_klaviyo_nl_warmup_fails' );
+delete_transient( 'hge_klaviyo_nl_warmup_lock' );
+delete_transient( 'hge_klaviyo_nl_warmup_acc' );
+delete_transient( 'hge_klaviyo_nl_warmup_pause' );
+delete_transient( 'hge_klaviyo_nl_admin_active' );
+
 // 3. Action Scheduler queue (best-effort — AS may not be loaded during uninstall)
 if ( function_exists( 'as_unschedule_all_actions' ) ) {
     as_unschedule_all_actions( 'hge_klaviyo_dispatch_newsletter', array(), 'hge-klaviyo' );
+    as_unschedule_all_actions( 'hge_klaviyo_nl_api_cache_warmup', array(), 'hge-klaviyo' ); // legacy 3.0.6 recurring
+    as_unschedule_all_actions( 'hge_klaviyo_nl_warmup_step', array(), 'hge-klaviyo' );      // 3.0.16 chained steps
 }
 
 // 4. Post meta — direct DB delete to bypass per-post overhead

@@ -84,7 +84,15 @@ if ( ! function_exists( 'hge_klaviyo_nl_deactivate' ) ) {
             // Since 3.0.6 — also unschedule the recurring API cache warmup so
             // a deactivated plugin stops hitting Klaviyo every 25 min.
             as_unschedule_all_actions( 'hge_klaviyo_nl_api_cache_warmup', array(), 'hge-klaviyo' );
+            // Since 3.0.16 — the chained warmup steps replace the recurring job.
+            as_unschedule_all_actions( 'hge_klaviyo_nl_warmup_step', array(), 'hge-klaviyo' );
         }
+
+        // Since 3.0.16 — drop warmup chain state so a re-activation starts clean.
+        delete_transient( 'hge_klaviyo_nl_warmup_lock' );
+        delete_transient( 'hge_klaviyo_nl_warmup_acc' );
+        delete_transient( 'hge_klaviyo_nl_warmup_pause' );
+        delete_transient( 'hge_klaviyo_nl_admin_active' );
     }
 }
 

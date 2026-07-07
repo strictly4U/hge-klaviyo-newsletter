@@ -106,6 +106,11 @@ if ( ! function_exists( 'hge_klaviyo_nl_settings_defaults' ) ) {
             // Empty = built-in HTML (Free behaviour). When set, the dispatcher reuses
             // this existing Klaviyo template instead of creating one per send.
             'default_template_id'       => '',
+            // Kill switch (since 3.0.16 / FcRapid1923-lxe) — every plan. Turns off
+            // ALL non-dispatch background activity (API cache warmup). Campaign
+            // dispatch + its retries keep working. Hosts can force it via the
+            // HGE_KLAVIYO_NL_DISABLE_BACKGROUND constant in wp-config.php.
+            'disable_background_jobs'  => false,
             'tag_rules'          => array( $default_rule ),
         ) );
     }
@@ -367,6 +372,12 @@ if ( ! function_exists( 'hge_klaviyo_nl_sanitize_settings' ) ) {
         }
         if ( isset( $input['debug_mode'] ) ) {
             $out['debug_mode'] = (bool) $input['debug_mode'];
+        }
+        // Kill switch (since 3.0.16 / FcRapid1923-lxe) — every plan. Unchecked
+        // checkbox is absent from POST → falls back to the default (false),
+        // same semantics as debug_mode.
+        if ( isset( $input['disable_background_jobs'] ) ) {
+            $out['disable_background_jobs'] = (bool) $input['disable_background_jobs'];
         }
 
         // Dynamic UTM (since 3.0.15 / FcRapid1923-5a3) — every plan.

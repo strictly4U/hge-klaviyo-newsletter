@@ -4,7 +4,7 @@ Tags: klaviyo, campaigns, newsletter, automation, woocommerce
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 3.0.15
+Stable tag: 3.0.16
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -123,6 +123,11 @@ The result is stored in `hge_klaviyo_pro_license_plan` and read by `hge_klaviyo_
 This plugin sends post titles, excerpts, featured images and post URLs to Klaviyo over HTTPS. No subscriber data is collected by the plugin itself; subscribers are managed entirely in your Klaviyo account.
 
 == Changelog ==
+
+= 3.0.16 =
+* **Performance / server-safety**: the API cache warmup no longer runs 24/7. It now starts only when you open the plugin admin page, runs as short chained queue actions (max 5 pages per action, 8s HTTP timeout) instead of one long job, and stops by itself after 24h without admin activity. Includes an overlap lock and a 6h automatic pause after repeated failures — a slow or unreachable Klaviyo can no longer tie up your server's queue workers.
+* **New (all plans)**: "Disable background jobs" setting (low-resource mode) + `HGE_KLAVIYO_NL_DISABLE_BACKGROUND` wp-config constant for hosts. Campaign sending keeps working; only the non-essential cache refresh stops. Recommended during high-traffic events.
+* Deactivation/uninstall now clean up all background-job state.
 
 = 3.0.15 =
 * **New (all plans)**: configurable UTM tags for the article link — utm_source / utm_medium plus toggles for campaign (slug vs token) and content (post id vs "newsletter").

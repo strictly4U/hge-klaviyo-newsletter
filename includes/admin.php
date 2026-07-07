@@ -1229,6 +1229,16 @@ if ( ! function_exists( 'hge_klaviyo_render_settings_tab' ) ) {
         echo '<p class="description">' . esc_html__( 'Leave off in production. Turn on when you need to inspect the webhook / dispatch / API response flow, copy the auto-generated Feed token / webhook secret into an external system, or trace a delivery issue end-to-end. ERROR and WARNING entries are always written regardless of this setting.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
         echo '</td></tr>';
 
+        // Kill switch — background jobs (since 3.0.16 / FcRapid1923-lxe, every plan)
+        echo '<tr><th scope="row">' . esc_html__( 'Background jobs', 'hge-automated-post-campaigns-for-klaviyo' ) . '</th><td>';
+        if ( defined( 'HGE_KLAVIYO_NL_DISABLE_BACKGROUND' ) && HGE_KLAVIYO_NL_DISABLE_BACKGROUND ) {
+            echo '<p class="description"><strong>' . esc_html__( 'Disabled by the HGE_KLAVIYO_NL_DISABLE_BACKGROUND constant in wp-config.php (host-level override).', 'hge-automated-post-campaigns-for-klaviyo' ) . '</strong></p>';
+        } else {
+            echo '<label><input type="checkbox" name="hge_klaviyo[disable_background_jobs]" value="1" ' . checked( ! empty( $s['disable_background_jobs'] ), true, false ) . '> ' . wp_kses_post( __( '<strong>Disable background jobs</strong> (low-resource mode). Stops the Klaviyo API cache warmup entirely.', 'hge-automated-post-campaigns-for-klaviyo' ) ) . '</label>';
+            echo '<p class="description">' . esc_html__( 'Campaign dispatch and its retries keep working — only the non-essential cache refresh stops. Turn on during high-traffic events (campaign launches, sales) or on constrained hosting. Trade-off: the Settings page loads list/segment/template data directly from Klaviyo when its cache is cold, which can take a few seconds. Hosts can force this mode with the HGE_KLAVIYO_NL_DISABLE_BACKGROUND constant.', 'hge-automated-post-campaigns-for-klaviyo' ) . '</p>';
+        }
+        echo '</td></tr>';
+
         echo '</table>';
 
         // ====== Section 2 — Newsletter rules (cards) ======
